@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  
+  <Import Project="..\..\vostok.devtools\library-common-props\Main-Project.props" />
+  <Import Project="..\..\vostok.devtools\git-commit-to-assembly-title\Vostok.Tools.GitCommit2AssemblyTitle.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Configurations>Debug;Release</Configurations>
+    <LangVersion>7.2</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VersionPrefix>0.0.1</VersionPrefix>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Title>Vostok.Metrics.System</Title>
+    <Description>Cross-platform system metrics collection for .NET Core applications.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageProjectUrl>https://github.com/vostok/metrics.system</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/vostok/metrics.system/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageTags>vostok vostok.metrics</PackageTags>
+    <PackageReleaseNotes>https://github.com/vostok/metrics.system/blob/master/CHANGELOG.md</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/vostok/metrics.system</RepositoryUrl>
+  </PropertyGroup>
+  
+</Project>
