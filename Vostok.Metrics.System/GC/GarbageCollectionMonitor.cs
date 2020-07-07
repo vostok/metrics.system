@@ -11,6 +11,7 @@ namespace Vostok.Metrics.System.Gc
 {
     /// <summary>
     /// <para><see cref="GarbageCollectionMonitor"/> emits notifications about garbage collections in current process.</para>
+    /// <para>Should only be used on .NET Core 3.0+ due to unavailability of internal CLR tracing events in earlier versions.</para>
     /// <para>Subscribe to receive instances of <see cref="GarbageCollectionInfo"/>.</para>
     /// <para>Remember to dispose of the monitor when it's no longer needed.</para>
     /// </summary>

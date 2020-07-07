@@ -5,6 +5,7 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Commons.Testing;
+using Vostok.Logging.Console;
 using Vostok.Metrics.System.Gc;
 
 namespace Vostok.Metrics.System.Tests
@@ -20,12 +21,13 @@ namespace Vostok.Metrics.System.Tests
         {
             collections = new List<GarbageCollectionInfo>();
             monitor = new GarbageCollectionMonitor();
+            monitor.LogCollections(new SynchronousConsoleLog(), null);
             monitor.Subscribe(this);
         }
 
         [TearDown]
         public void TestTeardown()
-            => monitor?.Dispose();
+            => monitor.Dispose();
 
         [Test]
         public void Should_record_induced_garbage_collections()

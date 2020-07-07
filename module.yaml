@@ -9,10 +9,11 @@ notests *default:
     - Vostok.Metrics.System/bin/Release/netstandard2.0/Vostok.Metrics.System.dll
 
   deps:
-    - vostok.logging.abstractions
     - vostok.commons.collections/src
     - vostok.commons.helpers/src
+    - vostok.commons.time/src
     - vostok.devtools
+    - vostok.logging.abstractions
 
 full-build > notests:
   build:
@@ -21,3 +22,4 @@ full-build > notests:
 
   deps:
     - vostok.commons.testing
+    - vostok.logging.console

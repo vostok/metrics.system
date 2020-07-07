@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\CircularBuffer.cs" Link="Commons\CircularBuffer.cs" />
     <Compile Include="..\..\vostok.commons.helpers\Vostok.Commons.Helpers\Observable\BroadcastObservable.cs" Link="Commons\BroadcastObservable.cs" />
+    <Compile Include="..\..\vostok.commons.time\Vostok.Commons.Time\TimeSpanFormatting.cs" Link="Commons\TimeSpanFormatting.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Vostok.Logging.Abstractions">
