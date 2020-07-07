@@ -25,8 +25,8 @@ namespace Vostok.Metrics.System.Gc
 
             public MeasuringObserver(IMetricContext metricContext)
             {
-                gcTotalDuration = metricContext.CreateFloatingGauge("gcTotalDurationMs", "type", config);
-                gcLongestDuration = metricContext.CreateFloatingGauge("gcLongestDurationMs", "type", config);
+                gcTotalDuration = metricContext.CreateFloatingGauge("gcTotalDurationMs", "gcType", config);
+                gcLongestDuration = metricContext.CreateFloatingGauge("gcLongestDurationMs", "gcType", config);
             }
 
             public void OnNext(GarbageCollectionInfo value)
