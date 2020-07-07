@@ -6,7 +6,7 @@ using Vostok.Logging.Abstractions;
 namespace Vostok.Metrics.System.Gc
 {
     [PublicAPI]
-    public static class GarbageCollectionMonitorExtensions
+    public static class GarbageCollectionMonitorExtensions_Logging
     {
         [NotNull]
         public static IDisposable LogCollections([NotNull] this GarbageCollectionMonitor monitor, [NotNull] ILog log, [CanBeNull] Predicate<GarbageCollectionInfo> filter)
