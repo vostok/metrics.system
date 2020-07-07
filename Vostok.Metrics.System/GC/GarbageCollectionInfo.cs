@@ -1,7 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
 
-namespace Vostok.Metrics.System.GC
+namespace Vostok.Metrics.System.Gc
 {
     /// <summary>
     /// <see cref="GarbageCollectionInfo"/> describes a single garbage collection that occurred in current process.

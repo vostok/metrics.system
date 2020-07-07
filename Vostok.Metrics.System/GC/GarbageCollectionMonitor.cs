@@ -7,14 +7,12 @@ using Vostok.Commons.Helpers.Observable;
 using Vostok.Logging.Abstractions;
 using Vostok.Metrics.System.Helpers;
 
-namespace Vostok.Metrics.System.GC
+namespace Vostok.Metrics.System.Gc
 {
     /// <summary>
-    /// <para>...</para>
-    /// <para>...</para>
-    /// <para>...</para>
-    /// <para>...</para>
-    /// <para>...</para>
+    /// <para><see cref="GarbageCollectionMonitor"/> emits notifications about garbage collections in current process.</para>
+    /// <para>Subscribe to receive instances of <see cref="GarbageCollectionInfo"/>.</para>
+    /// <para>Remember to dispose of the monitor when it's no longer needed.</para>
     /// </summary>
     [PublicAPI]
     public class GarbageCollectionMonitor : EventListener, IObservable<GarbageCollectionInfo>
@@ -28,48 +26,36 @@ namespace Vostok.Metrics.System.GC
             = ReflectionHelper.BuildInstancePropertyAccessor<EventWrittenEventArgs, DateTime>("TimeStamp");
 
         private readonly CircularBuffer<GarbageCollectionStartEvent> startEvents 
-            = new CircularBuffer<GarbageCollectionStartEvent>(32);
+            = new CircularBuffer<GarbageCollectionStartEvent>(64);
 
         private readonly BroadcastObservable<GarbageCollectionInfo> observable
             = new BroadcastObservable<GarbageCollectionInfo>();
 
-        private readonly object eventHandlingLock = new object();
-
-        private volatile EventSource gcEventSource;
-
         public IDisposable Subscribe(IObserver<GarbageCollectionInfo> observer)
             => observable.Subscribe(observer);
-
-        public override void Dispose()
-        {
-            if (gcEventSource != null)
-                DisableEvents(gcEventSource);
-
-            base.Dispose();
-        }
 
         protected override void OnEventSourceCreated(EventSource source)
         {
             if (source.Name == GCEventSourceName)
-                EnableEvents(gcEventSource = source, EventLevel.Informational, (EventKeywords)GCKeyword);
+                EnableEvents(source, EventLevel.Informational, (EventKeywords)GCKeyword);
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs @event)
         {
+            if (!observable.HasObservers)
+                return;
+
             try
             {
-                lock (eventHandlingLock)
+                switch (@event.EventId)
                 {
-                    switch (@event.EventId)
-                    {
-                        case GCStartEventId:
-                            OnGCStart(@event);
-                            break;
+                    case GCStartEventId:
+                        OnGCStart(@event);
+                        break;
 
-                        case GCEndEventId:
-                            OnGCEnd(@event);
-                            break;
-                    }
+                    case GCEndEventId:
+                        OnGCEnd(@event);
+                        break;
                 }
             }
             catch (Exception error)
@@ -91,7 +77,8 @@ namespace Vostok.Metrics.System.GC
                 (GarbageCollectionType) GetFieldValue<uint>(@event, "Type"),
                 (GarbageCollectionReason) GetFieldValue<uint>(@event, "Reason"));
 
-            startEvents.Add(startEvent);
+            lock (startEvents)
+                startEvents.Add(startEvent);
         }
 
         private void OnGCEnd(EventWrittenEventArgs @event)
@@ -105,10 +92,13 @@ namespace Vostok.Metrics.System.GC
                 (int) GetFieldValue<uint>(@event, "Count"),
                 (int) GetFieldValue<uint>(@event, "Depth"));
 
-            foreach (var startEvent in startEvents.EnumerateReverse())
+            lock (startEvents)
             {
-                if (Correspond(startEvent, endEvent))
-                    ReportCollectionInfo(startEvent, endEvent);
+                foreach (var startEvent in startEvents.EnumerateReverse())
+                {
+                    if (Correspond(startEvent, endEvent))
+                        ReportCollectionInfo(startEvent, endEvent);
+                }
             }
         }
 

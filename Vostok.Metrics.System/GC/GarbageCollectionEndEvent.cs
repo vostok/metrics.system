@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Vostok.Metrics.System.GC
+namespace Vostok.Metrics.System.Gc
 {
     internal class GarbageCollectionEndEvent
     {
