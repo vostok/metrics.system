@@ -20,6 +20,7 @@
     <PackageTags>vostok vostok.metrics</PackageTags>
     <PackageReleaseNotes>https://github.com/vostok/metrics.system/blob/master/CHANGELOG.md</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/vostok/metrics.system</RepositoryUrl>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\CircularBuffer.cs" Link="Commons\CircularBuffer.cs" />
