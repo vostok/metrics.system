@@ -45,8 +45,14 @@ namespace Vostok.Metrics.System.Gc
         /// </summary>
         public int Number { get; }
 
+        /// <summary>
+        /// Collection type.
+        /// </summary>
         public GarbageCollectionType Type { get; }
 
+        /// <summary>
+        /// Collection reason.
+        /// </summary>
         public GarbageCollectionReason Reason { get; }
     }
 }

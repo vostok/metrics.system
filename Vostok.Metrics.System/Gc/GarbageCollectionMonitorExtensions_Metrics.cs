@@ -8,6 +8,17 @@ namespace Vostok.Metrics.System.Gc
     [PublicAPI]
     public static class GarbageCollectionMonitorExtensions_Metrics
     {
+        /// <summary>
+        /// <para>Enables reporting of following GC-based metrics:</para>
+        /// <list type="bullet">
+        ///     <item><description>Total GC duration in ms (sum of all collections for the reporting period).</description></item>
+        ///     <item><description>Total GC duration per type in ms (sum of all collections for the reporting period).</description></item>
+        ///     <item><description>Longest GC duration in ms (of all collections for the reporting period).</description></item>
+        ///     <item><description>Longest GC duration per type in ms (of all collections for the reporting period).</description></item>
+        /// </list>
+        /// <para>Note that provided <see cref="IMetricContext"/> should contain tags sufficient to decouple these metrics from others.</para>
+        /// <para>Dispose of the returned <see cref="IDisposable"/> object to stop reporting metrics.</para>
+        /// </summary>
         [NotNull]
         public static IDisposable MeasureCollections([NotNull] this GarbageCollectionMonitor monitor, [NotNull] IMetricContext metricContext)
             => monitor.Subscribe(new MeasuringObserver(metricContext));

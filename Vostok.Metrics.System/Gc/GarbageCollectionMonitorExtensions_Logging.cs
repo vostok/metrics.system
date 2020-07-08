@@ -8,6 +8,10 @@ namespace Vostok.Metrics.System.Gc
     [PublicAPI]
     public static class GarbageCollectionMonitorExtensions_Logging
     {
+        /// <summary>
+        /// <para>Enables logging of all garbage collections matched by given <paramref name="filter"/> into provided <paramref name="log"/> with Info level.</para>
+        /// <para>Dispose of the returned <see cref="IDisposable"/> object to stop the logging.</para>
+        /// </summary>
         [NotNull]
         public static IDisposable LogCollections([NotNull] this GarbageCollectionMonitor monitor, [NotNull] ILog log, [CanBeNull] Predicate<GarbageCollectionInfo> filter)
             => monitor.Subscribe(new LoggingObserver(log, filter));
