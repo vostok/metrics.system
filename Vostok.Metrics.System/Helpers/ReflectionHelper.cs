@@ -22,8 +22,10 @@ namespace Vostok.Metrics.System.Helpers
 
                 return Expression.Lambda<Func<TObject, TProperty>>(propertyExpression, parameterExpression).Compile();
             }
-            catch
+            catch (Exception error)
             {
+                InternalErrorLogger.Warn(error);
+
                 return _ => default;
             }
         }
@@ -38,8 +40,10 @@ namespace Vostok.Metrics.System.Helpers
 
                 return Expression.Lambda<Func<TProperty>>(Expression.Property(null, property)).Compile();
             }
-            catch
+            catch (Exception error)
             {
+                InternalErrorLogger.Warn(error);
+
                 return () => default;
             }
         }
@@ -54,8 +58,10 @@ namespace Vostok.Metrics.System.Helpers
 
                 return Expression.Lambda<Func<TResult>>(Expression.Call(method)).Compile();
             }
-            catch
+            catch (Exception error)
             {
+                InternalErrorLogger.Warn(error);
+
                 return () => default;
             }
         }
@@ -73,8 +79,10 @@ namespace Vostok.Metrics.System.Helpers
 
                 return Expression.Lambda<Func<TParam, TResult>>(methodCallExpression, parameterExpression).Compile();
             }
-            catch
+            catch (Exception error)
             {
+                InternalErrorLogger.Warn(error);
+
                 return _ => default;
             }
         }

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using Vostok.Metrics.System.Helpers;
 
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 // ReSharper disable MemberCanBePrivate.Local
 
 namespace Vostok.Metrics.System.Process
 {
-    internal class WindowsNativeMetricsCollector
+    internal class NativeMetricsCollector_Windows
     {
         private static readonly IntPtr CurrentProcessHandle = GetCurrentProcess();
 
@@ -22,40 +23,61 @@ namespace Vostok.Metrics.System.Process
 
         private static unsafe void CollectMemoryMetrics(CurrentProcessMetrics metrics)
         {
-            if (!GetProcessMemoryInfo(CurrentProcessHandle, out var memoryCounters, sizeof(PROCESS_MEMORY_COUNTERS_EX)))
-                ThrowOnError();
-
-            metrics.MemoryResident = (long)memoryCounters.WorkingSetSize;
-            metrics.MemoryPrivate = (long)memoryCounters.PrivateUsage;
+            try
+            {
+                if (!GetProcessMemoryInfo(CurrentProcessHandle, out var memoryCounters, sizeof(PROCESS_MEMORY_COUNTERS_EX)))
+                    ThrowOnError();
+                
+                metrics.MemoryResident = (long)memoryCounters.WorkingSetSize;
+                metrics.MemoryPrivate = (long)memoryCounters.PrivateUsage;
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
         }
 
         private static void CollectHandlesCount(CurrentProcessMetrics metrics)
         {
-            if (!GetProcessHandleCount(CurrentProcessHandle, out var handleCount))
-                ThrowOnError();
+            try
+            {
+                if (!GetProcessHandleCount(CurrentProcessHandle, out var handleCount))
+                    ThrowOnError();
 
-            metrics.HandlesCount = (int)handleCount;
+                metrics.HandlesCount = (int)handleCount;
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
         }
 
         private void CollectCpuUtilization(CurrentProcessMetrics metrics)
         {
-            if (!GetSystemTimes(out _, out var systemKernel, out var systemUser))
-                ThrowOnError();
+            try
+            {
+                if (!GetSystemTimes(out _, out var systemKernel, out var systemUser))
+                    ThrowOnError();
 
-            if (!GetProcessTimes(CurrentProcessHandle, out _, out _, out var processKernel, out var processUser))
-                ThrowOnError();
+                if (!GetProcessTimes(CurrentProcessHandle, out _, out _, out var processKernel, out var processUser))
+                    ThrowOnError();
 
-            var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
-            var processTime = processKernel.ToUInt64() + processUser.ToUInt64();
+                var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
+                var processTime = processKernel.ToUInt64() + processUser.ToUInt64();
 
-            cpuCollector.Collect(metrics, systemTime, processTime);
+                cpuCollector.Collect(metrics, systemTime, processTime);
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
         }
 
         private static void ThrowOnError()
         {
             var exception = new Win32Exception();
 
-            throw new Win32Exception(exception.ErrorCode, exception.Message + $"; Error code = {exception.ErrorCode} (0x{exception.ErrorCode:X}).");
+            throw new Win32Exception(exception.ErrorCode, exception.Message + $" Error code = {exception.ErrorCode} (0x{exception.ErrorCode:X}).");
         }
 
         [DllImport("kernel32.dll")]
@@ -103,10 +125,7 @@ namespace Vostok.Metrics.System.Process
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct FILETIME
         {
-            /// <summary>Specifies the low 32 bits of the <see langword="FILETIME" />.</summary>
             public uint dwLowDateTime;
-
-            /// <summary>Specifies the high 32 bits of the <see langword="FILETIME" />.</summary>
             public uint dwHighDateTime;
 
             public ulong ToUInt64()

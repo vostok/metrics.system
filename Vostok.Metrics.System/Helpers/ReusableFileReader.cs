@@ -4,32 +4,39 @@ using System.IO;
 
 namespace Vostok.Metrics.System.Helpers
 {
-    internal class ReusableFileReader
+    internal class ReusableFileReader : IDisposable
     {
-        private readonly Lazy<StreamReader> reader;
+        private readonly string path;
+        private volatile StreamReader reader;
 
         public ReusableFileReader(string path)
-            => reader = new Lazy<StreamReader>(() => new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete)));
+            => this.path = path;
 
         public string ReadFirstLine()
         {
             Reset();
 
-            return reader.Value.ReadLine();
+            return reader.ReadLine();
         }
 
         public IEnumerable<string> ReadLines()
         {
             Reset();
 
-            while (!reader.Value.EndOfStream)
-                yield return reader.Value.ReadLine();
+            while (!reader.EndOfStream)
+                yield return reader.ReadLine();
         }
+
+        public void Dispose()
+            => reader?.BaseStream.Dispose();
 
         private void Reset()
         {
-            reader.Value.BaseStream.Seek(0, SeekOrigin.Begin);
-            reader.Value.DiscardBufferedData();
+            if (reader == null)
+                reader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete));
+
+            reader.BaseStream.Seek(0, SeekOrigin.Begin);
+            reader.DiscardBufferedData();
         }
     }
 }

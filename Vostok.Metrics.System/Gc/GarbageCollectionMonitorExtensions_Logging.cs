@@ -23,7 +23,7 @@ namespace Vostok.Metrics.System.Gc
 
             public LoggingObserver(ILog log, Predicate<GarbageCollectionInfo> filter)
             {
-                this.log = log.ForContext("GCMonitor");
+                this.log = log.ForContext<GarbageCollectionMonitor>();
                 this.filter = filter ?? (_ => true);
             }
 

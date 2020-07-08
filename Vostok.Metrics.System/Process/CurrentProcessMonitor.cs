@@ -5,6 +5,9 @@ using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Process
 {
+    /// <summary>
+    /// <see cref="CurrentProcessMonitor"/> provides means to observe <see cref="CurrentProcessMetrics"/> periodically.
+    /// </summary>
     [PublicAPI]
     public class CurrentProcessMonitor
     {

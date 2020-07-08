@@ -5,12 +5,19 @@ using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Process
 {
-    internal class LinuxNativeMetricsCollector
+    internal class NativeMetricsCollector_Linux : IDisposable
     {
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader processStatReader = new ReusableFileReader("/proc/self/stat");
         private readonly ReusableFileReader processStatusReader = new ReusableFileReader("/proc/self/status");
         private readonly CpuUtilizationCollector cpuCollector = new CpuUtilizationCollector();
+
+        public void Dispose()
+        {
+            systemStatReader.Dispose();
+            processStatReader.Dispose();
+            processStatusReader.Dispose();
+        }
 
         public void Collect(CurrentProcessMetrics metrics)
         {
@@ -40,16 +47,23 @@ namespace Vostok.Metrics.System.Process
         {
             var result = new SystemStat();
 
-            if (TrySplitLine(systemStatReader.ReadFirstLine(), 5, out var parts) && parts[0] == "cpu")
+            try
             {
-                if (ulong.TryParse(parts[1], out var utime))
-                    result.UserTime = utime;
+                if (TrySplitLine(systemStatReader.ReadFirstLine(), 5, out var parts) && parts[0] == "cpu")
+                {
+                    if (ulong.TryParse(parts[1], out var utime))
+                        result.UserTime = utime;
 
-                if (ulong.TryParse(parts[3], out var stime))
-                    result.SystemTime = stime;
+                    if (ulong.TryParse(parts[3], out var stime))
+                        result.SystemTime = stime;
 
-                if (ulong.TryParse(parts[4], out var itime))
-                    result.IdleTime = itime;
+                    if (ulong.TryParse(parts[4], out var itime))
+                        result.IdleTime = itime;
+                }
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
             }
 
             return result;
@@ -59,13 +73,20 @@ namespace Vostok.Metrics.System.Process
         {
             var result = new ProcessStat();
 
-            if (TrySplitLine(processStatReader.ReadFirstLine(), 15, out var parts))
+            try
             {
-                if (ulong.TryParse(parts[13], out var utime))
-                    result.UserTime = utime;
+                if (TrySplitLine(processStatReader.ReadFirstLine(), 15, out var parts))
+                {
+                    if (ulong.TryParse(parts[13], out var utime))
+                        result.UserTime = utime;
 
-                if (ulong.TryParse(parts[14], out var stime))
-                    result.SystemTime = stime;
+                    if (ulong.TryParse(parts[14], out var stime))
+                        result.SystemTime = stime;
+                }
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
             }
 
             return result;
@@ -75,26 +96,33 @@ namespace Vostok.Metrics.System.Process
         {
             var result = new ProcessStatus();
 
-            bool TryParse(string line, string name, out int value)
+            try
             {
-                value = 0;
+                bool TryParse(string line, string name, out int value)
+                {
+                    value = 0;
 
-                return line.StartsWith(name) && TrySplitLine(line, 2, out var parts) && int.TryParse(parts[1], out value);
+                    return line.StartsWith(name) && TrySplitLine(line, 2, out var parts) && int.TryParse(parts[1], out value);
+                }
+
+                foreach (var line in processStatusReader.ReadLines())
+                {
+                    if (TryParse(line, "FDSize", out var fdSize))
+                        result.FileDescriptorsSize = fdSize;
+
+                    if (TryParse(line, "VmRSS", out var vmRss))
+                        result.VirtualMemoryResident = vmRss * 1024;
+
+                    if (TryParse(line, "VmData", out var vmData))
+                        result.VirtualMemoryData = vmData * 1024;
+
+                    if (result.Filled)
+                        break;
+                }
             }
-
-            foreach (var line in processStatusReader.ReadLines())
+            catch (Exception error)
             {
-                if (TryParse(line, "FDSize", out var fdSize))
-                    result.FileDescriptorsSize = fdSize;
-
-                if (TryParse(line, "VmRSS", out var vmRss))
-                    result.VirtualMemoryResident = vmRss * 1024;
-
-                if (TryParse(line, "VmData", out var vmData))
-                    result.VirtualMemoryData = vmData * 1024;
-
-                if (result.Filled)
-                    break;
+                InternalErrorLogger.Warn(error);
             }
 
             return result;

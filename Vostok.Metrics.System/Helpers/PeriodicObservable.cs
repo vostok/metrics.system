@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Vostok.Logging.Abstractions;
 
 namespace Vostok.Metrics.System.Helpers
 {
@@ -55,7 +54,7 @@ namespace Vostok.Metrics.System.Helpers
                 }
                 catch (Exception error)
                 {
-                    LogProvider.Get().ForContext("Vostok.Metrics.System").Warn(error);
+                    InternalErrorLogger.Warn(error);
                 }
 
                 var remainingWait = period - watch.Elapsed;
