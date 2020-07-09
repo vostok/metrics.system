@@ -20,10 +20,10 @@ namespace Vostok.Metrics.System.Gc
         /// <para>Dispose of the returned <see cref="IDisposable"/> object to stop reporting metrics.</para>
         /// </summary>
         [NotNull]
-        public static IDisposable MeasureCollections([NotNull] this GarbageCollectionMonitor monitor, [NotNull] IMetricContext metricContext)
-            => monitor.Subscribe(new MeasuringObserver(metricContext));
+        public static IDisposable ReportMetrics([NotNull] this GarbageCollectionMonitor monitor, [NotNull] IMetricContext metricContext)
+            => monitor.Subscribe(new ReportingObserver(metricContext));
 
-        private class MeasuringObserver : IObserver<GarbageCollectionInfo>
+        private class ReportingObserver : IObserver<GarbageCollectionInfo>
         {
             private static readonly FloatingGaugeConfig config = new FloatingGaugeConfig
             {
@@ -34,10 +34,10 @@ namespace Vostok.Metrics.System.Gc
             private readonly IMetricGroup1<IFloatingGauge> gcTotalDuration;
             private readonly IMetricGroup1<IFloatingGauge> gcLongestDuration;
 
-            public MeasuringObserver(IMetricContext metricContext)
+            public ReportingObserver(IMetricContext metricContext)
             {
-                gcTotalDuration = metricContext.CreateFloatingGauge("gcTotalDurationMs", "gcType", config);
-                gcLongestDuration = metricContext.CreateFloatingGauge("gcLongestDurationMs", "gcType", config);
+                gcTotalDuration = metricContext.CreateFloatingGauge("GcTotalDurationMs", "GcType", config);
+                gcLongestDuration = metricContext.CreateFloatingGauge("GcLongestDurationMs", "GcType", config);
             }
 
             public void OnNext(GarbageCollectionInfo value)

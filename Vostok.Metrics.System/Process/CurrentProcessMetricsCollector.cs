@@ -6,7 +6,6 @@ using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Process
 {
-    // TODO(iloktionov): add metrics extensions
     // TODO(iloktionov): add unit tests
 
     /// <summary>
