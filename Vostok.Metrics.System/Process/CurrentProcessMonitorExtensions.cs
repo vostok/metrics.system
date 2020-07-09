@@ -6,7 +6,7 @@ using Vostok.Metrics.System.Helpers;
 namespace Vostok.Metrics.System.Process
 {
     [PublicAPI]
-    public static class CurrentProcessMonitorExtensions_Logging
+    public static class CurrentProcessMonitorExtensions
     {
         /// <summary>
         /// <para>Enables periodical logging of current process system metrics into given <paramref name="log"/>.</para>
