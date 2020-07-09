@@ -21,7 +21,7 @@ namespace Vostok.Metrics.System.Process
             var metrics = collector.Collect();
 
             foreach (var property in typeof(CurrentProcessMetrics).GetProperties())
-                yield return new MetricDataPoint((double)property.GetValue(metrics), (WellKnownTagKeys.Name, property.Name));
+                yield return new MetricDataPoint(Convert.ToDouble(property.GetValue(metrics)), (WellKnownTagKeys.Name, property.Name));
         }
     }
 }
