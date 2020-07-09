@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Commons.Collections;
 using Vostok.Commons.Helpers.Observable;
-using Vostok.Logging.Abstractions;
 using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Gc
@@ -61,7 +60,7 @@ namespace Vostok.Metrics.System.Gc
             }
             catch (Exception error)
             {
-                LogProvider.Get().ForContext<GarbageCollectionMonitor>().Warn(error);
+                InternalErrorLogger.Warn(error);
             }
         }
 

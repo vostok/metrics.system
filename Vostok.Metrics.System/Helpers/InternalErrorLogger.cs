@@ -7,9 +7,6 @@ namespace Vostok.Metrics.System.Helpers
     {
         private const string SourceContext = "Vostok.Metrics.System";
 
-        public static void Warn(string message)
-            => LogProvider.Get().ForContext(SourceContext).Warn(message);
-
         public static void Warn(Exception error)
             => LogProvider.Get().ForContext(SourceContext).Warn(error);
     }
