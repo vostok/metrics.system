@@ -6,8 +6,6 @@ using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Process
 {
-    // TODO(iloktionov): add unit tests
-
     /// <summary>
     /// <para><see cref="CurrentProcessMetricsCollector"/> collects and returns <see cref="CurrentProcessMetrics"/>.</para>
     /// <para>It is not thread-safe and is designed to be invoked periodically without concurrency.</para>
