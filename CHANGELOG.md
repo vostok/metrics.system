@@ -1,3 +1,7 @@
+## 0.1.3 (17-07-2020):
+
+Fixed Int32 overflow in process memory metrics on Linux.
+
 ## 0.1.2 (09-07-2020):
 
 Fixed a bug in current process metrics reporting to Vostok metric context.

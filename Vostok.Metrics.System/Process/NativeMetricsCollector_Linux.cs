@@ -98,23 +98,23 @@ namespace Vostok.Metrics.System.Process
 
             try
             {
-                bool TryParse(string line, string name, out int value)
+                bool TryParse(string line, string name, out long value)
                 {
                     value = 0;
 
-                    return line.StartsWith(name) && TrySplitLine(line, 2, out var parts) && int.TryParse(parts[1], out value);
+                    return line.StartsWith(name) && TrySplitLine(line, 2, out var parts) && long.TryParse(parts[1], out value);
                 }
 
                 foreach (var line in processStatusReader.ReadLines())
                 {
                     if (TryParse(line, "FDSize", out var fdSize))
-                        result.FileDescriptorsSize = fdSize;
+                        result.FileDescriptorsSize = (int) fdSize;
 
                     if (TryParse(line, "VmRSS", out var vmRss))
-                        result.VirtualMemoryResident = vmRss * 1024;
+                        result.VirtualMemoryResident = vmRss * 1024L;
 
                     if (TryParse(line, "VmData", out var vmData))
-                        result.VirtualMemoryData = vmData * 1024;
+                        result.VirtualMemoryData = vmData * 1024L;
 
                     if (result.Filled)
                         break;
