@@ -8,17 +8,20 @@ namespace Vostok.Metrics.System.Host
     public class NativeHostMetricsCollector_Linux : IDisposable
     {
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
+        private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
 
         public void Dispose()
         {
             systemStatReader.Dispose();
+            memoryReader.Dispose();
         }
 
         //https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&solutionid=sk65143
         public void Collect(HostMetrics metrics)
         {
             var systemStat = ReadSystemStat();
+            var memInfo = ReadMemoryInfo();
 
             if (systemStat.Filled)
             {
@@ -27,6 +30,14 @@ namespace Vostok.Metrics.System.Host
                                  systemStat.SoftInterruptsTime.Value;
 
                 cpuCollector.Collect(metrics, systemTime, systemStat.IdleTime.Value);
+            }
+
+            if (memInfo.Filled)
+            {
+                metrics.MemoryAvailable = memInfo.AvailableMemory.Value;
+                metrics.MemoryCached = memInfo.CacheMemory.Value;
+                metrics.MemoryKernel = memInfo.KernelMemory.Value;
+                metrics.MemoryTotal = memInfo.TotalMemory.Value;
             }
         }
 
@@ -71,6 +82,42 @@ namespace Vostok.Metrics.System.Host
             return result;
         }
 
+        private MemoryInfo ReadMemoryInfo()
+        {
+            var result = new MemoryInfo();
+
+            try
+            {
+                bool TryParse(string line, string name, out long value)
+                {
+                    value = 0;
+
+                    return line.StartsWith(name) && TrySplitLine(line, 2, out var parts) && long.TryParse(parts[1], out value);
+                }
+
+                foreach (var line in memoryReader.ReadLines())
+                {
+                    if (TryParse(line, "MemTotal", out var memTotal))
+                        result.TotalMemory = memTotal * 1024;
+
+                    if (TryParse(line, "MemAvailable", out var memAvailable))
+                        result.AvailableMemory = memAvailable;
+
+                    if (TryParse(line, "Cached", out var memCached))
+                        result.CacheMemory = memCached;
+
+                    if (TryParse(line, "Slab", out var memKernel))
+                        result.KernelMemory = memKernel;
+                }
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
+
+            return result;
+        }
+
         private class SystemStat
         {
             public bool Filled => UserTime.HasValue && NicedTime.HasValue && SystemTime.HasValue &&
@@ -84,6 +131,16 @@ namespace Vostok.Metrics.System.Host
             public ulong? IOWaitTime { get; set; }
             public ulong? InterruptsTime { get; set; }
             public ulong? SoftInterruptsTime { get; set; }
+        }
+
+        private class MemoryInfo
+        {
+            public bool Filled => AvailableMemory.HasValue && KernelMemory.HasValue && CacheMemory.HasValue && TotalMemory.HasValue;
+
+            public long? AvailableMemory { get; set; }
+            public long? KernelMemory { get; set; }
+            public long? CacheMemory { get; set; }
+            public long? TotalMemory { get; set; }
         }
     }
 }

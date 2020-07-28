@@ -12,6 +12,7 @@ namespace Vostok.Metrics.System.Host
         public void Collect(HostMetrics metrics)
         {
             CollectCpuUtilization(metrics);
+            CollectMemoryMetrics(metrics);
         }
 
         private static void ThrowOnError()
@@ -26,6 +27,11 @@ namespace Vostok.Metrics.System.Host
             out FILETIME idleTime,
             out FILETIME kernelTime,
             out FILETIME userTime);
+
+        [DllImport("psapi.dll", SetLastError = true)]
+        private static extern bool GetPerformanceInfo(
+            [Out] out PERFORMANCE_INFORMATION ppsmemCounters,
+            [In] int cb);
 
         private void CollectCpuUtilization(HostMetrics metrics)
         {
@@ -42,6 +48,43 @@ namespace Vostok.Metrics.System.Host
             {
                 InternalErrorLogger.Warn(error);
             }
+        }
+
+        private unsafe void CollectMemoryMetrics(HostMetrics metrics)
+        {
+            try
+            {
+                if (!GetPerformanceInfo(out var perfInfo, sizeof(PERFORMANCE_INFORMATION)))
+                    ThrowOnError();
+
+                metrics.MemoryAvailable = (long) perfInfo.PhysicalAvailable * (long) perfInfo.PageSize;
+                metrics.MemoryCached = (long) perfInfo.SystemCache * (long) perfInfo.PageSize;
+                metrics.MemoryKernel = (long) perfInfo.KernelTotal * (long) perfInfo.PageSize;
+                metrics.MemoryTotal = (long) perfInfo.PhysicalTotal * (long) perfInfo.PageSize;
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PERFORMANCE_INFORMATION
+        {
+            public readonly int cb;
+            public readonly UIntPtr CommitTotal;
+            public readonly UIntPtr CommitLimit;
+            public readonly UIntPtr CommitPeak;
+            public readonly UIntPtr PhysicalTotal;
+            public readonly UIntPtr PhysicalAvailable;
+            public readonly UIntPtr SystemCache;
+            public readonly UIntPtr KernelTotal;
+            public readonly UIntPtr KernelPaged;
+            public readonly UIntPtr KernelNonpaged;
+            public readonly UIntPtr PageSize;
+            public readonly uint HandleCount;
+            public readonly uint ProcessCount;
+            public readonly uint ThreadCount;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]

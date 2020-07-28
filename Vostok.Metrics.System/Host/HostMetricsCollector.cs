@@ -22,7 +22,6 @@ namespace Vostok.Metrics.System.Host
         {
             var metrics = new HostMetrics();
             CollectNativeMetrics(metrics);
-            throw new NotImplementedException();
             return metrics;
         }
 
