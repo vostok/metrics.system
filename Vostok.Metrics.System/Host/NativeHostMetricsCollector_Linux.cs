@@ -41,16 +41,13 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        private static bool TrySplitLine(string line, int minParts, out string[] parts)
-            => (parts = line?.Split(null as char[], StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>()).Length >= minParts;
-
         private SystemStat ReadSystemStat()
         {
             var result = new SystemStat();
 
             try
             {
-                if (TrySplitLine(systemStatReader.ReadFirstLine(), 7, out var parts) && parts[0] == "cpu")
+                if (FileParser.TrySplitLine(systemStatReader.ReadFirstLine(), 7, out var parts) && parts[0] == "cpu")
                 {
                     if (ulong.TryParse(parts[1], out var utime))
                         result.UserTime = utime;
@@ -88,25 +85,18 @@ namespace Vostok.Metrics.System.Host
 
             try
             {
-                bool TryParse(string line, string name, out long value)
-                {
-                    value = 0;
-
-                    return line.StartsWith(name) && TrySplitLine(line, 2, out var parts) && long.TryParse(parts[1], out value);
-                }
-
                 foreach (var line in memoryReader.ReadLines())
                 {
-                    if (TryParse(line, "MemTotal", out var memTotal))
+                    if (FileParser.TryParse(line, "MemTotal", out var memTotal))
                         result.TotalMemory = memTotal * 1024;
 
-                    if (TryParse(line, "MemAvailable", out var memAvailable))
+                    if (FileParser.TryParse(line, "MemAvailable", out var memAvailable))
                         result.AvailableMemory = memAvailable;
 
-                    if (TryParse(line, "Cached", out var memCached))
+                    if (FileParser.TryParse(line, "Cached", out var memCached))
                         result.CacheMemory = memCached;
 
-                    if (TryParse(line, "Slab", out var memKernel))
+                    if (FileParser.TryParse(line, "Slab", out var memKernel))
                         result.KernelMemory = memKernel;
                 }
             }
