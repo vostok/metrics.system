@@ -87,16 +87,16 @@ namespace Vostok.Metrics.System.Host
             {
                 foreach (var line in memoryReader.ReadLines())
                 {
-                    if (FileParser.TryParse(line, "MemTotal", out var memTotal))
+                    if (FileParser.TryParseLong(line, "MemTotal", out var memTotal))
                         result.TotalMemory = memTotal * 1024;
 
-                    if (FileParser.TryParse(line, "MemAvailable", out var memAvailable))
+                    if (FileParser.TryParseLong(line, "MemAvailable", out var memAvailable))
                         result.AvailableMemory = memAvailable;
 
-                    if (FileParser.TryParse(line, "Cached", out var memCached))
+                    if (FileParser.TryParseLong(line, "Cached", out var memCached))
                         result.CacheMemory = memCached;
 
-                    if (FileParser.TryParse(line, "Slab", out var memKernel))
+                    if (FileParser.TryParseLong(line, "Slab", out var memKernel))
                         result.KernelMemory = memKernel;
                 }
             }

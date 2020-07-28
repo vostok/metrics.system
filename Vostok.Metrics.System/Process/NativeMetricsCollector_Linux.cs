@@ -100,13 +100,13 @@ namespace Vostok.Metrics.System.Process
             {
                 foreach (var line in processStatusReader.ReadLines())
                 {
-                    if (FileParser.TryParse(line, "FDSize", out var fdSize))
+                    if (FileParser.TryParseLong(line, "FDSize", out var fdSize))
                         result.FileDescriptorsSize = (int) fdSize;
 
-                    if (FileParser.TryParse(line, "VmRSS", out var vmRss))
+                    if (FileParser.TryParseLong(line, "VmRSS", out var vmRss))
                         result.VirtualMemoryResident = vmRss * 1024L;
 
-                    if (FileParser.TryParse(line, "VmData", out var vmData))
+                    if (FileParser.TryParseLong(line, "VmData", out var vmData))
                         result.VirtualMemoryData = vmData * 1024L;
 
                     if (result.Filled)
