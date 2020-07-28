@@ -32,6 +32,4 @@ namespace Vostok.Metrics.System.Process
         private static double Clamp(double min, double max, double value)
             => Math.Max(min, Math.Min(value, max));
     }
-
-
 }
