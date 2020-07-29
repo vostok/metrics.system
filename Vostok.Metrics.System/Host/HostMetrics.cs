@@ -19,17 +19,17 @@ namespace Vostok.Metrics.System.Host
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
         public double CpuUtilizedFraction { get; set; }
-        
+
         /// <summary>
         /// Amount of physical RAM on host.
         /// </summary>
         public long MemoryTotal { get; set; }
-        
+
         /// <summary>
         /// Amount of physical RAM available for starting new applications.
         /// </summary>
         public long MemoryAvailable { get; set; }
-        
+
         /// <summary>
         /// Amount of physical RAM consumed by system kernel.
         /// </summary>
@@ -39,5 +39,10 @@ namespace Vostok.Metrics.System.Host
         /// Amount of physical RAM used as cache memory.
         /// </summary>
         public long MemoryCached { get; set; }
+
+        /// <summary>
+        /// Disk space info per volume.
+        /// </summary>
+        public DiskSpaceInfo[] DiskSpaceInfos { get; set; }
     }
 }
