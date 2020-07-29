@@ -42,5 +42,21 @@ namespace Vostok.Metrics.System.Tests
             metrics.MemoryCached.Should().BeGreaterThan(0);
             metrics.MemoryAvailable.Should().BeGreaterThan(0);
         }
+
+        [Test]
+        public void Should_measure_disk_space()
+        {
+            var metrics = collector.Collect();
+
+            metrics.DiskSpaceInfos.Should().NotBeEmpty();
+
+            foreach (var diskSpaceInfo in metrics.DiskSpaceInfos)
+            {
+                diskSpaceInfo.Name.Should().NotBeNullOrEmpty();
+                diskSpaceInfo.FreeBytes.Should().BeGreaterThan(0);
+                diskSpaceInfo.FreePercent.Should().BeGreaterThan(0);
+                diskSpaceInfo.TotalCapacity.Should().BeGreaterThan(0);
+            }
+        }
     }
 }
