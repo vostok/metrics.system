@@ -5,7 +5,7 @@ using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
 {
-    public class NativeHostMetricsCollector_Windows
+    internal class NativeHostMetricsCollector_Windows
     {
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
 

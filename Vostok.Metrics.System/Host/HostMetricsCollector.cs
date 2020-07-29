@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 
 namespace Vostok.Metrics.System.Host
 {
+    [PublicAPI]
     public class HostMetricsCollector
     {
         private readonly Action<HostMetrics> nativeCollector;

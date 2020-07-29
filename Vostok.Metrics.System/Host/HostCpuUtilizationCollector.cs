@@ -2,7 +2,7 @@
 
 namespace Vostok.Metrics.System.Host
 {
-    public class HostCpuUtilizationCollector
+    internal class HostCpuUtilizationCollector
     {
         private static readonly int CoresCount = Environment.ProcessorCount;
 

@@ -5,7 +5,7 @@ using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
 {
-    public class NativeHostMetricsCollector_Linux : IDisposable
+    internal class NativeHostMetricsCollector_Linux : IDisposable
     {
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
