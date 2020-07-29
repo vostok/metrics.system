@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.NetworkInformation;
 using JetBrains.Annotations;
 
 namespace Vostok.Metrics.System.Host
@@ -44,5 +47,15 @@ namespace Vostok.Metrics.System.Host
         /// Disk space info per volume.
         /// </summary>
         public DiskSpaceInfo[] DiskSpaceInfos { get; set; }
+
+        /// <summary>
+        /// TCP connections per state.
+        /// </summary>
+        public Dictionary<TcpState, int> TcpStateMetrics { get; set; }
+
+        /// <summary>
+        /// Total TCP connections count.
+        /// </summary>
+        public int TotalTcpConnectionsCount => TcpStateMetrics.Sum(x => x.Value);
     }
 }
