@@ -1,4 +1,5 @@
 ﻿using System;
+using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
 {
@@ -22,15 +23,12 @@ namespace Vostok.Metrics.System.Host
             }
             else
             {
-                metrics.CpuUtilizedCores = Clamp(0, CoresCount, CoresCount * spentTimeDiff);
-                metrics.CpuUtilizedFraction = Clamp(0, 1, spentTimeDiff);
+                metrics.CpuUtilizedCores = (CoresCount * spentTimeDiff).Clamp(0, CoresCount);
+                metrics.CpuUtilizedFraction = spentTimeDiff.Clamp(0, 1);
             }
 
             previousSystemTime = systemTime;
             previousIdleTime = idleTime;
         }
-
-        private static double Clamp(double min, double max, double value)
-            => Math.Max(min, Math.Min(value, max));
     }
 }

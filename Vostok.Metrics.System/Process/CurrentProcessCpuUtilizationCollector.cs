@@ -1,4 +1,5 @@
 ﻿using System;
+using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Process
 {
@@ -21,15 +22,12 @@ namespace Vostok.Metrics.System.Process
             }
             else
             {
-                metrics.CpuUtilizedCores = Clamp(0, CoresCount, CoresCount * processTimeDiff / systemTimeDiff);
-                metrics.CpuUtilizedFraction = Clamp(0, 1, processTimeDiff / systemTimeDiff);
+                metrics.CpuUtilizedCores = (CoresCount * processTimeDiff / systemTimeDiff).Clamp(0, CoresCount);
+                metrics.CpuUtilizedFraction = (processTimeDiff / systemTimeDiff).Clamp(0, 1);
             }
 
             previousSystemTime = systemTime;
             previousProcessTime = processTime;
         }
-
-        private static double Clamp(double min, double max, double value)
-            => Math.Max(min, Math.Min(value, max));
     }
 }

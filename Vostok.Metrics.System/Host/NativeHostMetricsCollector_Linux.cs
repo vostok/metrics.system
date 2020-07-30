@@ -17,7 +17,6 @@ namespace Vostok.Metrics.System.Host
             memoryReader.Dispose();
         }
 
-        //https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&solutionid=sk65143
         public void Collect(HostMetrics metrics)
         {
             var systemStat = ReadSystemStat();
@@ -25,11 +24,10 @@ namespace Vostok.Metrics.System.Host
 
             if (systemStat.Filled)
             {
-                var systemTime = systemStat.UserTime.Value + systemStat.NicedTime.Value + systemStat.SystemTime.Value +
-                                 systemStat.IOWaitTime.Value + systemStat.InterruptsTime.Value +
-                                 systemStat.SoftInterruptsTime.Value;
+                var usedTime = systemStat.UserTime.Value + systemStat.NicedTime.Value +
+                               systemStat.SystemTime.Value + systemStat.IdleTime.Value;
 
-                cpuCollector.Collect(metrics, systemTime, systemStat.IdleTime.Value);
+                cpuCollector.Collect(metrics, usedTime, systemStat.IdleTime.Value);
             }
 
             if (memInfo.Filled)
@@ -60,15 +58,6 @@ namespace Vostok.Metrics.System.Host
 
                     if (ulong.TryParse(parts[4], out var itime))
                         result.IdleTime = itime;
-
-                    if (ulong.TryParse(parts[5], out var iotime))
-                        result.IOWaitTime = iotime;
-
-                    if (ulong.TryParse(parts[6], out var intime))
-                        result.InterruptsTime = intime;
-
-                    if (ulong.TryParse(parts[7], out var sintime))
-                        result.SoftInterruptsTime = sintime;
                 }
             }
             catch (Exception error)
@@ -110,17 +99,12 @@ namespace Vostok.Metrics.System.Host
 
         private class SystemStat
         {
-            public bool Filled => UserTime.HasValue && NicedTime.HasValue && SystemTime.HasValue &&
-                                  IdleTime.HasValue && IOWaitTime.HasValue && InterruptsTime.HasValue &&
-                                  SoftInterruptsTime.HasValue;
+            public bool Filled => UserTime.HasValue && NicedTime.HasValue && SystemTime.HasValue && IdleTime.HasValue;
 
             public ulong? UserTime { get; set; }
             public ulong? NicedTime { get; set; }
             public ulong? SystemTime { get; set; }
             public ulong? IdleTime { get; set; }
-            public ulong? IOWaitTime { get; set; }
-            public ulong? InterruptsTime { get; set; }
-            public ulong? SoftInterruptsTime { get; set; }
         }
 
         private class MemoryInfo
