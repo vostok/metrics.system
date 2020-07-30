@@ -52,10 +52,10 @@ namespace Vostok.Metrics.System.Tests
 
             foreach (var diskSpaceInfo in metrics.DiskSpaceInfos)
             {
-                diskSpaceInfo.Name.Should().NotBeNullOrEmpty();
-                diskSpaceInfo.FreeBytes.Should().BeGreaterThan(0);
-                diskSpaceInfo.FreePercent.Should().BeGreaterThan(0);
-                diskSpaceInfo.TotalCapacityBytes.Should().BeGreaterThan(0);
+                diskSpaceInfo.Value.Name.Should().NotBeNullOrEmpty();
+                diskSpaceInfo.Value.FreeBytes.Should().BeGreaterThan(0);
+                diskSpaceInfo.Value.FreePercent.Should().BeGreaterThan(0);
+                diskSpaceInfo.Value.TotalCapacityBytes.Should().BeGreaterThan(0);
             }
         }
     }

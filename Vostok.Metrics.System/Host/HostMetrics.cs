@@ -46,7 +46,7 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// Disk space info per volume.
         /// </summary>
-        public DiskSpaceInfo[] DiskSpaceInfos { get; set; }
+        public Dictionary<string, DiskSpaceInfo> DiskSpaceInfos { get; set; }
 
         /// <summary>
         /// TCP connections per state.

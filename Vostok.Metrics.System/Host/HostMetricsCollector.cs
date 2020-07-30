@@ -4,6 +4,10 @@ using JetBrains.Annotations;
 
 namespace Vostok.Metrics.System.Host
 {
+    /// <summary>
+    /// <para><see cref="HostMetricsCollector"/> collects and returns <see cref="HostMetrics"/>.</para>
+    /// <para>It is designed to be invoked periodically.</para>
+    /// </summary>
     [PublicAPI]
     public class HostMetricsCollector
     {

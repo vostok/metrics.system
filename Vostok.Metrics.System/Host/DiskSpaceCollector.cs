@@ -16,7 +16,7 @@ namespace Vostok.Metrics.System.Host
                         TotalCapacityBytes = x.TotalSize,
                         FreePercent = x.TotalFreeSpace * 100d / x.TotalSize
                     })
-                .ToArray();
+                .ToDictionary(x => x.Name);
         }
     }
 }
