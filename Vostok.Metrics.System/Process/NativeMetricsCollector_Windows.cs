@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Vostok.Metrics.System.Helpers;
 
@@ -26,10 +25,10 @@ namespace Vostok.Metrics.System.Process
             try
             {
                 if (!GetProcessMemoryInfo(CurrentProcessHandle, out var memoryCounters, sizeof(PROCESS_MEMORY_COUNTERS_EX)))
-                    ThrowOnError();
-                
-                metrics.MemoryResident = (long)memoryCounters.WorkingSetSize;
-                metrics.MemoryPrivate = (long)memoryCounters.PrivateUsage;
+                    WinMetricsCollectorHelper.ThrowOnError();
+
+                metrics.MemoryResident = (long) memoryCounters.WorkingSetSize;
+                metrics.MemoryPrivate = (long) memoryCounters.PrivateUsage;
             }
             catch (Exception error)
             {
@@ -42,42 +41,14 @@ namespace Vostok.Metrics.System.Process
             try
             {
                 if (!GetProcessHandleCount(CurrentProcessHandle, out var handleCount))
-                    ThrowOnError();
+                    WinMetricsCollectorHelper.ThrowOnError();
 
-                metrics.HandlesCount = (int)handleCount;
+                metrics.HandlesCount = (int) handleCount;
             }
             catch (Exception error)
             {
                 InternalErrorLogger.Warn(error);
             }
-        }
-
-        private void CollectCpuUtilization(CurrentProcessMetrics metrics)
-        {
-            try
-            {
-                if (!GetSystemTimes(out _, out var systemKernel, out var systemUser))
-                    ThrowOnError();
-
-                if (!GetProcessTimes(CurrentProcessHandle, out _, out _, out var processKernel, out var processUser))
-                    ThrowOnError();
-
-                var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
-                var processTime = processKernel.ToUInt64() + processUser.ToUInt64();
-
-                cpuCollector.Collect(metrics, systemTime, processTime);
-            }
-            catch (Exception error)
-            {
-                InternalErrorLogger.Warn(error);
-            }
-        }
-
-        private static void ThrowOnError()
-        {
-            var exception = new Win32Exception();
-
-            throw new Win32Exception(exception.ErrorCode, exception.Message + $" Error code = {exception.ErrorCode} (0x{exception.ErrorCode:X}).");
         }
 
         [DllImport("kernel32.dll")]
@@ -89,22 +60,37 @@ namespace Vostok.Metrics.System.Process
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool GetProcessTimes(
             IntPtr hProcess,
-            out FILETIME creationTime,
-            out FILETIME exitTime,
-            out FILETIME kernelTime,
-            out FILETIME userTime);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool GetSystemTimes(
-            out FILETIME idleTime,
-            out FILETIME kernelTime,
-            out FILETIME userTime);
+            out WinMetricsCollectorHelper.FILETIME creationTime,
+            out WinMetricsCollectorHelper.FILETIME exitTime,
+            out WinMetricsCollectorHelper.FILETIME kernelTime,
+            out WinMetricsCollectorHelper.FILETIME userTime);
 
         [DllImport("psapi.dll", SetLastError = true)]
         private static extern bool GetProcessMemoryInfo(
             [In] IntPtr process,
             [Out] out PROCESS_MEMORY_COUNTERS_EX ppsmemCounters,
             [In] int cb);
+
+        private void CollectCpuUtilization(CurrentProcessMetrics metrics)
+        {
+            try
+            {
+                if (!WinMetricsCollectorHelper.GetSystemTimes(out _, out var systemKernel, out var systemUser))
+                    WinMetricsCollectorHelper.ThrowOnError();
+
+                if (!GetProcessTimes(CurrentProcessHandle, out _, out _, out var processKernel, out var processUser))
+                    WinMetricsCollectorHelper.ThrowOnError();
+
+                var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
+                var processTime = processKernel.ToUInt64() + processUser.ToUInt64();
+
+                cpuCollector.Collect(metrics, systemTime, processTime);
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         private struct PROCESS_MEMORY_COUNTERS_EX
@@ -120,20 +106,6 @@ namespace Vostok.Metrics.System.Process
             public UIntPtr PagefileUsage;
             public UIntPtr PeakPagefileUsage;
             public UIntPtr PrivateUsage;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        private struct FILETIME
-        {
-            public uint dwLowDateTime;
-            public uint dwHighDateTime;
-
-            public ulong ToUInt64()
-            {
-                var high = (ulong) dwHighDateTime;
-                var low = (ulong) dwLowDateTime;
-                return (high << 32) | low;
-            }
         }
     }
 }
