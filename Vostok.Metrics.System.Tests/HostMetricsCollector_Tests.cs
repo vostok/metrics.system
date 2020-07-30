@@ -58,5 +58,15 @@ namespace Vostok.Metrics.System.Tests
                 diskSpaceInfo.Value.TotalCapacityBytes.Should().BeGreaterThan(0);
             }
         }
+
+        [Test]
+        public void Should_measure_performance_info()
+        {
+            var metrics = collector.Collect();
+
+            metrics.HandleCount.Should().BeGreaterThan(0);
+            metrics.ThreadCount.Should().BeGreaterThan(0);
+            metrics.ProcessCount.Should().BeGreaterThan(0);
+        }
     }
 }

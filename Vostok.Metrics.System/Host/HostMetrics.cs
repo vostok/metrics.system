@@ -44,6 +44,21 @@ namespace Vostok.Metrics.System.Host
         public long MemoryCached { get; set; }
 
         /// <summary>
+        /// The current number of processes on host.
+        /// </summary>
+        public int ProcessCount { get; set; }
+
+        /// <summary>
+        /// The current number of threads on host.
+        /// </summary>
+        public int ThreadCount { get; set; }
+
+        /// <summary>
+        /// The current number of open handles on host.
+        /// </summary>
+        public int HandleCount { get; set; }
+
+        /// <summary>
         /// Disk space info per volume.
         /// </summary>
         public Dictionary<string, DiskSpaceInfo> DiskSpaceInfos { get; set; }

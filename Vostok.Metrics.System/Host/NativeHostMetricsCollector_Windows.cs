@@ -47,6 +47,10 @@ namespace Vostok.Metrics.System.Host
                 metrics.MemoryCached = (long) perfInfo.SystemCache * (long) perfInfo.PageSize;
                 metrics.MemoryKernel = (long) perfInfo.KernelTotal * (long) perfInfo.PageSize;
                 metrics.MemoryTotal = (long) perfInfo.PhysicalTotal * (long) perfInfo.PageSize;
+
+                metrics.ProcessCount = (int) perfInfo.ProcessCount;
+                metrics.ThreadCount = (int) perfInfo.ThreadCount;
+                metrics.HandleCount = (int) perfInfo.HandleCount;
             }
             catch (Exception error)
             {

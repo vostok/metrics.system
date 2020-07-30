@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Vostok.Metrics.System.Helpers;
 
 // ReSharper disable PossibleInvalidOperationException
@@ -7,20 +10,24 @@ namespace Vostok.Metrics.System.Host
 {
     internal class NativeHostMetricsCollector_Linux : IDisposable
     {
+        private readonly Regex pidRegex = new Regex("[0-9]+$");
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
+        private readonly ReusableFileReader descriptorInfoReader = new ReusableFileReader("/proc/sys/fs/file-nr");
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
 
         public void Dispose()
         {
             systemStatReader.Dispose();
             memoryReader.Dispose();
+            descriptorInfoReader.Dispose();
         }
 
         public void Collect(HostMetrics metrics)
         {
             var systemStat = ReadSystemStat();
             var memInfo = ReadMemoryInfo();
+            var perfInfo = ReadPerformanceInfo();
 
             if (systemStat.Filled)
             {
@@ -36,6 +43,13 @@ namespace Vostok.Metrics.System.Host
                 metrics.MemoryCached = memInfo.CacheMemory.Value;
                 metrics.MemoryKernel = memInfo.KernelMemory.Value;
                 metrics.MemoryTotal = memInfo.TotalMemory.Value;
+            }
+
+            if (perfInfo.Filled)
+            {
+                metrics.HandleCount = perfInfo.HandleCount.Value;
+                metrics.ThreadCount = perfInfo.ThreadCount.Value;
+                metrics.ProcessCount = perfInfo.ProcessCount.Value;
             }
         }
 
@@ -95,6 +109,42 @@ namespace Vostok.Metrics.System.Host
             }
 
             return result;
+        }
+
+        private PerformanceInfo ReadPerformanceInfo()
+        {
+            var result = new PerformanceInfo();
+
+            try
+            {
+                var processDirectories = Directory.GetDirectories("/proc/")
+                    .Where(x => pidRegex.IsMatch(x))
+                    .ToArray();
+
+                result.ProcessCount = processDirectories.Length;
+
+                result.ThreadCount = processDirectories.Sum(processDirectory => Directory.GetDirectories($"{processDirectory}/task/").Length);
+
+                if (FileParser.TrySplitLine(descriptorInfoReader.ReadFirstLine(), 3, out var parts) &&
+                    int.TryParse(parts[0], out var allocatedDescriptors) &&
+                    int.TryParse(parts[1], out var freeDescriptors))
+                    result.HandleCount = allocatedDescriptors - freeDescriptors;
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
+
+            return result;
+        }
+
+        private class PerformanceInfo
+        {
+            public bool Filled => ProcessCount.HasValue && ThreadCount.HasValue && HandleCount.HasValue;
+
+            public int? ProcessCount { get; set; }
+            public int? ThreadCount { get; set; }
+            public int? HandleCount { get; set; }
         }
 
         private class SystemStat
