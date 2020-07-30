@@ -6,7 +6,7 @@ namespace Vostok.Metrics.System.Host
     public class DiskSpaceInfo
     {
         public string Name { get; internal set; }
-        public long TotalCapacity { get; internal set; }
+        public long TotalCapacityBytes { get; internal set; }
         public long FreeBytes { get; internal set; }
         public double FreePercent { get; internal set; }
     }

@@ -2,7 +2,7 @@
 
 namespace Vostok.Metrics.System.Helpers
 {
-    public static class FileParser
+    internal static class FileParser
     {
         public static bool TrySplitLine(string line, int minParts, out string[] parts)
             => (parts = line?.Split(null as char[], StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>()).Length >= minParts;

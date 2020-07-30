@@ -7,7 +7,7 @@ using Vostok.Metrics.System.Host;
 namespace Vostok.Metrics.System.Tests
 {
     [TestFixture]
-    public class HostMetricsCollector_Tests
+    internal class HostMetricsCollector_Tests
     {
         private HostMetricsCollector collector;
 
@@ -55,7 +55,7 @@ namespace Vostok.Metrics.System.Tests
                 diskSpaceInfo.Name.Should().NotBeNullOrEmpty();
                 diskSpaceInfo.FreeBytes.Should().BeGreaterThan(0);
                 diskSpaceInfo.FreePercent.Should().BeGreaterThan(0);
-                diskSpaceInfo.TotalCapacity.Should().BeGreaterThan(0);
+                diskSpaceInfo.TotalCapacityBytes.Should().BeGreaterThan(0);
             }
         }
     }

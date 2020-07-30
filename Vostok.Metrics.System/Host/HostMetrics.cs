@@ -10,14 +10,14 @@ namespace Vostok.Metrics.System.Host
     public class HostMetrics
     {
         /// <summary>
-        /// <para>Number of CPU cores utilized by current process.</para>
+        /// <para>Number of CPU cores utilized by host.</para>
         /// <para>This metric has a value between 0 and <see cref="Environment.ProcessorCount"/>.</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
         public double CpuUtilizedCores { get; set; }
 
         /// <summary>
-        /// <para>Fraction of the CPU resources consumed by current process (relative to all cores).</para>
+        /// <para>Fraction of the CPU resources consumed by host (relative to all cores).</para>
         /// <para>This metric has a value between 0 and 1.</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
@@ -56,6 +56,6 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// Total TCP connections count.
         /// </summary>
-        public int TotalTcpConnectionsCount => TcpStateMetrics.Sum(x => x.Value);
+        public int TcpConnectionsTotalCount => TcpStateMetrics.Sum(x => x.Value);
     }
 }

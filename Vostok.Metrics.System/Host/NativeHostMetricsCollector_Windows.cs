@@ -69,7 +69,7 @@ namespace Vostok.Metrics.System.Host
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct PERFORMANCE_INFORMATION
+        private struct PERFORMANCE_INFORMATION
         {
             public readonly int cb;
             public readonly UIntPtr CommitTotal;

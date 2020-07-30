@@ -91,13 +91,13 @@ namespace Vostok.Metrics.System.Host
                         result.TotalMemory = memTotal * 1024;
 
                     if (FileParser.TryParseLong(line, "MemAvailable", out var memAvailable))
-                        result.AvailableMemory = memAvailable;
+                        result.AvailableMemory = memAvailable * 1024;
 
                     if (FileParser.TryParseLong(line, "Cached", out var memCached))
-                        result.CacheMemory = memCached;
+                        result.CacheMemory = memCached * 1024;
 
                     if (FileParser.TryParseLong(line, "Slab", out var memKernel))
-                        result.KernelMemory = memKernel;
+                        result.KernelMemory = memKernel * 1024;
                 }
             }
             catch (Exception error)
