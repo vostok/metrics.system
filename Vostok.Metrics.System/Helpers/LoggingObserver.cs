@@ -3,7 +3,7 @@ using Vostok.Logging.Abstractions;
 
 namespace Vostok.Metrics.System.Helpers
 {
-    public class LoggingObserver<T> : IObserver<T>
+    internal class LoggingObserver<T> : IObserver<T>
     {
         private readonly ILog log;
         private readonly TimeSpan period;
