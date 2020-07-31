@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net.NetworkInformation;
 using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
@@ -67,6 +68,17 @@ namespace Vostok.Metrics.System.Tests
             metrics.HandleCount.Should().BeGreaterThan(0);
             metrics.ThreadCount.Should().BeGreaterThan(0);
             metrics.ProcessCount.Should().BeGreaterThan(0);
+        }
+
+        [Test]
+        public void Should_measure_tcp_states()
+        {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+                throw new InconclusiveException("No network available");
+            var metrics = collector.Collect();
+
+            metrics.TcpStateMetrics.Should().NotBeEmpty();
+            metrics.TcpConnectionsTotalCount.Should().BeGreaterThan(0);
         }
     }
 }

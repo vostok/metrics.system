@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.NetworkInformation;
 
 namespace Vostok.Metrics.System.Host
 {
-    internal class NetworkInfoCollector
+    internal class TcpStateCollector
     {
         public void Collect(HostMetrics metrics)
-        {
-            CollectTcpStateMetrics(metrics);
-            // CollectNetworkUsageMetrics(metrics);
-        }
-
-        private void CollectTcpStateMetrics(HostMetrics metrics)
         {
             var states = new Dictionary<TcpState, int>();
 
@@ -24,11 +17,6 @@ namespace Vostok.Metrics.System.Host
             }
 
             metrics.TcpStateMetrics = states;
-        }
-
-        private void CollectNetworkUsageMetrics(HostMetrics metrics)
-        {
-            throw new NotImplementedException();
         }
     }
 }
