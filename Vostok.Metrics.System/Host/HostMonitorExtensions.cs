@@ -14,8 +14,8 @@ namespace Vostok.Metrics.System.Host
             log.Info(
                 "CPU = {CpuUsagePercent:0.00}% ({CpuUsageCores:0.00} cores). " +
                 "Total Memory = {MemoryTotal} (Available = {MemoryAvailable})(Cached = {MemoryCached})(Kernel = {MemoryKernel}). " +
-                "Process count = {ProcessCount}. Thread count = {ThreadCount}. Handle count = {HandleCount}" +
-                "TCP connections total count = {TcpConnectionsTotalCount}",
+                "Process count = {ProcessCount}. Thread count = {ThreadCount}. Handle count = {HandleCount}. " +
+                "TCP connections total count = {TcpConnectionsTotalCount}.",
                 metrics.CpuUtilizedFraction * 100,
                 metrics.CpuUtilizedCores,
                 SizeFormatter.Format(metrics.MemoryTotal),
