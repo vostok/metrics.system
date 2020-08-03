@@ -13,19 +13,22 @@ namespace Vostok.Metrics.System.Host
             // TODO: Add drive info and tcp state logging.
             log.Info(
                 "CPU = {CpuUsagePercent:0.00}% ({CpuUsageCores:0.00} cores). " +
-                "Total Memory = {MemoryTotal} (Available = {MemoryAvailable})(Cached = {MemoryCached})(Kernel = {MemoryKernel}). " +
-                "Process count = {ProcessCount}. Thread count = {ThreadCount}. Handle count = {HandleCount}. " +
-                "TCP connections total count = {TcpConnectionsTotalCount}.",
-                metrics.CpuUtilizedFraction * 100,
-                metrics.CpuUtilizedCores,
-                SizeFormatter.Format(metrics.MemoryTotal),
-                SizeFormatter.Format(metrics.MemoryAvailable),
-                SizeFormatter.Format(metrics.MemoryCached),
-                SizeFormatter.Format(metrics.MemoryKernel),
-                metrics.ProcessCount,
-                metrics.ThreadCount,
-                metrics.HandleCount,
-                metrics.TcpConnectionsTotalCount
+                "Memory: available = {MemoryAvailable} / {MemoryTotal}; cached = {MemoryCached}; kernel = {MemoryKernel}. " +
+                "Processes = {ProcessCount}. Threads = {ThreadCount}. Handles = {HandleCount}. " +
+                "TCP connections = {TcpConnectionsTotalCount}.",
+                new
+                {
+                    CpuUsagePercent = metrics.CpuUtilizedFraction * 100,
+                    CpuUsageCores = metrics.CpuUtilizedCores,
+                    MemoryAvailable = SizeFormatter.Format(metrics.MemoryAvailable),
+                    MemoryTotal = SizeFormatter.Format(metrics.MemoryTotal),
+                    MemoryCached = SizeFormatter.Format(metrics.MemoryCached),
+                    MemoryKernel = SizeFormatter.Format(metrics.MemoryKernel),
+                    metrics.ProcessCount,
+                    metrics.ThreadCount,
+                    metrics.HandleCount,
+                    metrics.TcpConnectionsTotalCount
+                }
             );
         };
 
