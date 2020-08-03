@@ -10,7 +10,6 @@ namespace Vostok.Metrics.System.Host
     {
         private static Action<ILog, TimeSpan, HostMetrics> loggingRule = (log, period, metrics) =>
         {
-            // TODO: Add drive info and tcp state logging.
             log.Info(
                 "CPU = {CpuUsagePercent:0.00}% ({CpuUsageCores:0.00} cores). " +
                 "Memory: available = {MemoryAvailable} / {MemoryTotal}; cached = {MemoryCached}; kernel = {MemoryKernel}. " +

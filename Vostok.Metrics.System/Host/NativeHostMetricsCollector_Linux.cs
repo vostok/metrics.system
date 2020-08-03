@@ -10,7 +10,7 @@ namespace Vostok.Metrics.System.Host
 {
     internal class NativeHostMetricsCollector_Linux : IDisposable
     {
-        private readonly Regex pidRegex = new Regex("[0-9]+$");
+        private readonly Regex pidRegex = new Regex("[0-9]+$", RegexOptions.Compiled);
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
         private readonly ReusableFileReader descriptorInfoReader = new ReusableFileReader("/proc/sys/fs/file-nr");
@@ -117,13 +117,20 @@ namespace Vostok.Metrics.System.Host
 
             try
             {
-                var processDirectories = Directory.GetDirectories("/proc/")
-                    .Where(x => pidRegex.IsMatch(x))
-                    .ToArray();
+                var processDirectories = Directory.EnumerateDirectories("/proc/")
+                    .Where(x => pidRegex.IsMatch(x));
 
-                result.ProcessCount = processDirectories.Length;
+                var processCount = 0;
+                var threadCount = 0;
 
-                result.ThreadCount = processDirectories.Sum(processDirectory => Directory.GetDirectories($"{processDirectory}/task/").Length);
+                foreach (var processDirectory in processDirectories)
+                {
+                    processCount++;
+                    threadCount += Directory.EnumerateDirectories($"{processDirectory}/task/").Count();
+                }
+
+                result.ProcessCount = processCount;
+                result.ThreadCount = threadCount;
 
                 if (FileParser.TrySplitLine(descriptorInfoReader.ReadFirstLine(), 3, out var parts) &&
                     int.TryParse(parts[0], out var allocatedDescriptors) &&
