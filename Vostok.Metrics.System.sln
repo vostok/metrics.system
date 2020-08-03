@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.Metrics.System", "Vo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.Metrics.System.Tests", "Vostok.Metrics.System.Tests\Vostok.Metrics.System.Tests.csproj", "{87C54CC1-C3B8-4730-B55D-5DB6F9C3ABA3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.Metrics.System.Benchmark", "Vostok.Metrics.System.Benchmark\Vostok.Metrics.System.Benchmark.csproj", "{9DECD46D-0846-496D-9514-9087A0995EF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,12 @@ Global
 		{87C54CC1-C3B8-4730-B55D-5DB6F9C3ABA3}.NoTests|Any CPU.ActiveCfg = Release|Any CPU
 		{87C54CC1-C3B8-4730-B55D-5DB6F9C3ABA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87C54CC1-C3B8-4730-B55D-5DB6F9C3ABA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DECD46D-0846-496D-9514-9087A0995EF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DECD46D-0846-496D-9514-9087A0995EF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DECD46D-0846-496D-9514-9087A0995EF9}.NoTests|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DECD46D-0846-496D-9514-9087A0995EF9}.NoTests|Any CPU.Build.0 = Debug|Any CPU
+		{9DECD46D-0846-496D-9514-9087A0995EF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DECD46D-0846-496D-9514-9087A0995EF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
