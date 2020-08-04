@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using Vostok.Metrics.Models;
 using Vostok.Metrics.Primitives.Gauge;
+using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
 {
@@ -20,8 +21,7 @@ namespace Vostok.Metrics.System.Host
         {
             var metrics = collector.Collect();
 
-            foreach (var property in typeof(HostMetrics).GetProperties())
-                yield return new MetricDataPoint(Convert.ToDouble(property.GetValue(metrics)), (WellKnownTagKeys.Name, property.Name));
+            return MetricCollectorHelper.ModelToMetricDataPoints(metrics);
         }
     }
 }

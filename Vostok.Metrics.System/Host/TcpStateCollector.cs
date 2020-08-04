@@ -16,7 +16,7 @@ namespace Vostok.Metrics.System.Host
                 states[tcpConnection.State]++;
             }
 
-            metrics.TcpStateMetrics = states;
+            metrics.TcpStates = states;
         }
     }
 }

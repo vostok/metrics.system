@@ -9,19 +9,19 @@ namespace Vostok.Metrics.System.Host
 {
     internal class DiskSpaceCollector
     {
-        private readonly Func<IEnumerable<DriveInfo>, IEnumerable<DriveInfo>> additionalDiskFilter;
+        private readonly Func<DriveInfo, bool> systemFilter;
         private readonly Func<string, string> nameFormatter;
 
         public DiskSpaceCollector()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                additionalDiskFilter = FilterDisks_Windows;
+                systemFilter = FilterDisks_Windows;
                 nameFormatter = FormatDiskName_Windows;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                additionalDiskFilter = FilterDisks_Linux;
+                systemFilter = FilterDisks_Linux;
                 nameFormatter = FormatDiskName_Linux;
             }
         }
@@ -31,23 +31,21 @@ namespace Vostok.Metrics.System.Host
             var diskSpaceInfos = new Dictionary<string, DiskSpaceInfo>();
 
             foreach (var info in GetDiskSpaceInfos())
-            {
-                if (!diskSpaceInfos.ContainsKey(info.Name))
-                    diskSpaceInfos[info.Name] = info;
-            }
+                if (!diskSpaceInfos.ContainsKey(info.DiskName))
+                    diskSpaceInfos[info.DiskName] = info;
 
             metrics.DiskSpaceInfos = diskSpaceInfos;
         }
 
         private IEnumerable<DiskSpaceInfo> GetDiskSpaceInfos()
         {
-            foreach (var drive in additionalDiskFilter(DriveInfo.GetDrives().Where(x => x.IsReady && x.DriveType == DriveType.Fixed)))
+            foreach (var drive in DriveInfo.GetDrives().Where(x => x.IsReady && x.DriveType == DriveType.Fixed && systemFilter(x)))
             {
                 var result = new DiskSpaceInfo();
 
                 try
                 {
-                    result.Name = nameFormatter(drive.Name);
+                    result.DiskName = nameFormatter(drive.Name);
                     result.FreeBytes = drive.TotalFreeSpace;
                     result.TotalCapacityBytes = drive.TotalSize;
                     if (result.TotalCapacityBytes != 0)
@@ -63,9 +61,9 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        private IEnumerable<DriveInfo> FilterDisks_Linux(IEnumerable<DriveInfo> disks) => disks.Where(x => x.Name.Contains("/dev/sd"));
+        private bool FilterDisks_Linux(DriveInfo disk) => disk.Name.Contains("/dev/sd");
 
-        private IEnumerable<DriveInfo> FilterDisks_Windows(IEnumerable<DriveInfo> disks) => disks;
+        private bool FilterDisks_Windows(DriveInfo disk) => true;
 
         private string FormatDiskName_Windows(string diskName) => diskName.Replace(":\\", string.Empty);
 

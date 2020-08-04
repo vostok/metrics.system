@@ -66,11 +66,11 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// TCP connections per state.
         /// </summary>
-        public Dictionary<TcpState, int> TcpStateMetrics { get; set; }
+        public Dictionary<TcpState, int> TcpStates { get; set; }
 
         /// <summary>
         /// Total TCP connections count.
         /// </summary>
-        public int TcpConnectionsTotalCount => TcpStateMetrics.Sum(x => x.Value);
+        public int TcpConnectionsTotalCount => TcpStates.Sum(x => x.Value);
     }
 }

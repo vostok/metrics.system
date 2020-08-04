@@ -53,7 +53,7 @@ namespace Vostok.Metrics.System.Tests
 
             foreach (var diskSpaceInfo in metrics.DiskSpaceInfos)
             {
-                diskSpaceInfo.Value.Name.Should().NotBeNullOrEmpty();
+                diskSpaceInfo.Value.DiskName.Should().NotBeNullOrEmpty();
                 diskSpaceInfo.Value.FreeBytes.Should().BeGreaterThan(0);
                 diskSpaceInfo.Value.FreePercent.Should().BeGreaterThan(0);
                 diskSpaceInfo.Value.TotalCapacityBytes.Should().BeGreaterThan(0);
@@ -77,7 +77,7 @@ namespace Vostok.Metrics.System.Tests
                 throw new InconclusiveException("No network available");
             var metrics = collector.Collect();
 
-            metrics.TcpStateMetrics.Should().NotBeEmpty();
+            metrics.TcpStates.Should().NotBeEmpty();
             metrics.TcpConnectionsTotalCount.Should().BeGreaterThan(0);
         }
     }
