@@ -58,7 +58,7 @@ namespace Vostok.Metrics.System.Helpers
                     }
                     else if (IsEnumerableType(property.PropertyType))
                     {
-                        foreach (var dataPoint in CollectionToMetricDataPoint(propertyValue as IEnumerable, property.Name, tags))
+                        foreach (var dataPoint in CollectionToMetricDataPoints(propertyValue as IEnumerable, property.Name, tags))
                             yield return dataPoint;
                     }
                     else
@@ -95,7 +95,7 @@ namespace Vostok.Metrics.System.Helpers
             }
         }
 
-        private static IEnumerable<MetricDataPoint> CollectionToMetricDataPoint(
+        private static IEnumerable<MetricDataPoint> CollectionToMetricDataPoints(
             IEnumerable collection,
             string collectionPropName,
             IEnumerable<(string key, string value)> tags)
