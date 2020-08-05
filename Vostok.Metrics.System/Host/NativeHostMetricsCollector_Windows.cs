@@ -1,17 +1,31 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Vostok.Metrics.System.Helpers;
+using Vostok.Sys.Metrics.PerfCounters;
 
 namespace Vostok.Metrics.System.Host
 {
     internal class NativeHostMetricsCollector_Windows
     {
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
+        private readonly IPerformanceCounter<Observation<NetworkUsage>[]> networkUsageCounter = PerformanceCounterFactory.Default
+           .Create<NetworkUsage>()
+           .AddCounter(
+                "Network Interface",
+                "Bytes Sent/sec",
+                (context, value) => context.Result.NetworkSentBytesPerSecond = value)
+           .AddCounter(
+                "Network Interface",
+                "Bytes Received/sec",
+                (context, value) => context.Result.NetworkReceivedBytesPerSecond = value)
+           .BuildForMultipleInstances("*");
 
         public void Collect(HostMetrics metrics)
         {
             CollectCpuUtilization(metrics);
             CollectMemoryMetrics(metrics);
+            CollectNetworkUsage(metrics);
         }
 
         [DllImport("psapi.dll", SetLastError = true)]
@@ -56,6 +70,32 @@ namespace Vostok.Metrics.System.Host
             {
                 InternalErrorLogger.Warn(error);
             }
+        }
+
+        private void CollectNetworkUsage(HostMetrics metrics)
+        {
+            try
+            {
+                var networkUsageInfo = networkUsageCounter.Observe();
+
+                metrics.NetworkSentBytesPerSecond = networkUsageInfo
+                   .Select(x => x.Value.NetworkSentBytesPerSecond)
+                   .Sum();
+
+                metrics.NetworkReceivedBytesPerSecond = networkUsageInfo
+                   .Select(x => x.Value.NetworkReceivedBytesPerSecond)
+                   .Sum();
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
+        }
+
+        private class NetworkUsage
+        {
+            public double NetworkSentBytesPerSecond { get; set; }
+            public double NetworkReceivedBytesPerSecond { get; set; }
         }
 
         [StructLayout(LayoutKind.Sequential)]

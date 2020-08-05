@@ -42,12 +42,12 @@ namespace Vostok.Metrics.System.Process
 
         private readonly Action<CurrentProcessMetrics> nativeCollector;
 
-        private readonly DerivativeCollector lockContentionCount = new DerivativeCollector(LockContentionCountProvider);
-        private readonly DerivativeCollector exceptionsCount = new DerivativeCollector(() => ExceptionsCountProvider());
-        private readonly DerivativeCollector allocatedBytes = new DerivativeCollector(() => TotalAllocatedBytesProvider(false));
-        private readonly DerivativeCollector gen0Collections = new DerivativeCollector(() => GcCollectionCountProvider(0));
-        private readonly DerivativeCollector gen1Collections = new DerivativeCollector(() => GcCollectionCountProvider(1));
-        private readonly DerivativeCollector gen2Collections = new DerivativeCollector(() => GcCollectionCountProvider(2));
+        private readonly DeltaCollector lockContentionCount = new DeltaCollector(LockContentionCountProvider);
+        private readonly DeltaCollector exceptionsCount = new DeltaCollector(() => ExceptionsCountProvider());
+        private readonly DeltaCollector allocatedBytes = new DeltaCollector(() => TotalAllocatedBytesProvider(false));
+        private readonly DeltaCollector gen0Collections = new DeltaCollector(() => GcCollectionCountProvider(0));
+        private readonly DeltaCollector gen1Collections = new DeltaCollector(() => GcCollectionCountProvider(1));
+        private readonly DeltaCollector gen2Collections = new DeltaCollector(() => GcCollectionCountProvider(2));
 
         public CurrentProcessMetricsCollector()
         {

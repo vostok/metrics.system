@@ -69,6 +69,16 @@ namespace Vostok.Metrics.System.Host
         public Dictionary<TcpState, int> TcpStates { get; set; }
 
         /// <summary>
+        /// Network sent bytes per second (across all interfaces).
+        /// </summary>
+        public double NetworkSentBytesPerSecond { get; set; }
+
+        /// <summary>
+        /// Network received bytes per second (across all interfaces).
+        /// </summary>
+        public double NetworkReceivedBytesPerSecond { get; set; }
+
+        /// <summary>
         /// Total TCP connections count.
         /// </summary>
         public int TcpConnectionsTotalCount => TcpStates.Sum(x => x.Value);

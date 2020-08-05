@@ -14,7 +14,9 @@ namespace Vostok.Metrics.System.Host
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
         private readonly ReusableFileReader descriptorInfoReader = new ReusableFileReader("/proc/sys/fs/file-nr");
+        private readonly ReusableFileReader networkUsageReader = new ReusableFileReader("/proc/net/dev");
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
+        private readonly HostNetworkUtilizationCollector networkCollector = new HostNetworkUtilizationCollector();
 
         public void Dispose()
         {
@@ -28,6 +30,7 @@ namespace Vostok.Metrics.System.Host
             var systemStat = ReadSystemStat();
             var memInfo = ReadMemoryInfo();
             var perfInfo = ReadPerformanceInfo();
+            var networkInfo = ReadNetworkUsageInfo();
 
             if (systemStat.Filled)
             {
@@ -51,6 +54,9 @@ namespace Vostok.Metrics.System.Host
                 metrics.ThreadCount = perfInfo.ThreadCount.Value;
                 metrics.ProcessCount = perfInfo.ProcessCount.Value;
             }
+
+            if (networkInfo.Filled)
+                networkCollector.Collect(metrics, networkInfo.ReceivedBytes.Value, networkInfo.SentBytes.Value);
         }
 
         private SystemStat ReadSystemStat()
@@ -118,7 +124,7 @@ namespace Vostok.Metrics.System.Host
             try
             {
                 var processDirectories = Directory.EnumerateDirectories("/proc/")
-                    .Where(x => pidRegex.IsMatch(x));
+                   .Where(x => pidRegex.IsMatch(x));
 
                 var processCount = 0;
                 var threadCount = 0;
@@ -136,6 +142,37 @@ namespace Vostok.Metrics.System.Host
                     int.TryParse(parts[0], out var allocatedDescriptors) &&
                     int.TryParse(parts[1], out var freeDescriptors))
                     result.HandleCount = allocatedDescriptors - freeDescriptors;
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
+
+            return result;
+        }
+
+        private NetworkUsage ReadNetworkUsageInfo()
+        {
+            var result = new NetworkUsage();
+
+            try
+            {
+                var totalReceivedBytes = 0L;
+                var totalSentBytes = 0L;
+
+                foreach (var line in networkUsageReader.ReadLines().Skip(2))
+                {
+                    if (FileParser.TrySplitLine(line, 17, out var parts) &&
+                        long.TryParse(parts[1], out var receivedBytes) &&
+                        long.TryParse(parts[9], out var sentBytes))
+                    {
+                        totalReceivedBytes += receivedBytes;
+                        totalSentBytes += sentBytes;
+                    }
+                }
+
+                result.ReceivedBytes = totalReceivedBytes;
+                result.SentBytes = totalSentBytes;
             }
             catch (Exception error)
             {
@@ -172,6 +209,14 @@ namespace Vostok.Metrics.System.Host
             public long? KernelMemory { get; set; }
             public long? CacheMemory { get; set; }
             public long? TotalMemory { get; set; }
+        }
+
+        private class NetworkUsage
+        {
+            public bool Filled => ReceivedBytes.HasValue && SentBytes.HasValue;
+
+            public long? ReceivedBytes { get; set; }
+            public long? SentBytes { get; set; }
         }
     }
 }
