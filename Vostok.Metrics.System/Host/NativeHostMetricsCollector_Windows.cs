@@ -20,6 +20,17 @@ namespace Vostok.Metrics.System.Host
                 "Bytes Received/sec",
                 (context, value) => context.Result.NetworkReceivedBytesPerSecond = value)
            .BuildForMultipleInstances("*");
+        private readonly IPerformanceCounter<MemoryInfo> memoryInfoCounter = PerformanceCounterFactory.Default
+           .Create<MemoryInfo>()
+           .AddCounter(
+                "Memory",
+                "Free & Zero Page List Bytes",
+                (context, value) => context.Result.MemoryFreeBytes = (long) value)
+           .AddCounter(
+                "Memory",
+                "Page Faults/sec",
+                (context, value) => context.Result.PageFaultsPerSecond = value)
+           .Build();
 
         public void Collect(HostMetrics metrics)
         {
@@ -65,6 +76,11 @@ namespace Vostok.Metrics.System.Host
                 metrics.ProcessCount = (int) perfInfo.ProcessCount;
                 metrics.ThreadCount = (int) perfInfo.ThreadCount;
                 metrics.HandleCount = (int) perfInfo.HandleCount;
+
+                var memoryInfo = memoryInfoCounter.Observe();
+
+                metrics.MemoryFree = memoryInfo.MemoryFreeBytes;
+                metrics.PageFaultsPerSecond = memoryInfo.PageFaultsPerSecond;
             }
             catch (Exception error)
             {
@@ -90,6 +106,12 @@ namespace Vostok.Metrics.System.Host
             {
                 InternalErrorLogger.Warn(error);
             }
+        }
+
+        private class MemoryInfo
+        {
+            public double PageFaultsPerSecond { get; set; }
+            public long MemoryFreeBytes { get; set; }
         }
 
         private class NetworkUsage

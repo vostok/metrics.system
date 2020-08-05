@@ -34,6 +34,11 @@ namespace Vostok.Metrics.System.Host
         public long MemoryAvailable { get; set; }
 
         /// <summary>
+        /// Amount of free physical RAM.
+        /// </summary>
+        public long MemoryFree { get; set; }
+
+        /// <summary>
         /// Amount of physical RAM consumed by system kernel.
         /// </summary>
         public long MemoryKernel { get; set; }
@@ -42,6 +47,11 @@ namespace Vostok.Metrics.System.Host
         /// Amount of physical RAM used as cache memory.
         /// </summary>
         public long MemoryCached { get; set; }
+
+        /// <summary>
+        /// Amount of hard page faults per second.
+        /// </summary>
+        public double PageFaultsPerSecond { get; set; }
 
         /// <summary>
         /// The current number of processes on host.

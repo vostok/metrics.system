@@ -107,6 +107,9 @@ namespace Vostok.Metrics.System.Host
 
                     if (FileParser.TryParseLong(line, "Slab", out var memKernel))
                         result.KernelMemory = memKernel * 1024;
+
+                    if (FileParser.TryParseLong(line, "MemFree", out var memFree))
+                        result.FreeMemory = memFree * 1024;
                 }
             }
             catch (Exception error)
@@ -203,11 +206,13 @@ namespace Vostok.Metrics.System.Host
 
         private class MemoryInfo
         {
-            public bool Filled => AvailableMemory.HasValue && KernelMemory.HasValue && CacheMemory.HasValue && TotalMemory.HasValue;
+            public bool Filled => AvailableMemory.HasValue && KernelMemory.HasValue && CacheMemory.HasValue &&
+                                  TotalMemory.HasValue && FreeMemory.HasValue;
 
             public long? AvailableMemory { get; set; }
             public long? KernelMemory { get; set; }
             public long? CacheMemory { get; set; }
+            public long? FreeMemory { get; set; }
             public long? TotalMemory { get; set; }
         }
 
