@@ -26,6 +26,8 @@ namespace Vostok.Metrics.System.Host
             systemStatReader.Dispose();
             memoryReader.Dispose();
             descriptorInfoReader.Dispose();
+            mountsReader.Dispose();
+            networkUsageReader.Dispose();
         }
 
         public void Collect(HostMetrics metrics)
