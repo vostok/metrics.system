@@ -11,7 +11,7 @@ namespace Vostok.Metrics.System.Host
 {
     internal class NativeHostMetricsCollector_Linux : IDisposable
     {
-        public static Dictionary<string, string> MountDiskMap;
+        public static Dictionary<string, string> MountDiskMap = new Dictionary<string, string>();
         private readonly Regex pidRegex = new Regex("[0-9]+$", RegexOptions.Compiled);
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
