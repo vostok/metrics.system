@@ -8,13 +8,17 @@ namespace Vostok.Metrics.System.Helpers
         private readonly DeltaCollector deltaCollector;
         private readonly Stopwatch stopwatch = new Stopwatch();
 
-        public DerivativeCollector(Func<long> provider)
+        private long currentValue;
+
+        public DerivativeCollector()
         {
-            deltaCollector = new DeltaCollector(provider);
+            deltaCollector = new DeltaCollector(() => currentValue);
         }
 
-        public double Collect()
+        public double Collect(long newValue)
         {
+            currentValue = newValue;
+            
             var delta = deltaCollector.Collect();
             var deltaTime = stopwatch.ElapsedTicks / (double) Stopwatch.Frequency;
 

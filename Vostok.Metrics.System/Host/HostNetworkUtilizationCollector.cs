@@ -7,22 +7,16 @@ namespace Vostok.Metrics.System.Host
         private readonly DerivativeCollector receivedBytesPerSecondCollector;
         private readonly DerivativeCollector sentBytesPerSecondCollector;
 
-        private long currentReceivedBytesValue;
-        private long currentSentBytesValue;
-
         public HostNetworkUtilizationCollector()
         {
-            receivedBytesPerSecondCollector = new DerivativeCollector(() => currentReceivedBytesValue);
-            sentBytesPerSecondCollector = new DerivativeCollector(() => currentSentBytesValue);
+            receivedBytesPerSecondCollector = new DerivativeCollector();
+            sentBytesPerSecondCollector = new DerivativeCollector();
         }
 
         public void Collect(HostMetrics metrics, long newReceivedBytesValue, long newSentBytesValue)
         {
-            currentReceivedBytesValue = newReceivedBytesValue;
-            currentSentBytesValue = newSentBytesValue;
-
-            metrics.NetworkReceivedBytesPerSecond = receivedBytesPerSecondCollector.Collect();
-            metrics.NetworkSentBytesPerSecond = sentBytesPerSecondCollector.Collect();
+            metrics.NetworkReceivedBytesPerSecond = receivedBytesPerSecondCollector.Collect(newReceivedBytesValue);
+            metrics.NetworkSentBytesPerSecond = sentBytesPerSecondCollector.Collect(newSentBytesValue);
         }
     }
 }

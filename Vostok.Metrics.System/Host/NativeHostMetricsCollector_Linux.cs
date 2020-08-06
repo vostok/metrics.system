@@ -15,11 +15,13 @@ namespace Vostok.Metrics.System.Host
         private readonly Regex pidRegex = new Regex("[0-9]+$", RegexOptions.Compiled);
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
+        private readonly ReusableFileReader vmStatReader = new ReusableFileReader("/proc/vmstat");
         private readonly ReusableFileReader descriptorInfoReader = new ReusableFileReader("/proc/sys/fs/file-nr");
         private readonly ReusableFileReader networkUsageReader = new ReusableFileReader("/proc/net/dev");
         private readonly ReusableFileReader mountsReader = new ReusableFileReader("/proc/mounts");
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
         private readonly HostNetworkUtilizationCollector networkCollector = new HostNetworkUtilizationCollector();
+        private readonly DerivativeCollector hardPageFaultCollector = new DerivativeCollector();
 
         public void Dispose()
         {
@@ -28,6 +30,7 @@ namespace Vostok.Metrics.System.Host
             descriptorInfoReader.Dispose();
             mountsReader.Dispose();
             networkUsageReader.Dispose();
+            vmStatReader.Dispose();
         }
 
         public void Collect(HostMetrics metrics)
@@ -51,6 +54,8 @@ namespace Vostok.Metrics.System.Host
                 metrics.MemoryCached = memInfo.CacheMemory.Value;
                 metrics.MemoryKernel = memInfo.KernelMemory.Value;
                 metrics.MemoryTotal = memInfo.TotalMemory.Value;
+                metrics.MemoryFree = memInfo.FreeMemory.Value;
+                metrics.PageFaultsPerSecond = hardPageFaultCollector.Collect(memInfo.MajorPageFaultCount.Value);
             }
 
             if (perfInfo.Filled)
@@ -117,6 +122,12 @@ namespace Vostok.Metrics.System.Host
 
                     if (FileParser.TryParseLong(line, "MemFree", out var memFree))
                         result.FreeMemory = memFree * 1024;
+                }
+
+                foreach (var line in vmStatReader.ReadLines())
+                {
+                    if (FileParser.TryParseLong(line, "pgmajfault", out var hardPageFaultCount))
+                        result.MajorPageFaultCount = hardPageFaultCount;
                 }
             }
             catch (Exception error)
@@ -232,13 +243,14 @@ namespace Vostok.Metrics.System.Host
         private class MemoryInfo
         {
             public bool Filled => AvailableMemory.HasValue && KernelMemory.HasValue && CacheMemory.HasValue &&
-                                  TotalMemory.HasValue && FreeMemory.HasValue;
+                                  TotalMemory.HasValue && FreeMemory.HasValue && MajorPageFaultCount.HasValue;
 
             public long? AvailableMemory { get; set; }
             public long? KernelMemory { get; set; }
             public long? CacheMemory { get; set; }
             public long? FreeMemory { get; set; }
             public long? TotalMemory { get; set; }
+            public long? MajorPageFaultCount { get; set; }
         }
 
         private class NetworkUsage
