@@ -7,13 +7,11 @@ namespace Vostok.Metrics.System.Host
     internal class NativeHostMetricsCollector_Windows
     {
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
-        private readonly DiskSpaceCollector diskSpaceCollector = new DiskSpaceCollector();
 
         public void Collect(HostMetrics metrics)
         {
             CollectCpuUtilization(metrics);
             CollectMemoryMetrics(metrics);
-            diskSpaceCollector.Collect(metrics);
         }
 
         [DllImport("psapi.dll", SetLastError = true)]

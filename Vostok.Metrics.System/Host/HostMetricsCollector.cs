@@ -12,6 +12,7 @@ namespace Vostok.Metrics.System.Host
     public class HostMetricsCollector
     {
         private readonly Action<HostMetrics> nativeCollector;
+        private readonly DiskSpaceCollector diskSpaceCollector = new DiskSpaceCollector();
         private readonly TcpStateCollector tcpStateCollector = new TcpStateCollector();
 
         public HostMetricsCollector()
@@ -28,6 +29,7 @@ namespace Vostok.Metrics.System.Host
         {
             var metrics = new HostMetrics();
             CollectNativeMetrics(metrics);
+            diskSpaceCollector.Collect(metrics);
             tcpStateCollector.Collect(metrics);
             return metrics;
         }
