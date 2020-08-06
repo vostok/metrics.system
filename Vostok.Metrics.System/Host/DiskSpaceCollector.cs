@@ -65,12 +65,12 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        private bool FilterDisks_Linux(DriveInfo disk) => disk.Name.Contains("/dev/sd");
+        private bool FilterDisks_Linux(DriveInfo disk) => NativeHostMetricsCollector_Linux.MountDiskMap.ContainsKey(disk.Name);
 
         private bool FilterDisks_Windows(DriveInfo disk) => true;
 
         private string FormatDiskName_Windows(string diskName) => diskName.Replace(":\\", string.Empty);
 
-        private string FormatDiskName_Linux(string diskName) => diskName.Replace("/dev/", string.Empty);
+        private string FormatDiskName_Linux(string diskName) => NativeHostMetricsCollector_Linux.MountDiskMap[diskName].Replace("/dev/", string.Empty);
     }
 }

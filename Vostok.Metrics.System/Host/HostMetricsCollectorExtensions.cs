@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Vostok.Metrics.Models;
 using Vostok.Metrics.Primitives.Gauge;
-using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
 {
@@ -21,7 +21,35 @@ namespace Vostok.Metrics.System.Host
         {
             var metrics = collector.Collect();
 
-            return MetricCollectorHelper.ModelToMetricDataPoints(metrics);
+            foreach (var property in typeof(HostMetrics).GetProperties())
+            {
+                if (property.PropertyType.GetInterface(nameof(IDictionary)) == null)
+                    yield return new MetricDataPoint(Convert.ToDouble(property.GetValue(metrics)), (WellKnownTagKeys.Name, property.Name));
+            }
+
+            foreach (var tcpState in metrics.TcpStates)
+            {
+                yield return new MetricDataPoint(
+                    Convert.ToDouble(tcpState.Value),
+                    (nameof(Type), nameof(HostMetrics.TcpStates)),
+                    (WellKnownTagKeys.Name, tcpState.Key.ToString())
+                );
+            }
+
+            foreach (var diskSpaceInfo in metrics.DiskSpaceInfos)
+            {
+                foreach (var property in typeof(DiskSpaceInfo).GetProperties())
+                {
+                    if (!property.Name.Equals(nameof(DiskSpaceInfo.DiskName)))
+                    {
+                        yield return new MetricDataPoint(
+                            Convert.ToDouble(property.GetValue(diskSpaceInfo.Value)),
+                            (WellKnownTagKeys.Name, property.Name),
+                            (nameof(DiskSpaceInfo.DiskName), diskSpaceInfo.Value.DiskName)
+                        );
+                    }
+                }
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -10,11 +11,13 @@ namespace Vostok.Metrics.System.Host
 {
     internal class NativeHostMetricsCollector_Linux : IDisposable
     {
+        public static Dictionary<string, string> MountDiskMap = new Dictionary<string, string>();
         private readonly Regex pidRegex = new Regex("[0-9]+$", RegexOptions.Compiled);
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
         private readonly ReusableFileReader descriptorInfoReader = new ReusableFileReader("/proc/sys/fs/file-nr");
         private readonly ReusableFileReader networkUsageReader = new ReusableFileReader("/proc/net/dev");
+        private readonly ReusableFileReader mountsReader = new ReusableFileReader("/proc/mounts");
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
         private readonly HostNetworkUtilizationCollector networkCollector = new HostNetworkUtilizationCollector();
 
@@ -57,6 +60,8 @@ namespace Vostok.Metrics.System.Host
 
             if (networkInfo.Filled)
                 networkCollector.Collect(metrics, networkInfo.ReceivedBytes.Value, networkInfo.SentBytes.Value);
+
+            UpdateMountMap();
         }
 
         private SystemStat ReadSystemStat()
@@ -183,6 +188,24 @@ namespace Vostok.Metrics.System.Host
             }
 
             return result;
+        }
+
+        private void UpdateMountMap()
+        {
+            MountDiskMap = new Dictionary<string, string>();
+
+            try
+            {
+                foreach (var mountLine in mountsReader.ReadLines())
+                {
+                    if (FileParser.TrySplitLine(mountLine, 2, out var parts) && parts[0].Contains("/dev/sd"))
+                        MountDiskMap[parts[1]] = parts[0];
+                }
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
         }
 
         private class PerformanceInfo
