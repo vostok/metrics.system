@@ -71,7 +71,7 @@ namespace Vostok.Metrics.System.Host
             {
                 foreach (var line in diskstats)
                 {
-                    if (FileParser.TrySplitLine(line, 14, out var parts) && parts[2].Contains("sd") && !char.IsDigit(parts[2].Last()))
+                    if (FileParser.TrySplitLine(line, 14, out var parts) && parts[1] == "0")
                     {
                         var stats = new DiskStats {DiskName = parts[2]};
 
