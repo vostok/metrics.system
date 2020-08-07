@@ -9,8 +9,8 @@ namespace Vostok.Metrics.System.Host
         public double IdleTimePercent { get; set; }
         public double ReadLatency { get; set; }
         public double WriteLatency { get; set; }
-        public double DiskReadsPerSecond { get; set; }
-        public double DiskWritesPerSecond { get; set; }
+        public double ReadsPerSecond { get; set; }
+        public double WritesPerSecond { get; set; }
         public long CurrentQueueLength { get; set; }
     }
 }

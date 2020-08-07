@@ -50,8 +50,8 @@ namespace Vostok.Metrics.System.Host
 
             toFill.CurrentQueueLength = diskStats.CurrentQueueLength - previousDiskStats.CurrentQueueLength;
 
-            toFill.DiskReadsPerSecond = readsDelta / deltaTime;
-            toFill.DiskWritesPerSecond = writesDelta / deltaTime;
+            toFill.ReadsPerSecond = readsDelta / deltaTime;
+            toFill.WritesPerSecond = writesDelta / deltaTime;
 
             toFill.IdleTimePercent = ((1 - (timeReadDelta + timeWriteDelta) / deltaTime) * 100).Clamp(0, 100);
         }

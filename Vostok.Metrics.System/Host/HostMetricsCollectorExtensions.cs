@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using JetBrains.Annotations;
 using Vostok.Metrics.Models;
 using Vostok.Metrics.Primitives.Gauge;
@@ -14,9 +15,12 @@ namespace Vostok.Metrics.System.Host
         /// <para>Enables reporting of system metrics of the host.</para>
         /// <para>Note that provided <see cref="IMetricContext"/> should contain tags sufficient to decouple these metrics from others.</para>
         /// </summary>
-        public static void ReportMetrics([NotNull] this HostMetricsCollector collector,
-            [NotNull] IMetricContext metricContext, TimeSpan? period = null)
-            => metricContext.CreateMultiFuncGauge(() => ProvideMetrics(collector),
+        public static void ReportMetrics(
+            [NotNull] this HostMetricsCollector collector,
+            [NotNull] IMetricContext metricContext,
+            TimeSpan? period = null)
+            => metricContext.CreateMultiFuncGauge(
+                () => ProvideMetrics(collector),
                 new FuncGaugeConfig {ScrapePeriod = period});
 
         private static IEnumerable<MetricDataPoint> ProvideMetrics(HostMetricsCollector collector)
@@ -27,7 +31,8 @@ namespace Vostok.Metrics.System.Host
             {
                 if (property.PropertyType.GetInterface(nameof(IDictionary)) == null)
                 {
-                    yield return new MetricDataPoint(Convert.ToDouble(property.GetValue(metrics)),
+                    yield return new MetricDataPoint(
+                        Convert.ToDouble(property.GetValue(metrics)),
                         (WellKnownTagKeys.Name, property.Name));
                 }
             }
@@ -36,8 +41,8 @@ namespace Vostok.Metrics.System.Host
             {
                 yield return new MetricDataPoint(
                     Convert.ToDouble(tcpState.Value),
-                    (nameof(Type), nameof(HostMetrics.TcpStates)),
-                    (WellKnownTagKeys.Name, tcpState.Key.ToString())
+                    (WellKnownTagKeys.Name, "TcpConnectionCountPerState"),
+                    (nameof(TcpState), tcpState.Key.ToString())
                 );
             }
 
@@ -49,7 +54,7 @@ namespace Vostok.Metrics.System.Host
                     {
                         yield return new MetricDataPoint(
                             Convert.ToDouble(property.GetValue(diskSpaceInfo.Value)),
-                            (WellKnownTagKeys.Name, property.Name),
+                            (WellKnownTagKeys.Name, $"Disk{property.Name}"),
                             (nameof(DiskSpaceInfo.DiskName), diskSpaceInfo.Value.DiskName)
                         );
                     }
@@ -64,7 +69,7 @@ namespace Vostok.Metrics.System.Host
                     {
                         yield return new MetricDataPoint(
                             Convert.ToDouble(property.GetValue(diskUsageInfo.Value)),
-                            (WellKnownTagKeys.Name, property.Name),
+                            (WellKnownTagKeys.Name, $"Disk{property.Name}"),
                             (nameof(DiskSpaceInfo.DiskName), diskUsageInfo.Value.DiskName)
                         );
                     }

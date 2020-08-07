@@ -153,8 +153,8 @@ namespace Vostok.Metrics.System.Host
                         WriteLatency = diskUsageInfo.Value.WriteLatency,
                         CurrentQueueLength = diskUsageInfo.Value.CurrentQueueLength,
                         IdleTimePercent = diskUsageInfo.Value.IdleTimePercent,
-                        DiskReadsPerSecond = diskUsageInfo.Value.DiskReadsPerSecond,
-                        DiskWritesPerSecond = diskUsageInfo.Value.DiskWritesPerSecond
+                        ReadsPerSecond = diskUsageInfo.Value.DiskReadsPerSecond,
+                        WritesPerSecond = diskUsageInfo.Value.DiskWritesPerSecond
                     };
                     disksUsageInfo[result.DiskName] = result;
                 }
