@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Vostok.Metrics.System.Helpers;
@@ -9,6 +10,7 @@ namespace Vostok.Metrics.System.Host
     internal class NativeHostMetricsCollector_Windows
     {
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
+
         private readonly IPerformanceCounter<Observation<NetworkUsage>[]> networkUsageCounter = PerformanceCounterFactory.Default
            .Create<NetworkUsage>()
            .AddCounter(
@@ -20,6 +22,7 @@ namespace Vostok.Metrics.System.Host
                 "Bytes Received/sec",
                 (context, value) => context.Result.NetworkReceivedBytesPerSecond = value)
            .BuildForMultipleInstances("*");
+
         private readonly IPerformanceCounter<MemoryInfo> memoryInfoCounter = PerformanceCounterFactory.Default
            .Create<MemoryInfo>()
            .AddCounter(
@@ -32,11 +35,31 @@ namespace Vostok.Metrics.System.Host
                 (context, value) => context.Result.PageFaultsPerSecond = value)
            .Build();
 
+        private readonly IPerformanceCounter<Observation<DiskUsage>[]> diskUsageCounter = PerformanceCounterFactory.Default
+           .Create<DiskUsage>()
+           .AddCounter("LogicalDisk", "% Idle Time", (context, value) => context.Result.IdleTimePercent = value.Clamp(0, 100))
+           .AddCounter(
+                "LogicalDisk",
+                "Avg. Disk sec/Read",
+                (context, value) => context.Result.ReadLatency = value)
+           .AddCounter(
+                "LogicalDisk",
+                "Avg. Disk sec/Write",
+                (context, value) => context.Result.WriteLatency = value)
+           .AddCounter("LogicalDisk", "Disk Reads/sec", (context, value) => context.Result.DiskReadsPerSecond = value)
+           .AddCounter("LogicalDisk", "Disk Writes/sec", (context, value) => context.Result.DiskWritesPerSecond = value)
+           .AddCounter(
+                "LogicalDisk",
+                "Current Disk Queue Length",
+                (context, value) => context.Result.CurrentQueueLength = (long) value)
+           .BuildForMultipleInstances("*:");
+
         public void Collect(HostMetrics metrics)
         {
             CollectCpuUtilization(metrics);
             CollectMemoryMetrics(metrics);
             CollectNetworkUsage(metrics);
+            CollectDisksUsage(metrics);
         }
 
         [DllImport("psapi.dll", SetLastError = true)]
@@ -108,6 +131,35 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
+        private void CollectDisksUsage(HostMetrics metrics)
+        {
+            var disksUsageInfo = new Dictionary<string, DiskUsageInfo>();
+
+            try
+            {
+                foreach (var diskUsageInfo in diskUsageCounter.Observe())
+                {
+                    var result = new DiskUsageInfo
+                    {
+                        DiskName = diskUsageInfo.Instance[0].ToString(),
+                        ReadLatency = diskUsageInfo.Value.ReadLatency,
+                        WriteLatency = diskUsageInfo.Value.WriteLatency,
+                        CurrentQueueLength = diskUsageInfo.Value.CurrentQueueLength,
+                        IdleTimePercent = diskUsageInfo.Value.IdleTimePercent,
+                        DiskReadsPerSecond = diskUsageInfo.Value.DiskReadsPerSecond,
+                        DiskWritesPerSecond = diskUsageInfo.Value.DiskWritesPerSecond
+                    };
+                    disksUsageInfo[result.DiskName] = result;
+                }
+
+                metrics.DisksUsageInfo = disksUsageInfo;
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
+        }
+
         private class MemoryInfo
         {
             public double PageFaultsPerSecond { get; set; }
@@ -118,6 +170,16 @@ namespace Vostok.Metrics.System.Host
         {
             public double NetworkSentBytesPerSecond { get; set; }
             public double NetworkReceivedBytesPerSecond { get; set; }
+        }
+
+        private class DiskUsage
+        {
+            public double IdleTimePercent { get; set; }
+            public double ReadLatency { get; set; }
+            public double WriteLatency { get; set; }
+            public double DiskReadsPerSecond { get; set; }
+            public double DiskWritesPerSecond { get; set; }
+            public long CurrentQueueLength { get; set; }
         }
 
         [StructLayout(LayoutKind.Sequential)]

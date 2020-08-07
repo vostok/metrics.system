@@ -38,7 +38,7 @@ namespace Vostok.Metrics.System.Host
                     InternalErrorLogger.Warn(new Exception($"Disk with the same name has already been added. DiskName: {info.DiskName}."));
             }
 
-            metrics.DiskSpaceInfos = diskSpaceInfos;
+            metrics.DisksSpaceInfo = diskSpaceInfos;
         }
 
         private IEnumerable<DiskSpaceInfo> GetDiskSpaceInfos()

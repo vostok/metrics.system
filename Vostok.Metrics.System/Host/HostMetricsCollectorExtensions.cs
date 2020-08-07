@@ -14,17 +14,22 @@ namespace Vostok.Metrics.System.Host
         /// <para>Enables reporting of system metrics of the host.</para>
         /// <para>Note that provided <see cref="IMetricContext"/> should contain tags sufficient to decouple these metrics from others.</para>
         /// </summary>
-        public static void ReportMetrics([NotNull] this HostMetricsCollector collector, [NotNull] IMetricContext metricContext, TimeSpan? period = null)
-            => metricContext.CreateMultiFuncGauge(() => ProvideMetrics(collector), new FuncGaugeConfig {ScrapePeriod = period});
+        public static void ReportMetrics([NotNull] this HostMetricsCollector collector,
+            [NotNull] IMetricContext metricContext, TimeSpan? period = null)
+            => metricContext.CreateMultiFuncGauge(() => ProvideMetrics(collector),
+                new FuncGaugeConfig {ScrapePeriod = period});
 
-        private static IEnumerable<MetricDataPoint> ProvideMetrics(HostMetricsCollector collector)
+        public static IEnumerable<MetricDataPoint> ProvideMetrics(HostMetricsCollector collector)
         {
             var metrics = collector.Collect();
 
             foreach (var property in typeof(HostMetrics).GetProperties())
             {
                 if (property.PropertyType.GetInterface(nameof(IDictionary)) == null)
-                    yield return new MetricDataPoint(Convert.ToDouble(property.GetValue(metrics)), (WellKnownTagKeys.Name, property.Name));
+                {
+                    yield return new MetricDataPoint(Convert.ToDouble(property.GetValue(metrics)),
+                        (WellKnownTagKeys.Name, property.Name));
+                }
             }
 
             foreach (var tcpState in metrics.TcpStates)
@@ -36,7 +41,7 @@ namespace Vostok.Metrics.System.Host
                 );
             }
 
-            foreach (var diskSpaceInfo in metrics.DiskSpaceInfos)
+            foreach (var diskSpaceInfo in metrics.DisksSpaceInfo)
             {
                 foreach (var property in typeof(DiskSpaceInfo).GetProperties())
                 {
@@ -46,6 +51,21 @@ namespace Vostok.Metrics.System.Host
                             Convert.ToDouble(property.GetValue(diskSpaceInfo.Value)),
                             (WellKnownTagKeys.Name, property.Name),
                             (nameof(DiskSpaceInfo.DiskName), diskSpaceInfo.Value.DiskName)
+                        );
+                    }
+                }
+            }
+
+            foreach (var diskUsageInfo in metrics.DisksUsageInfo)
+            {
+                foreach (var property in typeof(DiskUsageInfo).GetProperties())
+                {
+                    if (!property.Name.Equals(nameof(DiskUsageInfo.DiskName)))
+                    {
+                        yield return new MetricDataPoint(
+                            Convert.ToDouble(property.GetValue(diskUsageInfo.Value)),
+                            (WellKnownTagKeys.Name, property.Name),
+                            (nameof(DiskSpaceInfo.DiskName), diskUsageInfo.Value.DiskName)
                         );
                     }
                 }
