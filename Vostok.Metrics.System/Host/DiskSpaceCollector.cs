@@ -43,8 +43,6 @@ namespace Vostok.Metrics.System.Host
             {
                 if (!diskSpaceInfos.ContainsKey(info.DiskName))
                     diskSpaceInfos[info.DiskName] = info;
-                else
-                    InternalErrorLogger.Warn(new Exception($"Disk with the same name has already been added. DiskName: {info.DiskName}."));
             }
 
             metrics.DiskSpaceInfos = diskSpaceInfos;
