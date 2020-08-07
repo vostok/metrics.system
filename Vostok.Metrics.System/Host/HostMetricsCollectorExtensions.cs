@@ -19,7 +19,7 @@ namespace Vostok.Metrics.System.Host
             => metricContext.CreateMultiFuncGauge(() => ProvideMetrics(collector),
                 new FuncGaugeConfig {ScrapePeriod = period});
 
-        public static IEnumerable<MetricDataPoint> ProvideMetrics(HostMetricsCollector collector)
+        private static IEnumerable<MetricDataPoint> ProvideMetrics(HostMetricsCollector collector)
         {
             var metrics = collector.Collect();
 

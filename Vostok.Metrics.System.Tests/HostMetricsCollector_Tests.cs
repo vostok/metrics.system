@@ -49,9 +49,9 @@ namespace Vostok.Metrics.System.Tests
         {
             var metrics = collector.Collect();
 
-            metrics.DiskSpaceInfos.Should().NotBeEmpty();
+            metrics.DisksSpaceInfo.Should().NotBeEmpty();
 
-            foreach (var diskSpaceInfo in metrics.DiskSpaceInfos)
+            foreach (var diskSpaceInfo in metrics.DisksSpaceInfo)
             {
                 diskSpaceInfo.Value.DiskName.Should().NotBeNullOrEmpty();
                 diskSpaceInfo.Value.FreeBytes.Should().BeGreaterThan(0);
@@ -72,7 +72,7 @@ namespace Vostok.Metrics.System.Tests
 
         [Test]
         public void Should_measure_tcp_states()
-        {
+        {    
             if (!NetworkInterface.GetIsNetworkAvailable())
                 throw new InconclusiveException("No network available");
             var metrics = collector.Collect();
