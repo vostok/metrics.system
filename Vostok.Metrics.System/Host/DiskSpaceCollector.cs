@@ -31,6 +31,11 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
+        public void Dispose()
+        {
+            mountsReader_Linux?.Dispose();
+        }
+
         public void Collect(HostMetrics metrics)
         {
             var diskSpaceInfos = new Dictionary<string, DiskSpaceInfo>();
@@ -99,10 +104,5 @@ namespace Vostok.Metrics.System.Host
         private string FormatDiskName_Windows(string diskName) => diskName.Replace(":\\", string.Empty);
 
         private string FormatDiskName_Linux(string diskName) => mountDiskMap[diskName].Replace("/dev/", string.Empty);
-
-        public void Dispose()
-        {
-            mountsReader_Linux?.Dispose();
-        }
     }
 }
