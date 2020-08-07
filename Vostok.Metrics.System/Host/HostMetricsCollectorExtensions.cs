@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using JetBrains.Annotations;
 using Vostok.Metrics.Models;
 using Vostok.Metrics.Primitives.Gauge;
@@ -31,8 +32,8 @@ namespace Vostok.Metrics.System.Host
             {
                 yield return new MetricDataPoint(
                     Convert.ToDouble(tcpState.Value),
-                    (nameof(Type), nameof(HostMetrics.TcpStates)),
-                    (WellKnownTagKeys.Name, tcpState.Key.ToString())
+                    (WellKnownTagKeys.Name, "TcpConnectionCountPerState"),
+                    (nameof(TcpState), tcpState.Key.ToString())
                 );
             }
 
@@ -44,7 +45,7 @@ namespace Vostok.Metrics.System.Host
                     {
                         yield return new MetricDataPoint(
                             Convert.ToDouble(property.GetValue(diskSpaceInfo.Value)),
-                            (WellKnownTagKeys.Name, property.Name),
+                            (WellKnownTagKeys.Name, $"Disk{property.Name}"),
                             (nameof(DiskSpaceInfo.DiskName), diskSpaceInfo.Value.DiskName)
                         );
                     }

@@ -159,7 +159,7 @@ namespace Vostok.Metrics.System.Host
             {
                 foreach (var mountLine in mountsReader.ReadLines())
                 {
-                    if (FileParser.TrySplitLine(mountLine, 2, out var parts) && parts[0].Contains("/dev/sd"))
+                    if (FileParser.TrySplitLine(mountLine, 2, out var parts) && parts[0].Contains("/dev/"))
                         MountDiskMap[parts[1]] = parts[0];
                 }
             }
