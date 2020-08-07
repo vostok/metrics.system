@@ -29,10 +29,10 @@ namespace Vostok.Metrics.System.Host
         {
             systemStatReader.Dispose();
             memoryReader.Dispose();
-            descriptorInfoReader.Dispose();
-            mountsReader.Dispose();
-            networkUsageReader.Dispose();
             vmStatReader.Dispose();
+            descriptorInfoReader.Dispose();
+            networkUsageReader.Dispose();
+            mountsReader.Dispose();
             diskStatsReader.Dispose();
         }
 

@@ -7,7 +7,7 @@ using Vostok.Sys.Metrics.PerfCounters;
 
 namespace Vostok.Metrics.System.Host
 {
-    internal class NativeHostMetricsCollector_Windows
+    internal class NativeHostMetricsCollector_Windows : IDisposable
     {
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
 
@@ -53,6 +53,13 @@ namespace Vostok.Metrics.System.Host
                 "Current Disk Queue Length",
                 (context, value) => context.Result.CurrentQueueLength = (long) value)
            .BuildForMultipleInstances("*:");
+
+        public void Dispose()
+        {
+            networkUsageCounter.Dispose();
+            memoryInfoCounter.Dispose();
+            diskUsageCounter.Dispose();
+        }
 
         public void Collect(HostMetrics metrics)
         {
@@ -141,7 +148,7 @@ namespace Vostok.Metrics.System.Host
                 {
                     var result = new DiskUsageInfo
                     {
-                        DiskName = diskUsageInfo.Instance[0].ToString(),
+                        DiskName = diskUsageInfo.Instance.Replace(":", string.Empty),
                         ReadLatency = diskUsageInfo.Value.ReadLatency,
                         WriteLatency = diskUsageInfo.Value.WriteLatency,
                         CurrentQueueLength = diskUsageInfo.Value.CurrentQueueLength,

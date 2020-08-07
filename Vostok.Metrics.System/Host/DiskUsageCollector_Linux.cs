@@ -21,40 +21,46 @@ namespace Vostok.Metrics.System.Host
             {
                 var result = new DiskUsageInfo {DiskName = diskStats.DiskName};
 
-                if (!previousDisksStatsInfo.ContainsKey(diskStats.DiskName))
-                    previousDisksStatsInfo[diskStats.DiskName] = diskStats;
-                else
-                {
-                    var previousDiskStats = previousDisksStatsInfo[diskStats.DiskName];
-
-                    var readsDelta = diskStats.ReadsCount - previousDiskStats.ReadsCount;
-                    var writesDelta = diskStats.WritesCount - previousDiskStats.WritesCount;
-                    var timeReadDelta = diskStats.TimeSpentReading - diskStats.TimeSpentReading;
-                    var timeWriteDelta = diskStats.TimeSpentWriting - diskStats.TimeSpentWriting;
-
-                    if (readsDelta > 0)
-                        result.ReadLatency = (double) timeReadDelta / readsDelta;
-                    if (writesDelta > 0)
-                        result.WriteLatency = (double) timeWriteDelta / writesDelta;
-
-                    result.CurrentQueueLength = diskStats.CurrentQueueLength - previousDiskStats.CurrentQueueLength;
-
-                    result.DiskReadsPerSecond = readsDelta / deltaTime;
-                    result.DiskWritesPerSecond = writesDelta / deltaTime;
-
-                    result.IdleTimePercent = ((1 - (timeReadDelta + timeWriteDelta) / deltaTime) * 100).Clamp(0, 100);
-                }
+                if (previousDisksStatsInfo.ContainsKey(diskStats.DiskName))
+                    FillInfo(result, previousDisksStatsInfo[diskStats.DiskName], diskStats, deltaTime);
 
                 disksUsageInfo[result.DiskName] = result;
+
+                previousDisksStatsInfo[diskStats.DiskName] = diskStats;
             }
 
             metrics.DisksUsageInfo = disksUsageInfo;
 
+            RemoveUnusedEntries(disksUsageInfo);
+
+            stopwatch.Restart();
+        }
+
+        private void FillInfo(DiskUsageInfo toFill, DiskStats previousDiskStats, DiskStats diskStats, double deltaTime)
+        {
+            var readsDelta = diskStats.ReadsCount - previousDiskStats.ReadsCount;
+            var writesDelta = diskStats.WritesCount - previousDiskStats.WritesCount;
+            var timeReadDelta = diskStats.TimeSpentReading - diskStats.TimeSpentReading;
+            var timeWriteDelta = diskStats.TimeSpentWriting - diskStats.TimeSpentWriting;
+
+            if (readsDelta > 0)
+                toFill.ReadLatency = (double) timeReadDelta / readsDelta;
+            if (writesDelta > 0)
+                toFill.WriteLatency = (double) timeWriteDelta / writesDelta;
+
+            toFill.CurrentQueueLength = diskStats.CurrentQueueLength - previousDiskStats.CurrentQueueLength;
+
+            toFill.DiskReadsPerSecond = readsDelta / deltaTime;
+            toFill.DiskWritesPerSecond = writesDelta / deltaTime;
+
+            toFill.IdleTimePercent = ((1 - (timeReadDelta + timeWriteDelta) / deltaTime) * 100).Clamp(0, 100);
+        }
+
+        private void RemoveUnusedEntries(Dictionary<string, DiskUsageInfo> disksUsageInfo)
+        {
             previousDisksStatsInfo = previousDisksStatsInfo
                .Where(x => disksUsageInfo.ContainsKey(x.Key))
                .ToDictionary(x => x.Key, y => y.Value);
-
-            stopwatch.Restart();
         }
 
         private List<DiskStats> ParseDiskstats(IEnumerable<string> diskstats)
