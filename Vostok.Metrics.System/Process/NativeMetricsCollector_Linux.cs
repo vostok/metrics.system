@@ -33,12 +33,12 @@ namespace Vostok.Metrics.System.Process
 
             if (processStatus.VirtualMemoryData.HasValue)
                 metrics.MemoryPrivate = processStatus.VirtualMemoryData.Value;
-            
+
             if (systemStat.Filled && processStat.Filled)
             {
                 var systemTime = systemStat.SystemTime.Value + systemStat.UserTime.Value + systemStat.IdleTime.Value;
                 var processTime = processStat.SystemTime.Value + processStat.UserTime.Value;
-            
+
                 cpuCollector.Collect(metrics, systemTime, processTime);
             }
         }
@@ -49,7 +49,7 @@ namespace Vostok.Metrics.System.Process
 
             try
             {
-                if (TrySplitLine(systemStatReader.ReadFirstLine(), 5, out var parts) && parts[0] == "cpu")
+                if (FileParser.TrySplitLine(systemStatReader.ReadFirstLine(), 5, out var parts) && parts[0] == "cpu")
                 {
                     if (ulong.TryParse(parts[1], out var utime))
                         result.UserTime = utime;
@@ -75,7 +75,7 @@ namespace Vostok.Metrics.System.Process
 
             try
             {
-                if (TrySplitLine(processStatReader.ReadFirstLine(), 15, out var parts))
+                if (FileParser.TrySplitLine(processStatReader.ReadFirstLine(), 15, out var parts))
                 {
                     if (ulong.TryParse(parts[13], out var utime))
                         result.UserTime = utime;
@@ -98,22 +98,15 @@ namespace Vostok.Metrics.System.Process
 
             try
             {
-                bool TryParse(string line, string name, out long value)
-                {
-                    value = 0;
-
-                    return line.StartsWith(name) && TrySplitLine(line, 2, out var parts) && long.TryParse(parts[1], out value);
-                }
-
                 foreach (var line in processStatusReader.ReadLines())
                 {
-                    if (TryParse(line, "FDSize", out var fdSize))
+                    if (FileParser.TryParseLong(line, "FDSize", out var fdSize))
                         result.FileDescriptorsSize = (int) fdSize;
 
-                    if (TryParse(line, "VmRSS", out var vmRss))
+                    if (FileParser.TryParseLong(line, "VmRSS", out var vmRss))
                         result.VirtualMemoryResident = vmRss * 1024L;
 
-                    if (TryParse(line, "VmData", out var vmData))
+                    if (FileParser.TryParseLong(line, "VmData", out var vmData))
                         result.VirtualMemoryData = vmData * 1024L;
 
                     if (result.Filled)
@@ -127,9 +120,6 @@ namespace Vostok.Metrics.System.Process
 
             return result;
         }
-
-        private static bool TrySplitLine(string line, int minParts, out string[] parts)
-            => (parts = line?.Split(null as char[], StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>()).Length >= minParts;
 
         private class SystemStat
         {
