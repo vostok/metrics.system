@@ -101,6 +101,9 @@ namespace Vostok.Metrics.System.Host
 
         private string FormatDiskName_Windows(string diskName) => diskName.Replace(":\\", string.Empty);
 
-        private string FormatDiskName_Linux(string diskName) => mountDiskMap[diskName].Replace("/dev/", string.Empty);
+        private string FormatDiskName_Linux(string diskName)
+            => mountDiskMap[diskName]
+                .Replace("/dev/", string.Empty)
+                .Replace("/", "-");
     }
 }
