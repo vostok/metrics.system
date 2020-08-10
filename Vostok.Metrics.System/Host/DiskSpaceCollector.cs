@@ -11,10 +11,11 @@ namespace Vostok.Metrics.System.Host
 {
     internal class DiskSpaceCollector : IDisposable
     {
-        private readonly ReusableFileReader mountsReader_Linux;
-        private Dictionary<string, string> mountDiskMap = new Dictionary<string, string>();
+        private readonly ReusableFileReader mountsReaderLinux;
         private readonly Func<DriveInfo, bool> systemFilter;
         private readonly Func<string, string> nameFormatter;
+
+        private volatile Dictionary<string, string> mountDiskMap = new Dictionary<string, string>();
 
         public DiskSpaceCollector()
         {
@@ -27,14 +28,12 @@ namespace Vostok.Metrics.System.Host
             {
                 systemFilter = FilterDisks_Linux;
                 nameFormatter = FormatDiskName_Linux;
-                mountsReader_Linux = new ReusableFileReader("/proc/mounts");
+                mountsReaderLinux = new ReusableFileReader("/proc/mounts");
             }
         }
 
         public void Dispose()
-        {
-            mountsReader_Linux?.Dispose();
-        }
+            => mountsReaderLinux?.Dispose();
 
         public void Collect(HostMetrics metrics)
         {
@@ -44,8 +43,6 @@ namespace Vostok.Metrics.System.Host
             {
                 if (!diskSpaceInfos.ContainsKey(info.DiskName))
                     diskSpaceInfos[info.DiskName] = info;
-                else
-                    InternalErrorLogger.Warn(new Exception($"Disk with the same name has already been added. DiskName: {info.DiskName}."));
             }
 
             metrics.DisksSpaceInfo = diskSpaceInfos;
@@ -53,6 +50,9 @@ namespace Vostok.Metrics.System.Host
 
         private IEnumerable<DiskSpaceInfo> GetDiskSpaceInfos()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                UpdateMountMap();
+
             foreach (var drive in DriveInfo.GetDrives().Where(x => x.IsReady && x.DriveType == DriveType.Fixed && systemFilter(x)))
             {
                 var result = new DiskSpaceInfo();
@@ -81,7 +81,7 @@ namespace Vostok.Metrics.System.Host
 
             try
             {
-                foreach (var mountLine in mountsReader_Linux.ReadLines())
+                foreach (var mountLine in mountsReaderLinux.ReadLines())
                 {
                     if (FileParser.TrySplitLine(mountLine, 2, out var parts) && parts[0].Contains("/dev/"))
                         mountDiskMap[parts[1]] = parts[0];
@@ -93,16 +93,15 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        private bool FilterDisks_Linux(DriveInfo disk)
-        {
-            UpdateMountMap();
-            return mountDiskMap.ContainsKey(disk.Name);
-        }
+        private bool FilterDisks_Linux(DriveInfo disk) => mountDiskMap.ContainsKey(disk.Name);
 
         private bool FilterDisks_Windows(DriveInfo disk) => true;
 
         private string FormatDiskName_Windows(string diskName) => diskName.Replace(":\\", string.Empty);
 
-        private string FormatDiskName_Linux(string diskName) => mountDiskMap[diskName].Replace("/dev/", string.Empty);
+        private string FormatDiskName_Linux(string diskName)
+            => mountDiskMap[diskName]
+                .Replace("/dev/", string.Empty)
+                .Replace("/", "-");
     }
 }

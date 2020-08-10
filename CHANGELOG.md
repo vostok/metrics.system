@@ -1,3 +1,9 @@
+## 0.2.1 (07-08-2020):
+
+- DiskSpaceCollector: only update mounts once per call, not once per disk.
+- DiskSpaceCollector: replace slashes in disk names with dashes on Linux.
+- DiskSpaceCollector: removed annoying repeated warns about duplicate disks on Linux.
+
 ## 0.2.0 (07-08-2020):
 
 Added host metrics collection (CPU, Memory, Disk and TCP connections).
