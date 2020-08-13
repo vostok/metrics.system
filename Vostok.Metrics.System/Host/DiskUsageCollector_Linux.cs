@@ -46,21 +46,21 @@ namespace Vostok.Metrics.System.Host
         {
             var readsDelta = diskStats.ReadsCount - previousDiskStats.ReadsCount;
             var writesDelta = diskStats.WritesCount - previousDiskStats.WritesCount;
-            var timeReadDelta = diskStats.TimeSpentReading - previousDiskStats.TimeSpentReading;
-            var timeWriteDelta = diskStats.TimeSpentWriting - previousDiskStats.TimeSpentWriting;
-            var timeSpentDoingIoDelta = diskStats.TimeSpentDoingIo - previousDiskStats.TimeSpentDoingIo;
+            var timeReadDelta = diskStats.MsSpentReading - previousDiskStats.MsSpentReading;
+            var timeWriteDelta = diskStats.MsSpentWriting - previousDiskStats.MsSpentWriting;
+            var timeSpentDoingIoDelta = diskStats.MsSpentDoingIo - previousDiskStats.MsSpentDoingIo;
 
             if (readsDelta > 0)
-                toFill.ReadLatency = (double) timeReadDelta / readsDelta;
+                toFill.ReadAverageLatency = TimeSpan.FromMilliseconds((double) timeReadDelta / readsDelta);
             if (writesDelta > 0)
-                toFill.WriteLatency = (double) timeWriteDelta / writesDelta;
+                toFill.WriteAverageLatency = TimeSpan.FromMilliseconds((double) timeWriteDelta / writesDelta);
 
             toFill.CurrentQueueLength = diskStats.CurrentQueueLength;
 
             toFill.ReadsPerSecond = readsDelta / deltaTime;
             toFill.WritesPerSecond = writesDelta / deltaTime;
 
-            toFill.IdleTimePercent = (timeSpentDoingIoDelta / deltaTime * 100).Clamp(0, 100);
+            toFill.UtilizedPercent = (timeSpentDoingIoDelta / deltaTime * 100).Clamp(0, 100);
         }
 
         private List<DiskStats> ParseDiskstats(IEnumerable<string> diskstats)
@@ -80,20 +80,20 @@ namespace Vostok.Metrics.System.Host
                         if (long.TryParse(parts[3], out var readsCount))
                             stats.ReadsCount = readsCount;
 
-                        if (long.TryParse(parts[6], out var timeSpentReading))
-                            stats.TimeSpentReading = timeSpentReading;
+                        if (long.TryParse(parts[6], out var msSpentReading))
+                            stats.MsSpentReading = msSpentReading;
 
                         if (long.TryParse(parts[7], out var writesCount))
                             stats.WritesCount = writesCount;
 
-                        if (long.TryParse(parts[10], out var timeSpentWriting))
-                            stats.TimeSpentWriting = timeSpentWriting;
+                        if (long.TryParse(parts[10], out var msSpentWriting))
+                            stats.MsSpentWriting = msSpentWriting;
 
                         if (long.TryParse(parts[11], out var currentQueueLength))
                             stats.CurrentQueueLength = currentQueueLength;
 
-                        if (long.TryParse(parts[12], out var timeSpentDoingIo))
-                            stats.TimeSpentDoingIo = timeSpentDoingIo;
+                        if (long.TryParse(parts[12], out var msSpentDoingIo))
+                            stats.MsSpentDoingIo = msSpentDoingIo;
 
                         disksStats.Add(stats);
                     }
@@ -112,10 +112,10 @@ namespace Vostok.Metrics.System.Host
             public string DiskName { get; set; }
             public long ReadsCount { get; set; }
             public long WritesCount { get; set; }
-            public long TimeSpentReading { get; set; }
-            public long TimeSpentWriting { get; set; }
+            public long MsSpentReading { get; set; }
+            public long MsSpentWriting { get; set; }
             public long CurrentQueueLength { get; set; }
-            public long TimeSpentDoingIo { get; set; }
+            public long MsSpentDoingIo { get; set; }
         }
 
         // NOTE: Every 16th minor device number is associated with whole disk (Not just partition)

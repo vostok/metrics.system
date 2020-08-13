@@ -92,7 +92,7 @@ namespace Vostok.Metrics.System.Tests
             foreach (var diskUsageInfo in metrics.DisksUsageInfo)
             {
                 diskUsageInfo.Value.DiskName.Should().NotBeNullOrEmpty();
-                diskUsageInfo.Value.IdleTimePercent.Should().BeGreaterOrEqualTo(0).And.BeLessOrEqualTo(100);
+                diskUsageInfo.Value.UtilizedPercent.Should().BeGreaterOrEqualTo(0).And.BeLessOrEqualTo(100);
             }
         }
 
