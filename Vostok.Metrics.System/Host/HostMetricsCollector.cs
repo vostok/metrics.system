@@ -9,19 +9,34 @@ namespace Vostok.Metrics.System.Host
     /// <para>It is designed to be invoked periodically.</para>
     /// </summary>
     [PublicAPI]
-    public class HostMetricsCollector
+    public class HostMetricsCollector : IDisposable
     {
         private readonly Action<HostMetrics> nativeCollector;
+        private readonly Action disposeNativeCollector;
         private readonly DiskSpaceCollector diskSpaceCollector = new DiskSpaceCollector();
         private readonly TcpStateCollector tcpStateCollector = new TcpStateCollector();
+
+        public void Dispose()
+        {
+            disposeNativeCollector?.Invoke();
+            diskSpaceCollector?.Dispose();
+        }
 
         public HostMetricsCollector()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                nativeCollector = new NativeHostMetricsCollector_Windows().Collect;
+            {
+                var collector = new NativeHostMetricsCollector_Windows();
+                nativeCollector = collector.Collect;
+                disposeNativeCollector = collector.Dispose;
+            }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                nativeCollector = new NativeHostMetricsCollector_Linux().Collect;
+            {
+                var collector = new NativeHostMetricsCollector_Linux();
+                nativeCollector = collector.Collect;
+                disposeNativeCollector = collector.Dispose;
+            }
         }
 
         [NotNull]
