@@ -60,6 +60,11 @@ namespace Vostok.Metrics.System.Host
             toFill.ReadsPerSecond = readsDelta / deltaTime;
             toFill.WritesPerSecond = writesDelta / deltaTime;
 
+            // NOTE: Since Reads/s means Sector/s, and every sector equals 512B, it's easy to convert this values.
+            // NOTE: See https://www.man7.org/linux/man-pages/man1/iostat.1.html for details about sector size.
+            toFill.BytesReadPerSecond = toFill.ReadsPerSecond * 512;
+            toFill.BytesWrittenPerSecond = toFill.WritesPerSecond * 512;
+
             toFill.UtilizedPercent = (timeSpentDoingIoDelta / deltaTime * 100).Clamp(0, 100);
         }
 
@@ -73,7 +78,7 @@ namespace Vostok.Metrics.System.Host
                 {
                     // NOTE: In the most basic form there are 14 parts.
                     // NOTE: See https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats for details.
-                    if (FileParser.TrySplitLine(line, 14, out var parts) && IsDiskNumber(parts[1]))
+                    if (FileParser.TrySplitLine(line, 14, out var parts) && IsWholeDiskNumber(parts[1]))
                     {
                         var stats = new DiskStats {DiskName = parts[2]};
 
@@ -118,9 +123,9 @@ namespace Vostok.Metrics.System.Host
             public long MsSpentDoingIo { get; set; }
         }
 
-        // NOTE: Every 16th minor device number is associated with whole disk (Not just partition)
+        // NOTE: Every 16th minor device number is associated with a whole disk (Not just partition)
         // NOTE: See https://www.kernel.org/doc/html/v4.12/admin-guide/devices.html (SCSI disk devices) for details.
-        private bool IsDiskNumber(string number)
+        private bool IsWholeDiskNumber(string number)
         {
             return int.TryParse(number, out var value) && value % 16 == 0;
         }

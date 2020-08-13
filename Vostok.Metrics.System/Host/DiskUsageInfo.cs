@@ -12,6 +12,8 @@ namespace Vostok.Metrics.System.Host
         public TimeSpan WriteAverageLatency { get; set; }
         public double ReadsPerSecond { get; set; }
         public double WritesPerSecond { get; set; }
+        public double BytesReadPerSecond { get; set; }
+        public double BytesWrittenPerSecond { get; set; }
         public long CurrentQueueLength { get; set; }
     }
 }

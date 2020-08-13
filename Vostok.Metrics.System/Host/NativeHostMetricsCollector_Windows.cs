@@ -41,17 +41,19 @@ namespace Vostok.Metrics.System.Host
            .AddCounter(
                 "LogicalDisk",
                 "Avg. Disk sec/Read",
-                (context, value) => context.Result.ReadLatency = value)
+                (context, value) => context.Result.ReadAverageLatency = value)
            .AddCounter(
                 "LogicalDisk",
                 "Avg. Disk sec/Write",
-                (context, value) => context.Result.WriteLatency = value)
+                (context, value) => context.Result.WriteAverageLatency = value)
            .AddCounter("LogicalDisk", "Disk Reads/sec", (context, value) => context.Result.DiskReadsPerSecond = value)
            .AddCounter("LogicalDisk", "Disk Writes/sec", (context, value) => context.Result.DiskWritesPerSecond = value)
            .AddCounter(
                 "LogicalDisk",
                 "Current Disk Queue Length",
                 (context, value) => context.Result.CurrentQueueLength = (long) value)
+           .AddCounter("LogicalDisk", "Disk Read Bytes/sec", (context, value) => context.Result.BytesReadPerSecond = value)
+           .AddCounter("LogicalDisk", "Disk Write Bytes/sec", (context, value) => context.Result.BytesWrittenPerSecond = value)
            .BuildForMultipleInstances("*:");
 
         public void Dispose()
@@ -149,12 +151,14 @@ namespace Vostok.Metrics.System.Host
                     var result = new DiskUsageInfo
                     {
                         DiskName = diskUsageInfo.Instance.Replace(":", string.Empty),
-                        ReadAverageLatency = TimeSpan.FromSeconds(diskUsageInfo.Value.ReadLatency),
-                        WriteAverageLatency = TimeSpan.FromSeconds(diskUsageInfo.Value.WriteLatency),
+                        ReadAverageLatency = TimeSpan.FromSeconds(diskUsageInfo.Value.ReadAverageLatency),
+                        WriteAverageLatency = TimeSpan.FromSeconds(diskUsageInfo.Value.WriteAverageLatency),
                         CurrentQueueLength = diskUsageInfo.Value.CurrentQueueLength,
                         UtilizedPercent = 100 - diskUsageInfo.Value.IdleTimePercent,
                         ReadsPerSecond = diskUsageInfo.Value.DiskReadsPerSecond,
-                        WritesPerSecond = diskUsageInfo.Value.DiskWritesPerSecond
+                        WritesPerSecond = diskUsageInfo.Value.DiskWritesPerSecond,
+                        BytesReadPerSecond = diskUsageInfo.Value.BytesReadPerSecond,
+                        BytesWrittenPerSecond = diskUsageInfo.Value.BytesWrittenPerSecond
                     };
                     disksUsageInfo[result.DiskName] = result;
                 }
@@ -182,10 +186,12 @@ namespace Vostok.Metrics.System.Host
         private class DiskUsage
         {
             public double IdleTimePercent { get; set; }
-            public double ReadLatency { get; set; }
-            public double WriteLatency { get; set; }
+            public double ReadAverageLatency { get; set; }
+            public double WriteAverageLatency { get; set; }
             public double DiskReadsPerSecond { get; set; }
             public double DiskWritesPerSecond { get; set; }
+            public double BytesReadPerSecond { get; set; }
+            public double BytesWrittenPerSecond { get; set; }
             public long CurrentQueueLength { get; set; }
         }
 
