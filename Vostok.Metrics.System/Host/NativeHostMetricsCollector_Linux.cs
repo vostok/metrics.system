@@ -16,7 +16,6 @@ namespace Vostok.Metrics.System.Host
         private readonly ReusableFileReader vmStatReader = new ReusableFileReader("/proc/vmstat");
         private readonly ReusableFileReader descriptorInfoReader = new ReusableFileReader("/proc/sys/fs/file-nr");
         private readonly ReusableFileReader networkUsageReader = new ReusableFileReader("/proc/net/dev");
-        private readonly ReusableFileReader diskStatsReader = new ReusableFileReader("/proc/diskstats");
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
         private readonly HostNetworkUtilizationCollector networkCollector = new HostNetworkUtilizationCollector();
         private readonly DerivativeCollector hardPageFaultCollector = new DerivativeCollector();
@@ -29,7 +28,7 @@ namespace Vostok.Metrics.System.Host
             vmStatReader.Dispose();
             descriptorInfoReader.Dispose();
             networkUsageReader.Dispose();
-            diskStatsReader.Dispose();
+            diskUsageCollector.Dispose();
         }
 
         public void Collect(HostMetrics metrics)
@@ -67,7 +66,7 @@ namespace Vostok.Metrics.System.Host
             if (networkInfo.Filled)
                 networkCollector.Collect(metrics, networkInfo.ReceivedBytes.Value, networkInfo.SentBytes.Value);
 
-            diskUsageCollector.Collect(metrics, diskStatsReader.ReadLines());
+            diskUsageCollector.Collect(metrics);
         }
 
         private SystemStat ReadSystemStat()

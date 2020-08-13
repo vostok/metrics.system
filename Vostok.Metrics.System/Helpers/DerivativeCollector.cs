@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Vostok.Metrics.System.Helpers
 {
@@ -18,9 +17,9 @@ namespace Vostok.Metrics.System.Helpers
         public double Collect(long newValue)
         {
             currentValue = newValue;
-            
+
             var delta = deltaCollector.Collect();
-            var deltaTime = stopwatch.ElapsedTicks / (double) Stopwatch.Frequency;
+            var deltaTime = stopwatch.Elapsed.TotalSeconds;
 
             stopwatch.Restart();
 
