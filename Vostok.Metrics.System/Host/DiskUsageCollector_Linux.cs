@@ -46,8 +46,9 @@ namespace Vostok.Metrics.System.Host
         {
             var readsDelta = diskStats.ReadsCount - previousDiskStats.ReadsCount;
             var writesDelta = diskStats.WritesCount - previousDiskStats.WritesCount;
-            var timeReadDelta = diskStats.TimeSpentReading - diskStats.TimeSpentReading;
-            var timeWriteDelta = diskStats.TimeSpentWriting - diskStats.TimeSpentWriting;
+            var timeReadDelta = diskStats.TimeSpentReading - previousDiskStats.TimeSpentReading;
+            var timeWriteDelta = diskStats.TimeSpentWriting - previousDiskStats.TimeSpentWriting;
+            var timeSpentDoingIoDelta = diskStats.TimeSpentDoingIo - previousDiskStats.TimeSpentDoingIo;
 
             if (readsDelta > 0)
                 toFill.ReadLatency = (double) timeReadDelta / readsDelta;
@@ -59,7 +60,7 @@ namespace Vostok.Metrics.System.Host
             toFill.ReadsPerSecond = readsDelta / deltaTime;
             toFill.WritesPerSecond = writesDelta / deltaTime;
 
-            toFill.IdleTimePercent = ((1 - (timeReadDelta + timeWriteDelta) / deltaTime) * 100).Clamp(0, 100);
+            toFill.IdleTimePercent = (timeSpentDoingIoDelta / deltaTime * 100).Clamp(0, 100);
         }
 
         private List<DiskStats> ParseDiskstats(IEnumerable<string> diskstats)
@@ -91,6 +92,9 @@ namespace Vostok.Metrics.System.Host
                         if (long.TryParse(parts[11], out var currentQueueLength))
                             stats.CurrentQueueLength = currentQueueLength;
 
+                        if (long.TryParse(parts[12], out var timeSpentDoingIo))
+                            stats.TimeSpentDoingIo = timeSpentDoingIo;
+
                         disksStats.Add(stats);
                     }
                 }
@@ -111,6 +115,7 @@ namespace Vostok.Metrics.System.Host
             public long TimeSpentReading { get; set; }
             public long TimeSpentWriting { get; set; }
             public long CurrentQueueLength { get; set; }
+            public long TimeSpentDoingIo { get; set; }
         }
 
         // NOTE: Every 16th minor device number is associated with whole disk (Not just partition)
