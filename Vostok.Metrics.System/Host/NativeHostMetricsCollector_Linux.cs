@@ -179,9 +179,12 @@ namespace Vostok.Metrics.System.Host
                 var totalReceivedBytes = 0L;
                 var totalSentBytes = 0L;
 
+                // NOTE: Skip first 2 lines because they contain format info. See https://man7.org/linux/man-pages/man5/proc.5.html for details.
+                // NOTE: We don't need info from loopback interface.
                 foreach (var line in networkUsageReader.ReadLines().Skip(2))
                 {
                     if (FileParser.TrySplitLine(line, 17, out var parts) &&
+                        parts[0] != "lo" &&
                         long.TryParse(parts[1], out var receivedBytes) &&
                         long.TryParse(parts[9], out var sentBytes))
                     {

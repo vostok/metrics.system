@@ -124,11 +124,11 @@ namespace Vostok.Metrics.System.Host
             {
                 var networkUsageInfo = networkUsageCounter.Observe();
 
-                metrics.NetworkSentBytesPerSecond = networkUsageInfo
+                metrics.NetworkSentBytesPerSecond = (long) networkUsageInfo
                    .Select(x => x.Value.NetworkSentBytesPerSecond)
                    .Sum();
 
-                metrics.NetworkReceivedBytesPerSecond = networkUsageInfo
+                metrics.NetworkReceivedBytesPerSecond = (long) networkUsageInfo
                    .Select(x => x.Value.NetworkReceivedBytesPerSecond)
                    .Sum();
             }

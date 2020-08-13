@@ -15,8 +15,8 @@ namespace Vostok.Metrics.System.Host
 
         public void Collect(HostMetrics metrics, long newReceivedBytesValue, long newSentBytesValue)
         {
-            metrics.NetworkReceivedBytesPerSecond = receivedBytesPerSecondCollector.Collect(newReceivedBytesValue);
-            metrics.NetworkSentBytesPerSecond = sentBytesPerSecondCollector.Collect(newSentBytesValue);
+            metrics.NetworkReceivedBytesPerSecond = (long) receivedBytesPerSecondCollector.Collect(newReceivedBytesValue);
+            metrics.NetworkSentBytesPerSecond = (long) sentBytesPerSecondCollector.Collect(newSentBytesValue);
         }
     }
 }

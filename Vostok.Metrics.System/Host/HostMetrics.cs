@@ -86,12 +86,12 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// Network sent bytes per second (across all interfaces).
         /// </summary>
-        public double NetworkSentBytesPerSecond { get; set; }
+        public long NetworkSentBytesPerSecond { get; set; }
 
         /// <summary>
         /// Network received bytes per second (across all interfaces).
         /// </summary>
-        public double NetworkReceivedBytesPerSecond { get; set; }
+        public long NetworkReceivedBytesPerSecond { get; set; }
 
         /// <summary>
         /// Total TCP connections count.
