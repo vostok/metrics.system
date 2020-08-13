@@ -38,7 +38,7 @@
     </Reference>
     <Reference Include="Vostok.Sys.Metrics.PerfCounters">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\vostok.sys.metrics.perfcounters\Vostok.Sys.Metrics.PerfCounters\bin\Release\netstandard2.0\Vostok.Sys.Metrics.PerfCounters.dll</HintPath>
+      <HintPath>..\..\vostok.sys.metrics.perfcounters\Vostok.Sys.Metrics.PerfCounters\bin\Release\netstandard2.0\Vostok.Sys.Metrics.PerfCounters.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
