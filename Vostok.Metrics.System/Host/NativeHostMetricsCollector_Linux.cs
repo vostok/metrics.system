@@ -153,12 +153,14 @@ namespace Vostok.Metrics.System.Host
                     try
                     {
                         threadCount += Directory.EnumerateDirectories($"{processDirectory}/task/").Count();
-                        processCount++;
                     }
                     catch (DirectoryNotFoundException error)
                     {
                         // Ignored due to process already exited so we don't have to count it's threads and just want to continue.
+                        continue;
                     }
+
+                    processCount++;
                 }
 
                 result.ProcessCount = processCount;
