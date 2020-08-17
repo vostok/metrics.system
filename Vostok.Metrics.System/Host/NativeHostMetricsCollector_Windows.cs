@@ -46,14 +46,14 @@ namespace Vostok.Metrics.System.Host
                 "LogicalDisk",
                 "Avg. Disk sec/Write",
                 (context, value) => context.Result.WriteAverageLatency = value)
-           .AddCounter("LogicalDisk", "Disk Reads/sec", (context, value) => context.Result.DiskReadsPerSecond = value)
-           .AddCounter("LogicalDisk", "Disk Writes/sec", (context, value) => context.Result.DiskWritesPerSecond = value)
+           .AddCounter("LogicalDisk", "Disk Reads/sec", (context, value) => context.Result.DiskReadsPerSecond = (long) value)
+           .AddCounter("LogicalDisk", "Disk Writes/sec", (context, value) => context.Result.DiskWritesPerSecond = (long) value)
            .AddCounter(
                 "LogicalDisk",
                 "Current Disk Queue Length",
                 (context, value) => context.Result.CurrentQueueLength = (long) value)
-           .AddCounter("LogicalDisk", "Disk Read Bytes/sec", (context, value) => context.Result.BytesReadPerSecond = value)
-           .AddCounter("LogicalDisk", "Disk Write Bytes/sec", (context, value) => context.Result.BytesWrittenPerSecond = value)
+           .AddCounter("LogicalDisk", "Disk Read Bytes/sec", (context, value) => context.Result.BytesReadPerSecond = (long) value)
+           .AddCounter("LogicalDisk", "Disk Write Bytes/sec", (context, value) => context.Result.BytesWrittenPerSecond = (long) value)
            .BuildForMultipleInstances("*:");
 
         public void Dispose()
@@ -188,10 +188,10 @@ namespace Vostok.Metrics.System.Host
             public double IdleTimePercent { get; set; }
             public double ReadAverageLatency { get; set; }
             public double WriteAverageLatency { get; set; }
-            public double DiskReadsPerSecond { get; set; }
-            public double DiskWritesPerSecond { get; set; }
-            public double BytesReadPerSecond { get; set; }
-            public double BytesWrittenPerSecond { get; set; }
+            public long DiskReadsPerSecond { get; set; }
+            public long DiskWritesPerSecond { get; set; }
+            public long BytesReadPerSecond { get; set; }
+            public long BytesWrittenPerSecond { get; set; }
             public long CurrentQueueLength { get; set; }
         }
 

@@ -10,10 +10,10 @@ namespace Vostok.Metrics.System.Host
         public double UtilizedPercent { get; set; }
         public TimeSpan ReadAverageLatency { get; set; }
         public TimeSpan WriteAverageLatency { get; set; }
-        public double ReadsPerSecond { get; set; }
-        public double WritesPerSecond { get; set; }
-        public double BytesReadPerSecond { get; set; }
-        public double BytesWrittenPerSecond { get; set; }
+        public long ReadsPerSecond { get; set; }
+        public long WritesPerSecond { get; set; }
+        public long BytesReadPerSecond { get; set; }
+        public long BytesWrittenPerSecond { get; set; }
         public long CurrentQueueLength { get; set; }
     }
 }

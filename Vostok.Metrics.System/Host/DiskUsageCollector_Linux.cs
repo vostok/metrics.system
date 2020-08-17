@@ -57,8 +57,8 @@ namespace Vostok.Metrics.System.Host
 
             toFill.CurrentQueueLength = diskStats.CurrentQueueLength;
 
-            toFill.ReadsPerSecond = readsDelta / deltaTime;
-            toFill.WritesPerSecond = writesDelta / deltaTime;
+            toFill.ReadsPerSecond = (long) (readsDelta / deltaTime);
+            toFill.WritesPerSecond = (long) (writesDelta / deltaTime);
 
             // NOTE: Since Reads/s means Sector/s, and every sector equals 512B, it's easy to convert this values.
             // NOTE: See https://www.man7.org/linux/man-pages/man1/iostat.1.html for details about sector size.
