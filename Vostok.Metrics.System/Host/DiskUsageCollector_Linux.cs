@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
@@ -78,7 +79,7 @@ namespace Vostok.Metrics.System.Host
                 {
                     // NOTE: In the most basic form there are 14 parts.
                     // NOTE: See https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats for details.
-                    if (FileParser.TrySplitLine(line, 14, out var parts) && IsWholeDiskNumber(parts[1]))
+                    if (FileParser.TrySplitLine(line, 14, out var parts) && IsDiskNumber(parts[0]) && IsWholeDiskNumber(parts[1]))
                     {
                         var stats = new DiskStats {DiskName = parts[2]};
 
@@ -128,6 +129,12 @@ namespace Vostok.Metrics.System.Host
         private bool IsWholeDiskNumber(string number)
         {
             return int.TryParse(number, out var value) && value % 16 == 0;
+        }
+
+        // NOTE: Disk numbers are listed here: https://www.kernel.org/doc/html/v4.12/admin-guide/devices.html
+        private bool IsDiskNumber(string number)
+        {
+            return int.TryParse(number, out var value) && new[] {8, 65, 66, 67, 68, 69, 70, 71, 128, 129, 130, 131, 132, 133, 134, 135}.Contains(value);
         }
     }
 }
