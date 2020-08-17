@@ -156,7 +156,7 @@ namespace Vostok.Metrics.System.Host
                     }
                     catch (DirectoryNotFoundException error)
                     {
-                        // Ignored due to process already exited so we don't have to count it's threads and just want to continue.
+                        // NOTE: Ignored due to process already exited so we don't have to count it's threads and just want to continue.
                         continue;
                     }
 

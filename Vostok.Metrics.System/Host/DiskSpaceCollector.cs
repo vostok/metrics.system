@@ -5,8 +5,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Vostok.Metrics.System.Helpers;
 
-// ReSharper disable InconsistentNaming
-
 namespace Vostok.Metrics.System.Host
 {
     internal class DiskSpaceCollector : IDisposable
@@ -101,7 +99,7 @@ namespace Vostok.Metrics.System.Host
 
         private string FormatDiskName_Linux(string diskName)
             => mountDiskMap[diskName]
-                .Replace("/dev/", string.Empty)
-                .Replace("/", "-");
+               .Replace("/dev/", string.Empty)
+               .Replace("/", "-");
     }
 }

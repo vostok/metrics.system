@@ -51,16 +51,16 @@ namespace Vostok.Metrics.System.Host
             var timeSpentDoingIoDelta = diskStats.MsSpentDoingIo - previousDiskStats.MsSpentDoingIo;
 
             if (readsDelta > 0)
-                toFill.ReadAverageLatency = TimeSpan.FromMilliseconds((double) timeReadDelta / readsDelta);
+                toFill.ReadAverageMsLatency = (long) ((double) timeReadDelta / readsDelta);
             if (writesDelta > 0)
-                toFill.WriteAverageLatency = TimeSpan.FromMilliseconds((double) timeWriteDelta / writesDelta);
+                toFill.WriteAverageMsLatency = (long) ((double) timeWriteDelta / writesDelta);
 
             toFill.CurrentQueueLength = diskStats.CurrentQueueLength;
 
             toFill.ReadsPerSecond = (long) (readsDelta / deltaTime);
             toFill.WritesPerSecond = (long) (writesDelta / deltaTime);
 
-            // NOTE: Since Reads/s means Sector/s, and every sector equals 512B, it's easy to convert this values.
+            // NOTE: Since Reads/s means Sectors/s, and every sector equals 512B, it's easy to convert this values.
             // NOTE: See https://www.man7.org/linux/man-pages/man1/iostat.1.html for details about sector size.
             toFill.BytesReadPerSecond = toFill.ReadsPerSecond * 512;
             toFill.BytesWrittenPerSecond = toFill.WritesPerSecond * 512;

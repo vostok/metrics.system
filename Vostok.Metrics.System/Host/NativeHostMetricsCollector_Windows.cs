@@ -41,11 +41,11 @@ namespace Vostok.Metrics.System.Host
            .AddCounter(
                 "LogicalDisk",
                 "Avg. Disk sec/Read",
-                (context, value) => context.Result.ReadAverageLatency = value)
+                (context, value) => context.Result.ReadAverageSecondsLatency = value)
            .AddCounter(
                 "LogicalDisk",
                 "Avg. Disk sec/Write",
-                (context, value) => context.Result.WriteAverageLatency = value)
+                (context, value) => context.Result.WriteAverageSecondsLatency = value)
            .AddCounter("LogicalDisk", "Disk Reads/sec", (context, value) => context.Result.DiskReadsPerSecond = (long) value)
            .AddCounter("LogicalDisk", "Disk Writes/sec", (context, value) => context.Result.DiskWritesPerSecond = (long) value)
            .AddCounter(
@@ -151,8 +151,8 @@ namespace Vostok.Metrics.System.Host
                     var result = new DiskUsageInfo
                     {
                         DiskName = diskUsageInfo.Instance.Replace(":", string.Empty),
-                        ReadAverageLatency = TimeSpan.FromSeconds(diskUsageInfo.Value.ReadAverageLatency),
-                        WriteAverageLatency = TimeSpan.FromSeconds(diskUsageInfo.Value.WriteAverageLatency),
+                        ReadAverageMsLatency = (long) (diskUsageInfo.Value.ReadAverageSecondsLatency * 1000),
+                        WriteAverageMsLatency = (long) (diskUsageInfo.Value.WriteAverageSecondsLatency * 1000),
                         CurrentQueueLength = diskUsageInfo.Value.CurrentQueueLength,
                         UtilizedPercent = 100 - diskUsageInfo.Value.IdleTimePercent,
                         ReadsPerSecond = diskUsageInfo.Value.DiskReadsPerSecond,
@@ -186,8 +186,8 @@ namespace Vostok.Metrics.System.Host
         private class DiskUsage
         {
             public double IdleTimePercent { get; set; }
-            public double ReadAverageLatency { get; set; }
-            public double WriteAverageLatency { get; set; }
+            public double ReadAverageSecondsLatency { get; set; }
+            public double WriteAverageSecondsLatency { get; set; }
             public long DiskReadsPerSecond { get; set; }
             public long DiskWritesPerSecond { get; set; }
             public long BytesReadPerSecond { get; set; }
