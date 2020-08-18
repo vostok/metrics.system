@@ -30,7 +30,7 @@ namespace Vostok.Metrics.System.Tests
             var metrics = collector.Collect();
 
             metrics.CpuUtilizedCores.Should().BeGreaterThan(0);
-            metrics.CpuUtilizedFraction.Should().BeGreaterThan(0);
+            metrics.CpuUtilizedFraction.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
         }
 
         [Test]
@@ -106,8 +106,8 @@ namespace Vostok.Metrics.System.Tests
 
             metrics.NetworkReceivedBytesPerSecond.Should().BeGreaterThan(0);
             metrics.NetworkSentBytesPerSecond.Should().BeGreaterThan(0);
-            metrics.NetworkInUtilizedFraction.Should().BeGreaterThan(0);
-            metrics.NetworkOutUtilizedFraction.Should().BeGreaterThan(0);
+            metrics.NetworkInUtilizedFraction.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
+            metrics.NetworkOutUtilizedFraction.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
         }
     }
 }
