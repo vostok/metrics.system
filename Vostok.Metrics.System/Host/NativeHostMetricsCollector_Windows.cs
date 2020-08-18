@@ -145,8 +145,8 @@ namespace Vostok.Metrics.System.Host
                 metrics.NetworkSentBytesPerSecond = (long) networkSentBytesPerSecond;
                 metrics.NetworkReceivedBytesPerSecond = (long) networkReceivedBytesPerSecond;
 
-                metrics.NetworkInUtilizedFraction = networkReceivedBytesPerSecond * 8 * 100 / networkMaxBitsPerSecond;
-                metrics.NetworkOutUtilizedFraction = networkSentBytesPerSecond * 8 * 100 / networkMaxBitsPerSecond;
+                metrics.NetworkInUtilizedFraction = (networkReceivedBytesPerSecond * 8 * 100 / networkMaxBitsPerSecond).Clamp(0, 100);
+                metrics.NetworkOutUtilizedFraction = (networkSentBytesPerSecond * 8 * 100 / networkMaxBitsPerSecond).Clamp(0, 100);
             }
             catch (Exception error)
             {

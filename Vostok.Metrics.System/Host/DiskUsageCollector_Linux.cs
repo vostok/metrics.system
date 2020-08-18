@@ -47,14 +47,14 @@ namespace Vostok.Metrics.System.Host
         {
             var readsDelta = diskStats.ReadsCount - previousDiskStats.ReadsCount;
             var writesDelta = diskStats.WritesCount - previousDiskStats.WritesCount;
-            var timeReadDelta = diskStats.MsSpentReading - previousDiskStats.MsSpentReading;
-            var timeWriteDelta = diskStats.MsSpentWriting - previousDiskStats.MsSpentWriting;
-            var timeSpentDoingIoDelta = diskStats.MsSpentDoingIo - previousDiskStats.MsSpentDoingIo;
+            var msReadDelta = diskStats.MsSpentReading - previousDiskStats.MsSpentReading;
+            var msWriteDelta = diskStats.MsSpentWriting - previousDiskStats.MsSpentWriting;
+            var msSpentDoingIoDelta = diskStats.MsSpentDoingIo - previousDiskStats.MsSpentDoingIo;
 
             if (readsDelta > 0)
-                toFill.ReadAverageMsLatency = (long) ((double) timeReadDelta / readsDelta);
+                toFill.ReadAverageMsLatency = (long) ((double) msReadDelta / readsDelta);
             if (writesDelta > 0)
-                toFill.WriteAverageMsLatency = (long) ((double) timeWriteDelta / writesDelta);
+                toFill.WriteAverageMsLatency = (long) ((double) msWriteDelta / writesDelta);
 
             toFill.CurrentQueueLength = diskStats.CurrentQueueLength;
 
@@ -66,7 +66,7 @@ namespace Vostok.Metrics.System.Host
             toFill.BytesReadPerSecond = toFill.ReadsPerSecond * 512;
             toFill.BytesWrittenPerSecond = toFill.WritesPerSecond * 512;
 
-            toFill.UtilizedPercent = (timeSpentDoingIoDelta / deltaTime * 100).Clamp(0, 100);
+            toFill.UtilizedPercent = (msSpentDoingIoDelta / deltaTime * 100 / 1000).Clamp(0, 100);
         }
 
         private List<DiskStats> ParseDiskstats(IEnumerable<string> diskstats)
