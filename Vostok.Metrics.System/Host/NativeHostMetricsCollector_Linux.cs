@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -64,7 +65,7 @@ namespace Vostok.Metrics.System.Host
             }
 
             if (networkInfo.Filled)
-                networkCollector.Collect(metrics, networkInfo.ReceivedBytes.Value, networkInfo.SentBytes.Value);
+                networkCollector.Collect(metrics, networkInfo.ReceivedBytes.Value, networkInfo.SentBytes.Value, networkInfo.NetworkMaxMBitsPerSecond.Value);
 
             diskUsageCollector.Collect(metrics);
         }
@@ -187,16 +188,18 @@ namespace Vostok.Metrics.System.Host
             {
                 var totalReceivedBytes = 0L;
                 var totalSentBytes = 0L;
+                var countedInterfaces = new HashSet<string>();
 
                 // NOTE: Skip first 2 lines because they contain format info. See https://man7.org/linux/man-pages/man5/proc.5.html for details.
-                // NOTE: We don't need info from loopback interface.
+                // NOTE: We don't need info from non ethernet interfaces.
                 foreach (var line in networkUsageReader.ReadLines().Skip(2))
                 {
                     if (FileParser.TrySplitLine(line, 17, out var parts) &&
-                        parts[0] != "lo" &&
+                        !parts[0].StartsWith("eth") &&
                         long.TryParse(parts[1], out var receivedBytes) &&
                         long.TryParse(parts[9], out var sentBytes))
                     {
+                        countedInterfaces.Add(parts[0]);
                         totalReceivedBytes += receivedBytes;
                         totalSentBytes += sentBytes;
                     }
@@ -204,6 +207,15 @@ namespace Vostok.Metrics.System.Host
 
                 result.ReceivedBytes = totalReceivedBytes;
                 result.SentBytes = totalSentBytes;
+
+                // NOTE: See https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net for details.
+                var networkMaxMBitsPerSecond = countedInterfaces.Sum(
+                    @interface =>
+                        int.TryParse(File.ReadAllText($"/sys/class/net/{@interface}/speed"), out var interfaceSpeed)
+                            ? interfaceSpeed
+                            : 0);
+
+                result.NetworkMaxMBitsPerSecond = networkMaxMBitsPerSecond;
             }
             catch (Exception error)
             {
@@ -247,10 +259,11 @@ namespace Vostok.Metrics.System.Host
 
         private class NetworkUsage
         {
-            public bool Filled => ReceivedBytes.HasValue && SentBytes.HasValue;
+            public bool Filled => ReceivedBytes.HasValue && SentBytes.HasValue && NetworkMaxMBitsPerSecond.HasValue;
 
             public long? ReceivedBytes { get; set; }
             public long? SentBytes { get; set; }
+            public long? NetworkMaxMBitsPerSecond { get; set; }
         }
     }
 }

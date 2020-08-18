@@ -21,6 +21,10 @@ namespace Vostok.Metrics.System.Host
                 "Network Interface",
                 "Bytes Received/sec",
                 (context, value) => context.Result.NetworkReceivedBytesPerSecond = value)
+           .AddCounter(
+                "Network Interface",
+                "Current Bandwidth",
+                (context, value) => context.Result.NetworkCurrentBandwidthBitsPerSecond = value)
            .BuildForMultipleInstances("*");
 
         private readonly IPerformanceCounter<MemoryInfo> memoryInfoCounter = PerformanceCounterFactory.Default
@@ -126,13 +130,23 @@ namespace Vostok.Metrics.System.Host
             {
                 var networkUsageInfo = networkUsageCounter.Observe();
 
-                metrics.NetworkSentBytesPerSecond = (long) networkUsageInfo
+                var networkSentBytesPerSecond = networkUsageInfo
                    .Select(x => x.Value.NetworkSentBytesPerSecond)
                    .Sum();
 
-                metrics.NetworkReceivedBytesPerSecond = (long) networkUsageInfo
+                var networkReceivedBytesPerSecond = networkUsageInfo
                    .Select(x => x.Value.NetworkReceivedBytesPerSecond)
                    .Sum();
+
+                var networkMaxBitsPerSecond = networkUsageInfo
+                   .Select(x => x.Value.NetworkCurrentBandwidthBitsPerSecond)
+                   .Sum();
+
+                metrics.NetworkSentBytesPerSecond = (long) networkSentBytesPerSecond;
+                metrics.NetworkReceivedBytesPerSecond = (long) networkReceivedBytesPerSecond;
+
+                metrics.NetworkInUtilizedFraction = networkReceivedBytesPerSecond * 8 * 100 / networkMaxBitsPerSecond;
+                metrics.NetworkOutUtilizedFraction = networkSentBytesPerSecond * 8 * 100 / networkMaxBitsPerSecond;
             }
             catch (Exception error)
             {
@@ -181,6 +195,7 @@ namespace Vostok.Metrics.System.Host
         {
             public double NetworkSentBytesPerSecond { get; set; }
             public double NetworkReceivedBytesPerSecond { get; set; }
+            public double NetworkCurrentBandwidthBitsPerSecond { get; set; }
         }
 
         private class DiskUsage

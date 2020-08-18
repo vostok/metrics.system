@@ -84,17 +84,31 @@ namespace Vostok.Metrics.System.Host
         public Dictionary<TcpState, int> TcpStates { get; set; }
 
         /// <summary>
-        /// Network sent bytes per second (across all interfaces).
+        /// Amount of network sent bytes per second (across all interfaces).
         /// </summary>
         public long NetworkSentBytesPerSecond { get; set; }
 
         /// <summary>
-        /// Network received bytes per second (across all interfaces).
+        /// Amount of network received bytes per second (across all interfaces).
         /// </summary>
         public long NetworkReceivedBytesPerSecond { get; set; }
 
         /// <summary>
-        /// Total TCP connections count.
+        /// <para>Fraction of the output network bandwidth (relative to all interfaces).</para>
+        /// <para>This metric has a value between 0 and 1.</para>
+        /// <para>This metric is an average value between two observation moments (current and previous).</para>
+        /// </summary>
+        public double NetworkOutUtilizedFraction { get; set; }
+
+        /// <summary>
+        /// <para>Fraction of the input network bandwidth (relative to all interfaces).</para>
+        /// <para>This metric has a value between 0 and 1.</para>
+        /// <para>This metric is an average value between two observation moments (current and previous).</para>
+        /// </summary>
+        public double NetworkInUtilizedFraction { get; set; }
+
+        /// <summary>
+        /// Amount of total TCP connections count.
         /// </summary>
         public int TcpConnectionsTotalCount => TcpStates.Sum(x => x.Value);
     }
