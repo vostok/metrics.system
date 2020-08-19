@@ -51,7 +51,7 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// Amount of hard page faults per second.
         /// </summary>
-        public double PageFaultsPerSecond { get; set; }
+        public long PageFaultsPerSecond { get; set; }
 
         /// <summary>
         /// The current number of processes on host.

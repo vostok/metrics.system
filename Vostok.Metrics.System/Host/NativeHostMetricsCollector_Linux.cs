@@ -54,7 +54,7 @@ namespace Vostok.Metrics.System.Host
                 metrics.MemoryKernel = memInfo.KernelMemory.Value;
                 metrics.MemoryTotal = memInfo.TotalMemory.Value;
                 metrics.MemoryFree = memInfo.FreeMemory.Value;
-                metrics.PageFaultsPerSecond = hardPageFaultCollector.Collect(memInfo.MajorPageFaultCount.Value);
+                metrics.PageFaultsPerSecond = (long) hardPageFaultCollector.Collect(memInfo.MajorPageFaultCount.Value);
             }
 
             if (perfInfo.Filled)
@@ -195,11 +195,11 @@ namespace Vostok.Metrics.System.Host
                 foreach (var line in networkUsageReader.ReadLines().Skip(2))
                 {
                     if (FileParser.TrySplitLine(line, 17, out var parts) &&
-                        !parts[0].StartsWith("eth") &&
+                        parts[0].StartsWith("eth") &&
                         long.TryParse(parts[1], out var receivedBytes) &&
                         long.TryParse(parts[9], out var sentBytes))
                     {
-                        countedInterfaces.Add(parts[0]);
+                        countedInterfaces.Add(parts[0].TrimEnd(':'));
                         totalReceivedBytes += receivedBytes;
                         totalSentBytes += sentBytes;
                     }

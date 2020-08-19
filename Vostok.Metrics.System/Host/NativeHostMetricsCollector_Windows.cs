@@ -36,7 +36,7 @@ namespace Vostok.Metrics.System.Host
            .AddCounter(
                 "Memory",
                 "Page Faults/sec",
-                (context, value) => context.Result.PageFaultsPerSecond = value)
+                (context, value) => context.Result.PageFaultsPerSecond = (long) value)
            .Build();
 
         private readonly IPerformanceCounter<Observation<DiskUsage>[]> diskUsageCounter = PerformanceCounterFactory.Default
@@ -187,7 +187,7 @@ namespace Vostok.Metrics.System.Host
 
         private class MemoryInfo
         {
-            public double PageFaultsPerSecond { get; set; }
+            public long PageFaultsPerSecond { get; set; }
             public long MemoryFreeBytes { get; set; }
         }
 

@@ -20,8 +20,8 @@ namespace Vostok.Metrics.System.Host
 
             if (networkMaxMBitsPerSecond > 0)
             {
-                metrics.NetworkInUtilizedPercent = ((double) metrics.NetworkReceivedBytesPerSecond * 8 / (1024 * 1024 * networkMaxMBitsPerSecond) * 100).Clamp(0, 100);
-                metrics.NetworkOutUtilizedPercent = ((double) metrics.NetworkSentBytesPerSecond * 8 / (1024 * 1024 * networkMaxMBitsPerSecond) * 100).Clamp(0, 100);
+                metrics.NetworkInUtilizedPercent = ((double) metrics.NetworkReceivedBytesPerSecond * 8 / (1000 * 1000 * networkMaxMBitsPerSecond) * 100).Clamp(0, 100);
+                metrics.NetworkOutUtilizedPercent = ((double) metrics.NetworkSentBytesPerSecond * 8 / (1000 * 1000 * networkMaxMBitsPerSecond) * 100).Clamp(0, 100);
             }
         }
     }
