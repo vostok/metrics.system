@@ -106,8 +106,8 @@ namespace Vostok.Metrics.System.Tests
 
             metrics.NetworkReceivedBytesPerSecond.Should().BeGreaterThan(0);
             metrics.NetworkSentBytesPerSecond.Should().BeGreaterThan(0);
-            metrics.NetworkInUtilizedFraction.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
-            metrics.NetworkOutUtilizedFraction.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
+            metrics.NetworkInUtilizedPercent.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
+            metrics.NetworkOutUtilizedPercent.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
         }
     }
 }

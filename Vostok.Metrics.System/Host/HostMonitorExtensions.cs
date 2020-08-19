@@ -15,7 +15,7 @@ namespace Vostok.Metrics.System.Host
                 "Memory: available = {MemoryAvailable} / {MemoryTotal}; cached = {MemoryCached}; kernel = {MemoryKernel}. " +
                 "Processes = {ProcessCount}. Threads = {ThreadCount}. Handles = {HandleCount}. " +
                 "TCP connections = {TcpConnectionsTotalCount}. " +
-                "Network: in = {NetworkReceivedBytesPerSecond}/sec; out = {NetworkSentBytesPerSecond}/sec.",
+                "Network: in = {NetworkInUsagePercent}% ({NetworkReceivedBytesPerSecond}/sec); out = {NetworkOutUsagePercent}% ({NetworkSentBytesPerSecond}/sec).",
                 new
                 {
                     CpuUsagePercent = metrics.CpuUtilizedFraction * 100,
@@ -28,7 +28,9 @@ namespace Vostok.Metrics.System.Host
                     metrics.ThreadCount,
                     metrics.HandleCount,
                     metrics.TcpConnectionsTotalCount,
+                    NetworkInUsagePercent = metrics.NetworkInUtilizedPercent,
                     NetworkReceivedBytesPerSecond = SizeFormatter.Format(metrics.NetworkReceivedBytesPerSecond),
+                    NetworkOutUsagePercent = metrics.NetworkOutUtilizedPercent,
                     NetworkSentBytesPerSecond = SizeFormatter.Format(metrics.NetworkSentBytesPerSecond)
                 }
             );

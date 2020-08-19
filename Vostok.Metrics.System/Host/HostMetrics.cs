@@ -94,18 +94,16 @@ namespace Vostok.Metrics.System.Host
         public long NetworkReceivedBytesPerSecond { get; set; }
 
         /// <summary>
-        /// <para>Fraction of the output network bandwidth (relative to all interfaces).</para>
-        /// <para>This metric has a value between 0 and 1.</para>
+        /// <para>Utilized percent of the output network bandwidth (relative to all interfaces).</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
-        public double NetworkOutUtilizedFraction { get; set; }
+        public double NetworkOutUtilizedPercent { get; set; }
 
         /// <summary>
-        /// <para>Fraction of the input network bandwidth (relative to all interfaces).</para>
-        /// <para>This metric has a value between 0 and 1.</para>
+        /// <para>Utilized percent of the input network bandwidth (relative to all interfaces).</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
-        public double NetworkInUtilizedFraction { get; set; }
+        public double NetworkInUtilizedPercent { get; set; }
 
         /// <summary>
         /// Amount of total TCP connections count.

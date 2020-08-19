@@ -210,10 +210,7 @@ namespace Vostok.Metrics.System.Host
 
                 // NOTE: See https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net for details.
                 var networkMaxMBitsPerSecond = countedInterfaces.Sum(
-                    @interface =>
-                        int.TryParse(File.ReadAllText($"/sys/class/net/{@interface}/speed"), out var interfaceSpeed)
-                            ? interfaceSpeed
-                            : 0);
+                    @interface => int.Parse(File.ReadAllText($"/sys/class/net/{@interface}/speed")));
 
                 result.NetworkMaxMBitsPerSecond = networkMaxMBitsPerSecond;
             }
