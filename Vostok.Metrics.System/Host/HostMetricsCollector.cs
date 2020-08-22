@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using JetBrains.Annotations;
+using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
 {
@@ -11,10 +12,13 @@ namespace Vostok.Metrics.System.Host
     [PublicAPI]
     public class HostMetricsCollector : IDisposable
     {
+        private static readonly TimeSpan CacheTTL = TimeSpan.FromMilliseconds(100);
+
         private readonly Action<HostMetrics> nativeCollector;
         private readonly Action disposeNativeCollector;
         private readonly DiskSpaceCollector diskSpaceCollector = new DiskSpaceCollector();
         private readonly TcpStateCollector tcpStateCollector = new TcpStateCollector();
+        private readonly ThrottlingCache<HostMetrics> cache;
 
         public void Dispose()
         {
@@ -37,10 +41,15 @@ namespace Vostok.Metrics.System.Host
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
             }
+
+            cache = new ThrottlingCache<HostMetrics>(CollectInternal, CacheTTL);
         }
 
         [NotNull]
         public HostMetrics Collect()
+            => cache.Obtain();
+
+        private HostMetrics CollectInternal()
         {
             var metrics = new HostMetrics();
             CollectNativeMetrics(metrics);

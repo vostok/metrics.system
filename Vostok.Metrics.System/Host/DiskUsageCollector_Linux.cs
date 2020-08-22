@@ -51,24 +51,21 @@ namespace Vostok.Metrics.System.Host
             var msSpentDoingIoDelta = diskStats.MsSpentDoingIo - previousDiskStats.MsSpentDoingIo;
 
             if (readsDelta > 0)
-                toFill.ReadAverageMsLatency = (long) ((double) msReadDelta / readsDelta);
+                toFill.ReadAverageMsLatency = (long)((double)msReadDelta / readsDelta);
             if (writesDelta > 0)
-                toFill.WriteAverageMsLatency = (long) ((double) msWriteDelta / writesDelta);
+                toFill.WriteAverageMsLatency = (long)((double)msWriteDelta / writesDelta);
 
             toFill.CurrentQueueLength = diskStats.CurrentQueueLength;
 
-            if (deltaSeconds > 0d)
-            {
-                toFill.ReadsPerSecond = (long)(readsDelta / deltaSeconds);
-                toFill.WritesPerSecond = (long)(writesDelta / deltaSeconds);
+            toFill.ReadsPerSecond = (long)(readsDelta / deltaSeconds);
+            toFill.WritesPerSecond = (long)(writesDelta / deltaSeconds);
 
-                // NOTE: Since Reads/s means Sectors/s, and every sector equals 512B, it's easy to convert this values.
-                // NOTE: See https://www.man7.org/linux/man-pages/man1/iostat.1.html for details about sector size.
-                toFill.BytesReadPerSecond = toFill.ReadsPerSecond * 512;
-                toFill.BytesWrittenPerSecond = toFill.WritesPerSecond * 512;
+            // NOTE: Since Reads/s means Sectors/s, and every sector equals 512B, it's easy to convert this values.
+            // NOTE: See https://www.man7.org/linux/man-pages/man1/iostat.1.html for details about sector size.
+            toFill.BytesReadPerSecond = toFill.ReadsPerSecond * 512;
+            toFill.BytesWrittenPerSecond = toFill.WritesPerSecond * 512;
 
-                toFill.UtilizedPercent = (100d * msSpentDoingIoDelta / (deltaSeconds * 1000)).Clamp(0, 100);
-            }
+            toFill.UtilizedPercent = (100d * msSpentDoingIoDelta / (deltaSeconds * 1000)).Clamp(0, 100);
         }
 
         private List<DiskStats> ParseDiskstats(IEnumerable<string> diskstats)
