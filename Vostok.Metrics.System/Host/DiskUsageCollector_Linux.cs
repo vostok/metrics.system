@@ -7,9 +7,9 @@ namespace Vostok.Metrics.System.Host
 {
     internal class DiskUsageCollector_Linux : IDisposable
     {
-        private Dictionary<string, DiskStats> previousDisksStatsInfo = new Dictionary<string, DiskStats>();
         private readonly Stopwatch stopwatch = new Stopwatch();
         private readonly ReusableFileReader diskStatsReader = new ReusableFileReader("/proc/diskstats");
+        private volatile Dictionary<string, DiskStats> previousDisksStatsInfo = new Dictionary<string, DiskStats>();
 
         public void Dispose()
         {
@@ -57,15 +57,18 @@ namespace Vostok.Metrics.System.Host
 
             toFill.CurrentQueueLength = diskStats.CurrentQueueLength;
 
-            toFill.ReadsPerSecond = (long) (readsDelta / deltaSeconds);
-            toFill.WritesPerSecond = (long) (writesDelta / deltaSeconds);
+            if (deltaSeconds > 0d)
+            {
+                toFill.ReadsPerSecond = (long)(readsDelta / deltaSeconds);
+                toFill.WritesPerSecond = (long)(writesDelta / deltaSeconds);
 
-            // NOTE: Since Reads/s means Sectors/s, and every sector equals 512B, it's easy to convert this values.
-            // NOTE: See https://www.man7.org/linux/man-pages/man1/iostat.1.html for details about sector size.
-            toFill.BytesReadPerSecond = toFill.ReadsPerSecond * 512;
-            toFill.BytesWrittenPerSecond = toFill.WritesPerSecond * 512;
+                // NOTE: Since Reads/s means Sectors/s, and every sector equals 512B, it's easy to convert this values.
+                // NOTE: See https://www.man7.org/linux/man-pages/man1/iostat.1.html for details about sector size.
+                toFill.BytesReadPerSecond = toFill.ReadsPerSecond * 512;
+                toFill.BytesWrittenPerSecond = toFill.WritesPerSecond * 512;
 
-            toFill.UtilizedPercent = (msSpentDoingIoDelta / deltaSeconds * 100 / 1000).Clamp(0, 100);
+                toFill.UtilizedPercent = (100d * msSpentDoingIoDelta / (deltaSeconds * 1000)).Clamp(0, 100);
+            }
         }
 
         private List<DiskStats> ParseDiskstats(IEnumerable<string> diskstats)

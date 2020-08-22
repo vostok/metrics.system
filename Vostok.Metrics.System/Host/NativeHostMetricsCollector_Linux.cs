@@ -153,9 +153,9 @@ namespace Vostok.Metrics.System.Host
                 {
                     try
                     {
-                        threadCount += Directory.EnumerateDirectories($"{processDirectory}/task/").Count();
+                        threadCount += Directory.EnumerateDirectories(Path.Combine(processDirectory, "task")).Count();
                     }
-                    catch (DirectoryNotFoundException error)
+                    catch (DirectoryNotFoundException)
                     {
                         // NOTE: Ignored due to process already exited so we don't have to count it's threads and just want to continue.
                         continue;
@@ -184,6 +184,9 @@ namespace Vostok.Metrics.System.Host
         {
             var result = new NetworkUsage();
 
+            bool ShouldBeCounted(string interfaceName)
+                => interfaceName.StartsWith("eth") || interfaceName.StartsWith("team");
+
             try
             {
                 var totalReceivedBytes = 0L;
@@ -194,8 +197,8 @@ namespace Vostok.Metrics.System.Host
                 // NOTE: We don't need info from non ethernet interfaces.
                 foreach (var line in networkUsageReader.ReadLines().Skip(2))
                 {
-                    if (FileParser.TrySplitLine(line, 17, out var parts) &&
-                        parts[0].StartsWith("eth") &&
+                    if (FileParser.TrySplitLine(line, 17, out var parts) && 
+                        ShouldBeCounted(parts[0]) &&
                         long.TryParse(parts[1], out var receivedBytes) &&
                         long.TryParse(parts[9], out var sentBytes))
                     {
