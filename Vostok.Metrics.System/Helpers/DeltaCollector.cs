@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Threading;
 
-namespace Vostok.Metrics.System.Process
+namespace Vostok.Metrics.System.Helpers
 {
-    internal class DerivativeCollector
+    internal class DeltaCollector
     {
         private readonly Func<long> provider;
         private long previousValue;
 
-        public DerivativeCollector(Func<long> provider)
+        public DeltaCollector(Func<long> provider)
             => this.provider = provider;
 
         public long Collect()

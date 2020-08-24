@@ -34,6 +34,11 @@ namespace Vostok.Metrics.System.Host
         public long MemoryAvailable { get; set; }
 
         /// <summary>
+        /// Amount of free physical RAM.
+        /// </summary>
+        public long MemoryFree { get; set; }
+
+        /// <summary>
         /// Amount of physical RAM consumed by system kernel.
         /// </summary>
         public long MemoryKernel { get; set; }
@@ -42,6 +47,11 @@ namespace Vostok.Metrics.System.Host
         /// Amount of physical RAM used as cache memory.
         /// </summary>
         public long MemoryCached { get; set; }
+
+        /// <summary>
+        /// Amount of hard page faults per second.
+        /// </summary>
+        public long PageFaultsPerSecond { get; set; }
 
         /// <summary>
         /// The current number of processes on host.
@@ -61,7 +71,12 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// Disk space info per volume.
         /// </summary>
-        public Dictionary<string, DiskSpaceInfo> DiskSpaceInfos { get; set; }
+        public Dictionary<string, DiskSpaceInfo> DisksSpaceInfo { get; set; }
+
+        /// <summary>
+        /// Disk usage info per device.
+        /// </summary>
+        public Dictionary<string, DiskUsageInfo> DisksUsageInfo { get; set; }
 
         /// <summary>
         /// TCP connections per state.
@@ -69,7 +84,29 @@ namespace Vostok.Metrics.System.Host
         public Dictionary<TcpState, int> TcpStates { get; set; }
 
         /// <summary>
-        /// Total TCP connections count.
+        /// Amount of network sent bytes per second (across all interfaces).
+        /// </summary>
+        public long NetworkSentBytesPerSecond { get; set; }
+
+        /// <summary>
+        /// Amount of network received bytes per second (across all interfaces).
+        /// </summary>
+        public long NetworkReceivedBytesPerSecond { get; set; }
+
+        /// <summary>
+        /// <para>Utilized percent of the output network bandwidth (relative to all interfaces).</para>
+        /// <para>This metric is an average value between two observation moments (current and previous).</para>
+        /// </summary>
+        public double NetworkOutUtilizedPercent { get; set; }
+
+        /// <summary>
+        /// <para>Utilized percent of the input network bandwidth (relative to all interfaces).</para>
+        /// <para>This metric is an average value between two observation moments (current and previous).</para>
+        /// </summary>
+        public double NetworkInUtilizedPercent { get; set; }
+
+        /// <summary>
+        /// Amount of total TCP connections count.
         /// </summary>
         public int TcpConnectionsTotalCount => TcpStates.Sum(x => x.Value);
     }

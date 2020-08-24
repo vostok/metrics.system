@@ -11,7 +11,7 @@ namespace Vostok.Metrics.System.Process
     /// <para>It is not thread-safe and is designed to be invoked periodically without concurrency.</para>
     /// </summary>
     [PublicAPI]
-    public class CurrentProcessMetricsCollector
+    public class CurrentProcessMetricsCollector : IDisposable
     {
         private static readonly Func<int, int> GcCollectionCountProvider
             = ReflectionHelper.BuildStaticMethodInvoker<int, int>(typeof(GC), "CollectionCount");
@@ -41,13 +41,19 @@ namespace Vostok.Metrics.System.Process
             = ReflectionHelper.BuildStaticPropertyAccessor<long>(typeof(ThreadPool), "PendingWorkItemCount");
 
         private readonly Action<CurrentProcessMetrics> nativeCollector;
+        private readonly Action disposeNativeCollector;
 
-        private readonly DerivativeCollector lockContentionCount = new DerivativeCollector(LockContentionCountProvider);
-        private readonly DerivativeCollector exceptionsCount = new DerivativeCollector(() => ExceptionsCountProvider());
-        private readonly DerivativeCollector allocatedBytes = new DerivativeCollector(() => TotalAllocatedBytesProvider(false));
-        private readonly DerivativeCollector gen0Collections = new DerivativeCollector(() => GcCollectionCountProvider(0));
-        private readonly DerivativeCollector gen1Collections = new DerivativeCollector(() => GcCollectionCountProvider(1));
-        private readonly DerivativeCollector gen2Collections = new DerivativeCollector(() => GcCollectionCountProvider(2));
+        private readonly DeltaCollector lockContentionCount = new DeltaCollector(LockContentionCountProvider);
+        private readonly DeltaCollector exceptionsCount = new DeltaCollector(() => ExceptionsCountProvider());
+        private readonly DeltaCollector allocatedBytes = new DeltaCollector(() => TotalAllocatedBytesProvider(false));
+        private readonly DeltaCollector gen0Collections = new DeltaCollector(() => GcCollectionCountProvider(0));
+        private readonly DeltaCollector gen1Collections = new DeltaCollector(() => GcCollectionCountProvider(1));
+        private readonly DeltaCollector gen2Collections = new DeltaCollector(() => GcCollectionCountProvider(2));
+
+        public void Dispose()
+        {
+            disposeNativeCollector?.Invoke();
+        }
 
         public CurrentProcessMetricsCollector()
         {
@@ -55,7 +61,11 @@ namespace Vostok.Metrics.System.Process
                 nativeCollector = new NativeMetricsCollector_Windows().Collect;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                nativeCollector = new NativeMetricsCollector_Linux().Collect;
+            {
+                var collector = new NativeMetricsCollector_Linux();
+                nativeCollector = collector.Collect;
+                disposeNativeCollector = collector.Dispose;
+            }
         }
 
         [NotNull]
@@ -70,7 +80,7 @@ namespace Vostok.Metrics.System.Process
             CollectMiscMetrics(metrics);
 
             CollectNativeMetrics(metrics);
-            
+
             return metrics;
         }
 
