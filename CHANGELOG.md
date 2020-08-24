@@ -1,3 +1,9 @@
+## 0.2.2 (24-08-2020):
+
+- Added network usage metrics.
+- Added disk usage metrics.
+- Added Page faults / sec metrics.
+
 ## 0.2.1 (07-08-2020):
 
 - DiskSpaceCollector: only update mounts once per call, not once per disk.
