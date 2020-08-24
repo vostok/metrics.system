@@ -46,24 +46,26 @@ namespace Vostok.Metrics.System.Host
         {
             var readsDelta = diskStats.ReadsCount - previousDiskStats.ReadsCount;
             var writesDelta = diskStats.WritesCount - previousDiskStats.WritesCount;
+            var sectorsReadDelta = diskStats.SectorsReadCount - previousDiskStats.SectorsReadCount;
+            var sectorsWrittenDelta = diskStats.SectorsWrittenCount - previousDiskStats.SectorsWrittenCount;
             var msReadDelta = diskStats.MsSpentReading - previousDiskStats.MsSpentReading;
             var msWriteDelta = diskStats.MsSpentWriting - previousDiskStats.MsSpentWriting;
             var msSpentDoingIoDelta = diskStats.MsSpentDoingIo - previousDiskStats.MsSpentDoingIo;
 
             if (readsDelta > 0)
-                toFill.ReadAverageMsLatency = (long)((double)msReadDelta / readsDelta);
+                toFill.ReadAverageMsLatency = (long) ((double) msReadDelta / readsDelta);
             if (writesDelta > 0)
-                toFill.WriteAverageMsLatency = (long)((double)msWriteDelta / writesDelta);
+                toFill.WriteAverageMsLatency = (long) ((double) msWriteDelta / writesDelta);
 
             toFill.CurrentQueueLength = diskStats.CurrentQueueLength;
 
-            toFill.ReadsPerSecond = (long)(readsDelta / deltaSeconds);
-            toFill.WritesPerSecond = (long)(writesDelta / deltaSeconds);
+            toFill.ReadsPerSecond = (long) (readsDelta / deltaSeconds);
+            toFill.WritesPerSecond = (long) (writesDelta / deltaSeconds);
 
-            // NOTE: Since Reads/s means Sectors/s, and every sector equals 512B, it's easy to convert this values.
+            // NOTE: Every sector equals 512B, so it's easy to convert this values.
             // NOTE: See https://www.man7.org/linux/man-pages/man1/iostat.1.html for details about sector size.
-            toFill.BytesReadPerSecond = toFill.ReadsPerSecond * 512;
-            toFill.BytesWrittenPerSecond = toFill.WritesPerSecond * 512;
+            toFill.BytesReadPerSecond = sectorsReadDelta * 512;
+            toFill.BytesWrittenPerSecond = sectorsWrittenDelta * 512;
 
             toFill.UtilizedPercent = (100d * msSpentDoingIoDelta / (deltaSeconds * 1000)).Clamp(0, 100);
         }
@@ -85,11 +87,17 @@ namespace Vostok.Metrics.System.Host
                         if (long.TryParse(parts[3], out var readsCount))
                             stats.ReadsCount = readsCount;
 
+                        if (long.TryParse(parts[5], out var sectorsRead))
+                            stats.SectorsReadCount = sectorsRead;
+
                         if (long.TryParse(parts[6], out var msSpentReading))
                             stats.MsSpentReading = msSpentReading;
 
                         if (long.TryParse(parts[7], out var writesCount))
                             stats.WritesCount = writesCount;
+
+                        if (long.TryParse(parts[9], out var sectorsWritten))
+                            stats.SectorsWrittenCount = sectorsWritten;
 
                         if (long.TryParse(parts[10], out var msSpentWriting))
                             stats.MsSpentWriting = msSpentWriting;
@@ -116,6 +124,8 @@ namespace Vostok.Metrics.System.Host
         {
             public string DiskName { get; set; }
             public long ReadsCount { get; set; }
+            public long SectorsReadCount { get; set; }
+            public long SectorsWrittenCount { get; set; }
             public long WritesCount { get; set; }
             public long MsSpentReading { get; set; }
             public long MsSpentWriting { get; set; }
