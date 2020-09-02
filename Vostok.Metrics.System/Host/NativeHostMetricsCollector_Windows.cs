@@ -128,25 +128,38 @@ namespace Vostok.Metrics.System.Host
         {
             try
             {
-                var networkUsageInfo = networkUsageCounter.Observe();
+                var networkInterfacesUsageInfo = new Dictionary<string, NetworkInterfaceUsageInfo>();
 
-                var networkSentBytesPerSecond = networkUsageInfo
-                   .Select(x => x.Value.NetworkSentBytesPerSecond)
+                foreach (var networkUsageObservation in networkUsageCounter.Observe())
+                {
+                    var result = new NetworkInterfaceUsageInfo
+                    {
+                        BandwidthBitsPerSecond = (long) networkUsageObservation.Value.NetworkCurrentBandwidthBitsPerSecond,
+                        InterfaceName = networkUsageObservation.Instance,
+                        ReceivedBytesPerSecond = (long) networkUsageObservation.Value.NetworkReceivedBytesPerSecond,
+                        SentBytesPerSecond = (long) networkUsageObservation.Value.NetworkSentBytesPerSecond,
+                    };
+
+                    networkInterfacesUsageInfo[networkUsageObservation.Instance] = result;
+                }
+
+                var networkSentBytesPerSecond = networkInterfacesUsageInfo
+                   .Select(x => x.Value.SentBytesPerSecond)
                    .Sum();
 
-                var networkReceivedBytesPerSecond = networkUsageInfo
-                   .Select(x => x.Value.NetworkReceivedBytesPerSecond)
+                var networkReceivedBytesPerSecond = networkInterfacesUsageInfo
+                   .Select(x => x.Value.ReceivedBytesPerSecond)
                    .Sum();
 
-                var networkMaxBitsPerSecond = networkUsageInfo
-                   .Select(x => x.Value.NetworkCurrentBandwidthBitsPerSecond)
+                var networkMaxBitsPerSecond = networkInterfacesUsageInfo
+                   .Select(x => x.Value.BandwidthBitsPerSecond)
                    .Sum();
 
-                metrics.NetworkSentBytesPerSecond = (long) networkSentBytesPerSecond;
-                metrics.NetworkReceivedBytesPerSecond = (long) networkReceivedBytesPerSecond;
+                metrics.NetworkSentBytesPerSecond = networkSentBytesPerSecond;
+                metrics.NetworkReceivedBytesPerSecond = networkReceivedBytesPerSecond;
 
-                metrics.NetworkInUtilizedPercent = (networkReceivedBytesPerSecond * 8 * 100 / networkMaxBitsPerSecond).Clamp(0, 100);
-                metrics.NetworkOutUtilizedPercent = (networkSentBytesPerSecond * 8 * 100 / networkMaxBitsPerSecond).Clamp(0, 100);
+                metrics.NetworkInUtilizedPercent = (networkReceivedBytesPerSecond * 8d * 100d / networkMaxBitsPerSecond).Clamp(0, 100);
+                metrics.NetworkOutUtilizedPercent = (networkSentBytesPerSecond * 8d * 100d / networkMaxBitsPerSecond).Clamp(0, 100);
             }
             catch (Exception error)
             {
