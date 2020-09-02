@@ -84,6 +84,11 @@ namespace Vostok.Metrics.System.Host
         public Dictionary<TcpState, int> TcpStates { get; set; }
 
         /// <summary>
+        /// Network usage info per interface.
+        /// </summary>
+        public Dictionary<string, NetworkInterfaceUsageInfo> NetworkInterfacesUsageInfo { get; set; }
+
+        /// <summary>
         /// Amount of network sent bytes per second (across all interfaces).
         /// </summary>
         public long NetworkSentBytesPerSecond { get; set; }
