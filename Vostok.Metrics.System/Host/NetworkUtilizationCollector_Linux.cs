@@ -41,17 +41,6 @@ namespace Vostok.Metrics.System.Host
 
             previousNetworkUsageInfo = newNetworkUsageInfo;
 
-            metrics.NetworkReceivedBytesPerSecond = networkInterfacesUsageInfo.Sum(x => x.Value.ReceivedBytesPerSecond);
-            metrics.NetworkSentBytesPerSecond = networkInterfacesUsageInfo.Sum(x => x.Value.SentBytesPerSecond);
-
-            var networkMaxBytesPerSecond = networkInterfacesUsageInfo.Sum(x => x.Value.BandwidthBytesPerSecond);
-
-            if (networkMaxBytesPerSecond > 0)
-            {
-                metrics.NetworkInUtilizedPercent = (100d * metrics.NetworkReceivedBytesPerSecond / networkMaxBytesPerSecond).Clamp(0, 100);
-                metrics.NetworkOutUtilizedPercent = (100d * metrics.NetworkSentBytesPerSecond / networkMaxBytesPerSecond).Clamp(0, 100);
-            }
-
             stopwatch.Restart();
         }
 

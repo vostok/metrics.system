@@ -143,23 +143,7 @@ namespace Vostok.Metrics.System.Host
                     networkInterfacesUsageInfo[networkUsageObservation.Instance] = result;
                 }
 
-                var networkSentBytesPerSecond = networkInterfacesUsageInfo
-                   .Select(x => x.Value.SentBytesPerSecond)
-                   .Sum();
-
-                var networkReceivedBytesPerSecond = networkInterfacesUsageInfo
-                   .Select(x => x.Value.ReceivedBytesPerSecond)
-                   .Sum();
-
-                var networkMaxBytesPerSecond = networkInterfacesUsageInfo
-                   .Select(x => x.Value.BandwidthBytesPerSecond)
-                   .Sum();
-
-                metrics.NetworkSentBytesPerSecond = networkSentBytesPerSecond;
-                metrics.NetworkReceivedBytesPerSecond = networkReceivedBytesPerSecond;
-
-                metrics.NetworkInUtilizedPercent = (networkReceivedBytesPerSecond * 100d / networkMaxBytesPerSecond).Clamp(0, 100);
-                metrics.NetworkOutUtilizedPercent = (networkSentBytesPerSecond * 100d / networkMaxBytesPerSecond).Clamp(0, 100);
+                metrics.NetworkInterfacesUsageInfo = networkInterfacesUsageInfo;
             }
             catch (Exception error)
             {

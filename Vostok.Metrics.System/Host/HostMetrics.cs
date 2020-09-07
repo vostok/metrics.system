@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
 using JetBrains.Annotations;
+using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
 {
@@ -91,24 +92,29 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// Amount of network sent bytes per second (across all interfaces).
         /// </summary>
-        public long NetworkSentBytesPerSecond { get; set; }
+        public long NetworkSentBytesPerSecond => NetworkInterfacesUsageInfo.Sum(x => x.Value.SentBytesPerSecond);
 
         /// <summary>
         /// Amount of network received bytes per second (across all interfaces).
         /// </summary>
-        public long NetworkReceivedBytesPerSecond { get; set; }
+        public long NetworkReceivedBytesPerSecond => NetworkInterfacesUsageInfo.Sum(x => x.Value.ReceivedBytesPerSecond);
+
+        /// <summary>
+        /// Maximum host network speed (across all interfaces).
+        /// </summary>
+        public long NetworkBandwidthBytesPerSecond => NetworkInterfacesUsageInfo.Sum(x => x.Value.BandwidthBytesPerSecond);
 
         /// <summary>
         /// <para>Utilized percent of the output network bandwidth (relative to all interfaces).</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
-        public double NetworkOutUtilizedPercent { get; set; }
+        public double NetworkOutUtilizedPercent => (NetworkSentBytesPerSecond * 100d / NetworkBandwidthBytesPerSecond).Clamp(0, 100);
 
         /// <summary>
         /// <para>Utilized percent of the input network bandwidth (relative to all interfaces).</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
-        public double NetworkInUtilizedPercent { get; set; }
+        public double NetworkInUtilizedPercent => (NetworkReceivedBytesPerSecond * 100d / NetworkBandwidthBytesPerSecond).Clamp(0, 100);
 
         /// <summary>
         /// Amount of total TCP connections count.
