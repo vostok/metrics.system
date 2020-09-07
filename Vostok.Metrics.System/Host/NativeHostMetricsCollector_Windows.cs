@@ -134,10 +134,10 @@ namespace Vostok.Metrics.System.Host
                 {
                     var result = new NetworkInterfaceUsageInfo
                     {
-                        BandwidthBitsPerSecond = (long) networkUsageObservation.Value.NetworkCurrentBandwidthBitsPerSecond,
                         InterfaceName = networkUsageObservation.Instance,
                         ReceivedBytesPerSecond = (long) networkUsageObservation.Value.NetworkReceivedBytesPerSecond,
                         SentBytesPerSecond = (long) networkUsageObservation.Value.NetworkSentBytesPerSecond,
+                        BandwidthBytesPerSecond = (long) (networkUsageObservation.Value.NetworkCurrentBandwidthBitsPerSecond / 8d)
                     };
 
                     networkInterfacesUsageInfo[networkUsageObservation.Instance] = result;
@@ -151,15 +151,15 @@ namespace Vostok.Metrics.System.Host
                    .Select(x => x.Value.ReceivedBytesPerSecond)
                    .Sum();
 
-                var networkMaxBitsPerSecond = networkInterfacesUsageInfo
-                   .Select(x => x.Value.BandwidthBitsPerSecond)
+                var networkMaxBytesPerSecond = networkInterfacesUsageInfo
+                   .Select(x => x.Value.BandwidthBytesPerSecond)
                    .Sum();
 
                 metrics.NetworkSentBytesPerSecond = networkSentBytesPerSecond;
                 metrics.NetworkReceivedBytesPerSecond = networkReceivedBytesPerSecond;
 
-                metrics.NetworkInUtilizedPercent = (networkReceivedBytesPerSecond * 8d * 100d / networkMaxBitsPerSecond).Clamp(0, 100);
-                metrics.NetworkOutUtilizedPercent = (networkSentBytesPerSecond * 8d * 100d / networkMaxBitsPerSecond).Clamp(0, 100);
+                metrics.NetworkInUtilizedPercent = (networkReceivedBytesPerSecond * 100d / networkMaxBytesPerSecond).Clamp(0, 100);
+                metrics.NetworkOutUtilizedPercent = (networkSentBytesPerSecond * 100d / networkMaxBytesPerSecond).Clamp(0, 100);
             }
             catch (Exception error)
             {

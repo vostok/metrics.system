@@ -44,15 +44,12 @@ namespace Vostok.Metrics.System.Host
             metrics.NetworkReceivedBytesPerSecond = networkInterfacesUsageInfo.Sum(x => x.Value.ReceivedBytesPerSecond);
             metrics.NetworkSentBytesPerSecond = networkInterfacesUsageInfo.Sum(x => x.Value.SentBytesPerSecond);
 
-            var networkMaxBitsPerSecond = networkInterfacesUsageInfo.Sum(x => x.Value.BandwidthBitsPerSecond);
+            var networkMaxBytesPerSecond = networkInterfacesUsageInfo.Sum(x => x.Value.BandwidthBytesPerSecond);
 
-            if (networkMaxBitsPerSecond > 0)
+            if (networkMaxBytesPerSecond > 0)
             {
-                var receivedBitsPerSecond = metrics.NetworkReceivedBytesPerSecond * 8d;
-                var sentBitsPerSecond = metrics.NetworkSentBytesPerSecond * 8d;
-
-                metrics.NetworkInUtilizedPercent = (100d * receivedBitsPerSecond / networkMaxBitsPerSecond).Clamp(0, 100);
-                metrics.NetworkOutUtilizedPercent = (100d * sentBitsPerSecond / networkMaxBitsPerSecond).Clamp(0, 100);
+                metrics.NetworkInUtilizedPercent = (100d * metrics.NetworkReceivedBytesPerSecond / networkMaxBytesPerSecond).Clamp(0, 100);
+                metrics.NetworkOutUtilizedPercent = (100d * metrics.NetworkSentBytesPerSecond / networkMaxBytesPerSecond).Clamp(0, 100);
             }
 
             stopwatch.Restart();
@@ -65,7 +62,7 @@ namespace Vostok.Metrics.System.Host
 
             toFill.ReceivedBytesPerSecond = (long) (deltaReceivedBytes / deltaSeconds);
             toFill.SentBytesPerSecond = (long) (deltaSentBytes / deltaSeconds);
-            toFill.BandwidthBitsPerSecond = usage.NetworkMaxMBitsPerSecond * 1000L * 1000L;
+            toFill.BandwidthBytesPerSecond = usage.NetworkMaxMBitsPerSecond * 1000L * 1000L / 8L;
         }
 
         private IEnumerable<NetworkUsage> ParseNetworkUsage()

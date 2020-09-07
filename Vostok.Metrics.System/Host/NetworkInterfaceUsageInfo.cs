@@ -8,6 +8,6 @@ namespace Vostok.Metrics.System.Host
         public string InterfaceName { get; set; }
         public long SentBytesPerSecond { get; set; }
         public long ReceivedBytesPerSecond { get; set; }
-        public long BandwidthBitsPerSecond { get; set; }
+        public long BandwidthBytesPerSecond { get; set; }
     }
 }
