@@ -14,6 +14,6 @@ namespace Vostok.Metrics.System.Benchmark
         public void CollectProcessMetrics() => processCollector.Collect();
 
         [Benchmark]
-        public void CollectHostMetrics() => hostCollector.Collect();
+        public void CollectHostMetrics() => new HostMetricsCollector().Collect();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -13,14 +14,22 @@ namespace Vostok.Metrics.System.Host
         private readonly Regex pidRegex = new Regex("[0-9]+$", RegexOptions.Compiled);
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
+        private readonly ReusableFileReader vmStatReader = new ReusableFileReader("/proc/vmstat");
         private readonly ReusableFileReader descriptorInfoReader = new ReusableFileReader("/proc/sys/fs/file-nr");
+        private readonly ReusableFileReader networkUsageReader = new ReusableFileReader("/proc/net/dev");
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
+        private readonly HostNetworkUtilizationCollector networkCollector = new HostNetworkUtilizationCollector();
+        private readonly DerivativeCollector hardPageFaultCollector = new DerivativeCollector();
+        private readonly DiskUsageCollector_Linux diskUsageCollector = new DiskUsageCollector_Linux();
 
         public void Dispose()
         {
             systemStatReader.Dispose();
             memoryReader.Dispose();
+            vmStatReader.Dispose();
             descriptorInfoReader.Dispose();
+            networkUsageReader.Dispose();
+            diskUsageCollector.Dispose();
         }
 
         public void Collect(HostMetrics metrics)
@@ -28,6 +37,7 @@ namespace Vostok.Metrics.System.Host
             var systemStat = ReadSystemStat();
             var memInfo = ReadMemoryInfo();
             var perfInfo = ReadPerformanceInfo();
+            var networkInfo = ReadNetworkUsageInfo();
 
             if (systemStat.Filled)
             {
@@ -43,6 +53,8 @@ namespace Vostok.Metrics.System.Host
                 metrics.MemoryCached = memInfo.CacheMemory.Value;
                 metrics.MemoryKernel = memInfo.KernelMemory.Value;
                 metrics.MemoryTotal = memInfo.TotalMemory.Value;
+                metrics.MemoryFree = memInfo.FreeMemory.Value;
+                metrics.PageFaultsPerSecond = (long) hardPageFaultCollector.Collect(memInfo.MajorPageFaultCount.Value);
             }
 
             if (perfInfo.Filled)
@@ -51,6 +63,11 @@ namespace Vostok.Metrics.System.Host
                 metrics.ThreadCount = perfInfo.ThreadCount.Value;
                 metrics.ProcessCount = perfInfo.ProcessCount.Value;
             }
+
+            if (networkInfo.Filled)
+                networkCollector.Collect(metrics, networkInfo.ReceivedBytes.Value, networkInfo.SentBytes.Value, networkInfo.NetworkMaxMBitsPerSecond.Value);
+
+            diskUsageCollector.Collect(metrics);
         }
 
         private SystemStat ReadSystemStat()
@@ -101,6 +118,15 @@ namespace Vostok.Metrics.System.Host
 
                     if (FileParser.TryParseLong(line, "Slab", out var memKernel))
                         result.KernelMemory = memKernel * 1024;
+
+                    if (FileParser.TryParseLong(line, "MemFree", out var memFree))
+                        result.FreeMemory = memFree * 1024;
+                }
+
+                foreach (var line in vmStatReader.ReadLines())
+                {
+                    if (FileParser.TryParseLong(line, "pgmajfault", out var hardPageFaultCount))
+                        result.MajorPageFaultCount = hardPageFaultCount;
                 }
             }
             catch (Exception error)
@@ -125,8 +151,17 @@ namespace Vostok.Metrics.System.Host
 
                 foreach (var processDirectory in processDirectories)
                 {
+                    try
+                    {
+                        threadCount += Directory.EnumerateDirectories(Path.Combine(processDirectory, "task")).Count();
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        // NOTE: Ignored due to process already exited so we don't have to count it's threads and just want to continue.
+                        continue;
+                    }
+
                     processCount++;
-                    threadCount += Directory.EnumerateDirectories($"{processDirectory}/task/").Count();
                 }
 
                 result.ProcessCount = processCount;
@@ -136,6 +171,51 @@ namespace Vostok.Metrics.System.Host
                     int.TryParse(parts[0], out var allocatedDescriptors) &&
                     int.TryParse(parts[1], out var freeDescriptors))
                     result.HandleCount = allocatedDescriptors - freeDescriptors;
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
+
+            return result;
+        }
+
+        private NetworkUsage ReadNetworkUsageInfo()
+        {
+            var result = new NetworkUsage();
+
+            bool ShouldBeCounted(string interfaceName)
+                => interfaceName.StartsWith("eth") || interfaceName.StartsWith("team");
+
+            try
+            {
+                var totalReceivedBytes = 0L;
+                var totalSentBytes = 0L;
+                var countedInterfaces = new HashSet<string>();
+
+                // NOTE: Skip first 2 lines because they contain format info. See https://man7.org/linux/man-pages/man5/proc.5.html for details.
+                // NOTE: We don't need info from non ethernet interfaces.
+                foreach (var line in networkUsageReader.ReadLines().Skip(2))
+                {
+                    if (FileParser.TrySplitLine(line, 17, out var parts) && 
+                        ShouldBeCounted(parts[0]) &&
+                        long.TryParse(parts[1], out var receivedBytes) &&
+                        long.TryParse(parts[9], out var sentBytes))
+                    {
+                        countedInterfaces.Add(parts[0].TrimEnd(':'));
+                        totalReceivedBytes += receivedBytes;
+                        totalSentBytes += sentBytes;
+                    }
+                }
+
+                result.ReceivedBytes = totalReceivedBytes;
+                result.SentBytes = totalSentBytes;
+
+                // NOTE: See https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net for details.
+                var networkMaxMBitsPerSecond = countedInterfaces.Sum(
+                    @interface => int.Parse(File.ReadAllText($"/sys/class/net/{@interface}/speed")));
+
+                result.NetworkMaxMBitsPerSecond = networkMaxMBitsPerSecond;
             }
             catch (Exception error)
             {
@@ -166,12 +246,24 @@ namespace Vostok.Metrics.System.Host
 
         private class MemoryInfo
         {
-            public bool Filled => AvailableMemory.HasValue && KernelMemory.HasValue && CacheMemory.HasValue && TotalMemory.HasValue;
+            public bool Filled => AvailableMemory.HasValue && KernelMemory.HasValue && CacheMemory.HasValue &&
+                                  TotalMemory.HasValue && FreeMemory.HasValue && MajorPageFaultCount.HasValue;
 
             public long? AvailableMemory { get; set; }
             public long? KernelMemory { get; set; }
             public long? CacheMemory { get; set; }
+            public long? FreeMemory { get; set; }
             public long? TotalMemory { get; set; }
+            public long? MajorPageFaultCount { get; set; }
+        }
+
+        private class NetworkUsage
+        {
+            public bool Filled => ReceivedBytes.HasValue && SentBytes.HasValue && NetworkMaxMBitsPerSecond.HasValue;
+
+            public long? ReceivedBytes { get; set; }
+            public long? SentBytes { get; set; }
+            public long? NetworkMaxMBitsPerSecond { get; set; }
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Vostok.Metrics.System.Tests
             var metrics = collector.Collect();
 
             metrics.CpuUtilizedCores.Should().BeGreaterThan(0);
-            metrics.CpuUtilizedFraction.Should().BeGreaterThan(0);
+            metrics.CpuUtilizedFraction.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
         }
 
         [Test]
@@ -42,6 +42,7 @@ namespace Vostok.Metrics.System.Tests
             metrics.MemoryKernel.Should().BeGreaterThan(0);
             metrics.MemoryCached.Should().BeGreaterThan(0);
             metrics.MemoryAvailable.Should().BeGreaterThan(0);
+            metrics.MemoryFree.Should().BeGreaterThan(0);
         }
 
         [Test]
@@ -49,9 +50,9 @@ namespace Vostok.Metrics.System.Tests
         {
             var metrics = collector.Collect();
 
-            metrics.DiskSpaceInfos.Should().NotBeEmpty();
+            metrics.DisksSpaceInfo.Should().NotBeEmpty();
 
-            foreach (var diskSpaceInfo in metrics.DiskSpaceInfos)
+            foreach (var diskSpaceInfo in metrics.DisksSpaceInfo)
             {
                 diskSpaceInfo.Value.DiskName.Should().NotBeNullOrEmpty();
                 diskSpaceInfo.Value.FreeBytes.Should().BeGreaterThan(0);
@@ -79,6 +80,34 @@ namespace Vostok.Metrics.System.Tests
 
             metrics.TcpStates.Should().NotBeEmpty();
             metrics.TcpConnectionsTotalCount.Should().BeGreaterThan(0);
+        }
+
+        [Test]
+        public void Should_measure_disk_usage()
+        {
+            var metrics = collector.Collect();
+
+            metrics.DisksSpaceInfo.Should().NotBeEmpty();
+
+            foreach (var diskUsageInfo in metrics.DisksUsageInfo)
+            {
+                diskUsageInfo.Value.DiskName.Should().NotBeNullOrEmpty();
+                diskUsageInfo.Value.UtilizedPercent.Should().BeGreaterOrEqualTo(0).And.BeLessOrEqualTo(100);
+            }
+        }
+
+        [Test]
+        [Explicit("Network should be loaded.")]
+        public void Should_measure_network_usage()
+        {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+                throw new InconclusiveException("No network available");
+            var metrics = collector.Collect();
+
+            metrics.NetworkReceivedBytesPerSecond.Should().BeGreaterThan(0);
+            metrics.NetworkSentBytesPerSecond.Should().BeGreaterThan(0);
+            metrics.NetworkInUtilizedPercent.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
+            metrics.NetworkOutUtilizedPercent.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
         }
     }
 }

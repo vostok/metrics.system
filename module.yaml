@@ -15,6 +15,7 @@ notests *default:
     - vostok.devtools
     - vostok.logging.abstractions
     - vostok.metrics
+    - vostok.sys.metrics.perfcounters
 
 full-build > notests:
   build:

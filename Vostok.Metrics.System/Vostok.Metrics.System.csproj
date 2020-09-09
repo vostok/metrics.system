@@ -8,7 +8,7 @@
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <VersionPrefix>0.2.2</VersionPrefix>
+    <VersionPrefix>0.2.3</VersionPrefix>
   </PropertyGroup>
   <PropertyGroup>
     <Title>Vostok.Metrics.System</Title>
@@ -35,6 +35,10 @@
     <Reference Include="Vostok.Metrics">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\vostok.metrics\Vostok.Metrics\bin\Release\netstandard2.0\Vostok.Metrics.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.Sys.Metrics.PerfCounters">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.sys.metrics.perfcounters\Vostok.Sys.Metrics.PerfCounters\bin\Release\netstandard2.0\Vostok.Sys.Metrics.PerfCounters.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

@@ -5,8 +5,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Vostok.Metrics.System.Helpers;
 
-// ReSharper disable InconsistentNaming
-
 namespace Vostok.Metrics.System.Host
 {
     internal class DiskSpaceCollector : IDisposable
@@ -45,7 +43,7 @@ namespace Vostok.Metrics.System.Host
                     diskSpaceInfos[info.DiskName] = info;
             }
 
-            metrics.DiskSpaceInfos = diskSpaceInfos;
+            metrics.DisksSpaceInfo = diskSpaceInfos;
         }
 
         private IEnumerable<DiskSpaceInfo> GetDiskSpaceInfos()
@@ -53,7 +51,10 @@ namespace Vostok.Metrics.System.Host
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 UpdateMountMap();
 
-            foreach (var drive in DriveInfo.GetDrives().Where(x => x.IsReady && x.DriveType == DriveType.Fixed && systemFilter(x)))
+            // NOTE: We are trying to get information from disks which are not ready. This is made for docker compatibility (some of the drives are shown as NotReady for some reason).
+            // NOTE: Also, the fact that drive has IsReady set to true doesn't mean much: it can still throw IOExceptions.
+            // NOTE: See https://docs.microsoft.com/en-us/dotnet/api/system.io.driveinfo.isready for details.
+            foreach (var drive in DriveInfo.GetDrives().Where(x => systemFilter(x) && x.DriveType == DriveType.Fixed))
             {
                 var result = new DiskSpaceInfo();
 
@@ -67,7 +68,8 @@ namespace Vostok.Metrics.System.Host
                 }
                 catch (Exception error)
                 {
-                    InternalErrorLogger.Warn(error);
+                    if (drive.IsReady)
+                        InternalErrorLogger.Warn(error);
                     continue;
                 }
 
@@ -101,7 +103,7 @@ namespace Vostok.Metrics.System.Host
 
         private string FormatDiskName_Linux(string diskName)
             => mountDiskMap[diskName]
-                .Replace("/dev/", string.Empty)
-                .Replace("/", "-");
+               .Replace("/dev/", string.Empty)
+               .Replace("/", "-");
     }
 }

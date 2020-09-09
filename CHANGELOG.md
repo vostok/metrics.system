@@ -1,6 +1,12 @@
-## 0.2.2 (09-09-2020):
+## 0.2.3 (09-09-2020):
 
 Added `CpuTotal` field.
+
+## 0.2.2 (24-08-2020):
+
+- Added network usage metrics.
+- Added disk usage metrics.
+- Added Page faults / sec metrics.
 
 ## 0.2.1 (07-08-2020):
 
