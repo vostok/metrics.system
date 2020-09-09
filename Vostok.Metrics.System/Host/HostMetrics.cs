@@ -12,7 +12,7 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// Total number of CPU cores on host.
         /// </summary>
-        public long CpuTotal { get; set; }
+        public int CpuTotal { get; set; }
 
         /// <summary>
         /// <para>Number of CPU cores utilized by host.</para>
