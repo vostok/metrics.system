@@ -1,3 +1,7 @@
+## 0.2.2 (09-09-2020):
+
+Added `CpuTotal` field.
+
 ## 0.2.1 (07-08-2020):
 
 - DiskSpaceCollector: only update mounts once per call, not once per disk.
