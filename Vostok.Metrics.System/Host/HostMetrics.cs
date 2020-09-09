@@ -10,8 +10,13 @@ namespace Vostok.Metrics.System.Host
     public class HostMetrics
     {
         /// <summary>
+        /// Total number of CPU cores on host.
+        /// </summary>
+        public int CpuTotal { get; set; }
+
+        /// <summary>
         /// <para>Number of CPU cores utilized by host.</para>
-        /// <para>This metric has a value between 0 and <see cref="Environment.ProcessorCount"/>.</para>
+        /// <para>This metric has a value between 0 and <see cref="CpuTotal"/>.</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
         public double CpuUtilizedCores { get; set; }

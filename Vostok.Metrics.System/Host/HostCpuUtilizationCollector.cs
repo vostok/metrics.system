@@ -12,9 +12,11 @@ namespace Vostok.Metrics.System.Host
 
         public void Collect(HostMetrics metrics, ulong systemTime, ulong idleTime)
         {
-            var systemTimeDiff = (double) systemTime - previousSystemTime;
-            var idleTimeDiff = (double) idleTime - previousIdleTime;
+            var systemTimeDiff = (double)systemTime - previousSystemTime;
+            var idleTimeDiff = (double)idleTime - previousIdleTime;
             var spentTimeDiff = 1 - idleTimeDiff / systemTimeDiff;
+
+            metrics.CpuTotal = Environment.ProcessorCount;
 
             if (previousSystemTime == 0 || systemTimeDiff <= 0)
             {
