@@ -16,7 +16,7 @@ namespace Vostok.Metrics.System.Host
             var idleTimeDiff = (double)idleTime - previousIdleTime;
             var spentTimeDiff = 1 - idleTimeDiff / systemTimeDiff;
 
-            metrics.CpuTotal = Environment.ProcessorCount;
+            metrics.CpuTotalCores = Environment.ProcessorCount;
 
             if (previousSystemTime == 0 || systemTimeDiff <= 0)
             {

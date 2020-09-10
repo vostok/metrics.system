@@ -1,6 +1,6 @@
-## 0.2.3 (09-09-2020):
+## 0.2.4 (10-09-2020):
 
-Added `CpuTotal` field.
+Added `CpuTotalCores` field.
 
 ## 0.2.2 (24-08-2020):
 

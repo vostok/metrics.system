@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
 using JetBrains.Annotations;
@@ -12,11 +11,11 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// Total number of CPU cores on host.
         /// </summary>
-        public int CpuTotal { get; set; }
+        public int CpuTotalCores { get; set; }
 
         /// <summary>
         /// <para>Number of CPU cores utilized by host.</para>
-        /// <para>This metric has a value between 0 and <see cref="CpuTotal"/>.</para>
+        /// <para>This metric has a value between 0 and <see cref="CpuTotalCores"/>.</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
         public double CpuUtilizedCores { get; set; }
