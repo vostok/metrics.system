@@ -108,13 +108,29 @@ namespace Vostok.Metrics.System.Host
         /// <para>Utilized percent of the output network bandwidth (relative to all interfaces).</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
-        public double NetworkOutUtilizedPercent => (NetworkSentBytesPerSecond * 100d / NetworkBandwidthBytesPerSecond).Clamp(0, 100);
+        public double NetworkOutUtilizedPercent
+        {
+            get
+            {
+                if (NetworkBandwidthBytesPerSecond == 0)
+                    return 0;
+                return (NetworkSentBytesPerSecond * 100d / NetworkBandwidthBytesPerSecond).Clamp(0, 100);
+            }
+        }
 
         /// <summary>
         /// <para>Utilized percent of the input network bandwidth (relative to all interfaces).</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
-        public double NetworkInUtilizedPercent => (NetworkReceivedBytesPerSecond * 100d / NetworkBandwidthBytesPerSecond).Clamp(0, 100);
+        public double NetworkInUtilizedPercent
+        {
+            get
+            {
+                if (NetworkBandwidthBytesPerSecond == 0)
+                    return 0;
+                return (NetworkReceivedBytesPerSecond * 100d / NetworkBandwidthBytesPerSecond).Clamp(0, 100);
+            }
+        }
 
         /// <summary>
         /// Amount of total TCP connections count.
