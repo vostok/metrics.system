@@ -1,3 +1,7 @@
+## 0.3.5 (21-09-2020):
+
+Added per-network-interface metrics.
+
 ## 0.2.4 (10-09-2020):
 
 Added `CpuTotalCores` field.
