@@ -1,4 +1,4 @@
-## 0.3.5 (21-09-2020):
+## 0.2.5 (21-09-2020):
 
 Added per-network-interface metrics.
 
