@@ -1,3 +1,10 @@
+## 0.2.6 (05-10-2020):
+
+- CurrentProcessMetrics: added limit metrics
+- CurrentProcessMetrics: added limit utilization metrics
+- CurrentProcessMetrics: added process uptime metric
+- HostMetricsCollector: added options enable/disable collection of different metrics
+
 ## 0.2.5 (21-09-2020):
 
 Added per-network-interface metrics.
