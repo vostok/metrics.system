@@ -14,7 +14,15 @@ namespace Vostok.Metrics.System.Process
         private readonly ConcurrentDictionary<TimeSpan, PeriodicObservable<CurrentProcessMetrics>> observables 
             = new ConcurrentDictionary<TimeSpan, PeriodicObservable<CurrentProcessMetrics>>();
 
+        private readonly CurrentProcessMetricsSettings settings;
+
+        public CurrentProcessMonitor(CurrentProcessMetricsSettings settings)
+            => this.settings = settings;
+
+        public CurrentProcessMonitor()
+            : this (new CurrentProcessMetricsSettings()) { }
+
         public IObservable<CurrentProcessMetrics> ObserveMetrics(TimeSpan period)
-            => observables.GetOrAdd(period, p => new PeriodicObservable<CurrentProcessMetrics>(p, new CurrentProcessMetricsCollector().Collect));
+            => observables.GetOrAdd(period, p => new PeriodicObservable<CurrentProcessMetrics>(p, new CurrentProcessMetricsCollector(settings).Collect));
     }
 }

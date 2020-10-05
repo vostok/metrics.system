@@ -14,35 +14,41 @@ namespace Vostok.Metrics.System.Host
     {
         private static readonly TimeSpan CacheTTL = TimeSpan.FromMilliseconds(100);
 
+        private readonly HostMetricsSettings settings;
         private readonly Action<HostMetrics> nativeCollector;
         private readonly Action disposeNativeCollector;
         private readonly DiskSpaceCollector diskSpaceCollector = new DiskSpaceCollector();
         private readonly TcpStateCollector tcpStateCollector = new TcpStateCollector();
         private readonly ThrottlingCache<HostMetrics> cache;
 
-        public void Dispose()
-        {
-            disposeNativeCollector?.Invoke();
-            diskSpaceCollector?.Dispose();
-        }
-
         public HostMetricsCollector()
+            : this (new HostMetricsSettings()) { }
+
+        public HostMetricsCollector(HostMetricsSettings settings)
         {
+            this.settings = settings ?? new HostMetricsSettings();
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                var collector = new NativeHostMetricsCollector_Windows();
+                var collector = new NativeHostMetricsCollector_Windows(this.settings);
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var collector = new NativeHostMetricsCollector_Linux();
+                var collector = new NativeHostMetricsCollector_Linux(this.settings);
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
             }
 
             cache = new ThrottlingCache<HostMetrics>(CollectInternal, CacheTTL);
+        }
+
+        public void Dispose()
+        {
+            disposeNativeCollector?.Invoke();
+            diskSpaceCollector?.Dispose();
         }
 
         [NotNull]
@@ -52,9 +58,15 @@ namespace Vostok.Metrics.System.Host
         private HostMetrics CollectInternal()
         {
             var metrics = new HostMetrics();
+            
             CollectNativeMetrics(metrics);
-            diskSpaceCollector.Collect(metrics);
-            tcpStateCollector.Collect(metrics);
+
+            if (settings.CollectDiskSpaceMetrics)
+                diskSpaceCollector.Collect(metrics);
+
+            if (settings.CollectTcpStateMetrics)
+                tcpStateCollector.Collect(metrics);
+            
             return metrics;
         }
 

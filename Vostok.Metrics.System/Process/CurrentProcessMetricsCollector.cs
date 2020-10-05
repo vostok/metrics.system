@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using JetBrains.Annotations;
 using Vostok.Metrics.System.Helpers;
+using Vostok.Metrics.System.Host;
 
 namespace Vostok.Metrics.System.Process
 {
@@ -40,6 +41,7 @@ namespace Vostok.Metrics.System.Process
         private static readonly Func<long> ThreadPoolQueueLengthProvider
             = ReflectionHelper.BuildStaticPropertyAccessor<long>(typeof(ThreadPool), "PendingWorkItemCount");
 
+        private readonly CurrentProcessMetricsSettings settings;
         private readonly Action<CurrentProcessMetrics> nativeCollector;
         private readonly Action disposeNativeCollector;
 
@@ -50,13 +52,31 @@ namespace Vostok.Metrics.System.Process
         private readonly DeltaCollector gen1Collections = new DeltaCollector(() => GcCollectionCountProvider(1));
         private readonly DeltaCollector gen2Collections = new DeltaCollector(() => GcCollectionCountProvider(2));
 
+        private readonly Lazy<long> totalHostMemory = new Lazy<long>(
+            () =>
+            {
+                var settings = HostMetricsSettings.CreateDisabled();
+
+                settings.CollectMemoryMetrics = true;
+
+                using (var collector = new HostMetricsCollector(settings))
+                    return collector.Collect().MemoryTotal;
+            });
+
         public void Dispose()
         {
             disposeNativeCollector?.Invoke();
         }
 
         public CurrentProcessMetricsCollector()
+            : this (null)
         {
+        }
+
+        public CurrentProcessMetricsCollector(CurrentProcessMetricsSettings settings)
+        {
+            this.settings = settings ?? new CurrentProcessMetricsSettings();
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 nativeCollector = new NativeMetricsCollector_Windows().Collect;
 
@@ -80,6 +100,8 @@ namespace Vostok.Metrics.System.Process
             CollectMiscMetrics(metrics);
 
             CollectNativeMetrics(metrics);
+
+            CollectLimitsMetrics(metrics);
 
             return metrics;
         }
@@ -122,5 +144,18 @@ namespace Vostok.Metrics.System.Process
 
         private void CollectNativeMetrics(CurrentProcessMetrics metrics)
             => nativeCollector?.Invoke(metrics);
+
+        private void CollectLimitsMetrics(CurrentProcessMetrics metrics)
+        {
+            metrics.CpuLimitCores = settings.CpuCoresLimitProvider?.Invoke() ?? Environment.ProcessorCount;
+
+            if (metrics.CpuLimitCores > 0)
+                metrics.CpuUtilizedFraction = (metrics.CpuUtilizedCores / metrics.CpuLimitCores).Clamp(0, 1);
+
+            metrics.MemoryLimit = settings.MemoryBytesLimitProvider?.Invoke() ?? totalHostMemory.Value;
+
+            if (metrics.MemoryLimit > 0)
+                metrics.MemoryUtilizedFraction = ((double) metrics.MemoryResident / metrics.MemoryLimit).Clamp(0, 1);
+        }
     }
 }

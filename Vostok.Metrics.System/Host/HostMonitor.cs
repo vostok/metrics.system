@@ -14,7 +14,15 @@ namespace Vostok.Metrics.System.Host
         private readonly ConcurrentDictionary<TimeSpan, PeriodicObservable<HostMetrics>> observables
             = new ConcurrentDictionary<TimeSpan, PeriodicObservable<HostMetrics>>();
 
+        private readonly HostMetricsSettings settings;
+
+        public HostMonitor(HostMetricsSettings settings)
+            => this.settings = settings;
+
+        public HostMonitor()
+            : this (new HostMetricsSettings()) { }
+
         public IObservable<HostMetrics> ObserveMetrics(TimeSpan period)
-            => observables.GetOrAdd(period, p => new PeriodicObservable<HostMetrics>(p, new HostMetricsCollector().Collect));
+            => observables.GetOrAdd(period, p => new PeriodicObservable<HostMetrics>(p, new HostMetricsCollector(settings).Collect));
     }
 }

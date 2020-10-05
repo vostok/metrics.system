@@ -10,6 +10,8 @@ namespace Vostok.Metrics.System.Host
 {
     internal class NativeHostMetricsCollector_Linux : IDisposable
     {
+        private readonly HostMetricsSettings settings;
+
         private readonly Regex pidRegex = new Regex("[0-9]+$", RegexOptions.Compiled);
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
@@ -19,6 +21,9 @@ namespace Vostok.Metrics.System.Host
         private readonly NetworkUtilizationCollector_Linux networkCollector = new NetworkUtilizationCollector_Linux();
         private readonly DerivativeCollector hardPageFaultCollector = new DerivativeCollector();
         private readonly DiskUsageCollector_Linux diskUsageCollector = new DiskUsageCollector_Linux();
+
+        public NativeHostMetricsCollector_Linux(HostMetricsSettings settings)
+            => this.settings = settings;
 
         public void Dispose()
         {
@@ -32,9 +37,10 @@ namespace Vostok.Metrics.System.Host
 
         public void Collect(HostMetrics metrics)
         {
-            var systemStat = ReadSystemStat();
-            var memInfo = ReadMemoryInfo();
-            var perfInfo = ReadPerformanceInfo();
+            var systemStat = settings.CollectCpuMetrics ? ReadSystemStat() : new SystemStat();
+            var memInfo = settings.CollectMemoryMetrics ? ReadMemoryInfo() : new MemoryInfo();
+            var perfInfo = settings.CollectMiscMetrics ? ReadPerformanceInfo() : new PerformanceInfo();
+
             if (systemStat.Filled)
             {
                 var usedTime = systemStat.UserTime.Value + systemStat.NicedTime.Value +
@@ -60,9 +66,11 @@ namespace Vostok.Metrics.System.Host
                 metrics.ProcessCount = perfInfo.ProcessCount.Value;
             }
 
-            networkCollector.Collect(metrics);
+            if (settings.CollectNetworkUsageMetrics)
+                networkCollector.Collect(metrics);
 
-            diskUsageCollector.Collect(metrics);
+            if (settings.CollectDiskUsageMetrics)
+                diskUsageCollector.Collect(metrics);
         }
 
         private SystemStat ReadSystemStat()

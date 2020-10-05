@@ -8,6 +8,7 @@ namespace Vostok.Metrics.System.Host
 {
     internal class NativeHostMetricsCollector_Windows : IDisposable
     {
+        private readonly HostMetricsSettings settings;
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
 
         private readonly IPerformanceCounter<Observation<NetworkUsage>[]> networkUsageCounter = PerformanceCounterFactory.Default
@@ -59,6 +60,9 @@ namespace Vostok.Metrics.System.Host
            .AddCounter("LogicalDisk", "Disk Write Bytes/sec", (context, value) => context.Result.BytesWrittenPerSecond = (long) value)
            .BuildForMultipleInstances("*:");
 
+        public NativeHostMetricsCollector_Windows(HostMetricsSettings settings)
+            => this.settings = settings;
+
         public void Dispose()
         {
             networkUsageCounter.Dispose();
@@ -68,10 +72,17 @@ namespace Vostok.Metrics.System.Host
 
         public void Collect(HostMetrics metrics)
         {
-            CollectCpuUtilization(metrics);
-            CollectMemoryMetrics(metrics);
-            CollectNetworkUsage(metrics);
-            CollectDisksUsage(metrics);
+            if (settings.CollectCpuMetrics)
+                CollectCpuUtilization(metrics);
+
+            if (settings.CollectMemoryMetrics)
+                CollectMemoryMetrics(metrics);
+            
+            if (settings.CollectNetworkUsageMetrics)
+                CollectNetworkUsage(metrics);
+
+            if (settings.CollectDiskUsageMetrics)
+                CollectDisksUsage(metrics);
         }
 
         [DllImport("psapi.dll", SetLastError = true)]
