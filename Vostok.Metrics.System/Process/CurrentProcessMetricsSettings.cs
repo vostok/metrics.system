@@ -7,9 +7,9 @@ namespace Vostok.Metrics.System.Process
     public class CurrentProcessMetricsSettings
     {
         [CanBeNull]
-        public Func<double> CpuCoresLimitProvider { get; set; }
+        public Func<double?> CpuCoresLimitProvider { get; set; }
 
         [CanBeNull]
-        public Func<long> MemoryBytesLimitProvider { get; set; }
+        public Func<long?> MemoryBytesLimitProvider { get; set; }
     }
 }
