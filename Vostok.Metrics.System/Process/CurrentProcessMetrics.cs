@@ -155,5 +155,10 @@ namespace Vostok.Metrics.System.Process
         /// Number of active timers in a process. An active timer is scheduled to fire sometime in the future.
         /// </summary>
         public long ActiveTimersCount { get; set; }
+
+        /// <summary>
+        /// Current process uptime in seconds.
+        /// </summary>
+        public double UptimeSeconds { get; set; }
     }
 }

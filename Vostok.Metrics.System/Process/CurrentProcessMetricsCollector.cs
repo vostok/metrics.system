@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using JetBrains.Annotations;
@@ -14,6 +15,8 @@ namespace Vostok.Metrics.System.Process
     [PublicAPI]
     public class CurrentProcessMetricsCollector : IDisposable
     {
+        private static readonly Stopwatch UptimeMeter = Stopwatch.StartNew();
+
         private static readonly Func<int, int> GcCollectionCountProvider
             = ReflectionHelper.BuildStaticMethodInvoker<int, int>(typeof(GC), "CollectionCount");
 
@@ -140,6 +143,7 @@ namespace Vostok.Metrics.System.Process
             metrics.LockContentionCount = (int) lockContentionCount.Collect();
             metrics.ExceptionsCount = (int) exceptionsCount.Collect();
             metrics.ActiveTimersCount = ActiveTimersCountProvider();
+            metrics.UptimeSeconds = UptimeMeter.Elapsed.TotalSeconds;
         }
 
         private void CollectNativeMetrics(CurrentProcessMetrics metrics)
