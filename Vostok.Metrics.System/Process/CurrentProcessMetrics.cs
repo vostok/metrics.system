@@ -130,6 +130,18 @@ namespace Vostok.Metrics.System.Process
         public int ThreadPoolBusyIo { get; set; }
 
         /// <summary>
+        /// <para>Fraction of the worker threads consumed by current process (<see cref="ThreadPoolBusyWorkers"/> relative to <see cref="ThreadPoolMinWorkers"/>).</para>
+        /// <para>This metric has a value between 0 and 1.</para>
+        /// </summary>
+        public double ThreadPoolWorkersUtilizedFraction { get; set; }
+
+        /// <summary>
+        /// <para>Fraction of the worker threads consumed by current process (<see cref="ThreadPoolBusyIo"/> relative to <see cref="ThreadPoolMinIo"/>).</para>
+        /// <para>This metric has a value between 0 and 1.</para>
+        /// </summary>
+        public double ThreadPoolIoUtilizedFraction { get; set; }
+
+        /// <summary>
         /// Number of work items waiting for a thread in the queue.
         /// </summary>
         public long ThreadPoolQueueLength { get; set; }

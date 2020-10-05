@@ -117,10 +117,18 @@ namespace Vostok.Metrics.System.Process
 
             metrics.ThreadPoolMinWorkers = minWorkerThreads;
             metrics.ThreadPoolMinIo = minIocpThreads;
+
             metrics.ThreadPoolBusyWorkers = maxWorkerThreads - availableWorkerThreads;
             metrics.ThreadPoolBusyIo = maxIocpThreads - availableIocpThreads;
+            
             metrics.ThreadPoolTotalCount = ThreadPoolTotalCountProvider();
             metrics.ThreadPoolQueueLength = ThreadPoolQueueLengthProvider();
+
+            if (metrics.ThreadPoolMinWorkers > 0)
+                metrics.ThreadPoolWorkersUtilizedFraction = ((double)metrics.ThreadPoolBusyWorkers / metrics.ThreadPoolMinWorkers).Clamp(0, 1);
+
+            if (metrics.ThreadPoolMinIo > 0)
+                metrics.ThreadPoolWorkersUtilizedFraction = ((double)metrics.ThreadPoolBusyIo / metrics.ThreadPoolMinIo).Clamp(0, 1);
         }
 
         private void CollectGCMetrics(CurrentProcessMetrics metrics)
