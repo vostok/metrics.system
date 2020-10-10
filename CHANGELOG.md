@@ -1,3 +1,7 @@
+## 0.2.7 (10-10-2020):
+
+Fixed a bug in disk traffic metrics calculation (per second metrics weren't appropriately scaled).
+
 ## 0.2.6 (05-10-2020):
 
 - CurrentProcessMetrics: added limit metrics
