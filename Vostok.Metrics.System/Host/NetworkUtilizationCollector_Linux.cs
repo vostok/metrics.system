@@ -49,8 +49,12 @@ namespace Vostok.Metrics.System.Host
             var deltaReceivedBytes = usage.ReceivedBytes - previousUsage.ReceivedBytes;
             var deltaSentBytes = usage.SentBytes - previousUsage.SentBytes;
 
-            toFill.ReceivedBytesPerSecond = (long) (deltaReceivedBytes / deltaSeconds);
-            toFill.SentBytesPerSecond = (long) (deltaSentBytes / deltaSeconds);
+            if (deltaSeconds > 0d)
+            {
+                toFill.ReceivedBytesPerSecond = (long)(deltaReceivedBytes / deltaSeconds);
+                toFill.SentBytesPerSecond = (long)(deltaSentBytes / deltaSeconds);
+            }
+
             toFill.BandwidthBytesPerSecond = usage.NetworkMaxMBitsPerSecond * 1000L * 1000L / 8L;
         }
 

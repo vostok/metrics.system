@@ -59,15 +59,18 @@ namespace Vostok.Metrics.System.Host
 
             toFill.CurrentQueueLength = diskStats.CurrentQueueLength;
 
-            toFill.ReadsPerSecond = (long) (readsDelta / deltaSeconds);
-            toFill.WritesPerSecond = (long) (writesDelta / deltaSeconds);
+            if (deltaSeconds > 0d)
+            {
+                toFill.ReadsPerSecond = (long)(readsDelta / deltaSeconds);
+                toFill.WritesPerSecond = (long)(writesDelta / deltaSeconds);
 
-            // NOTE: Every sector equals 512B, so it's easy to convert this values.
-            // NOTE: See https://www.man7.org/linux/man-pages/man1/iostat.1.html for details about sector size.
-            toFill.BytesReadPerSecond = sectorsReadDelta * 512;
-            toFill.BytesWrittenPerSecond = sectorsWrittenDelta * 512;
+                // NOTE: Every sector equals 512B, so it's easy to convert these values.
+                // NOTE: See https://www.man7.org/linux/man-pages/man1/iostat.1.html for details about sector size.
+                toFill.BytesReadPerSecond = (long)(sectorsReadDelta * 512d / deltaSeconds);
+                toFill.BytesWrittenPerSecond = (long)(sectorsWrittenDelta * 512d / deltaSeconds);
 
-            toFill.UtilizedPercent = (100d * msSpentDoingIoDelta / (deltaSeconds * 1000)).Clamp(0, 100);
+                toFill.UtilizedPercent = (100d * msSpentDoingIoDelta / (deltaSeconds * 1000)).Clamp(0, 100);
+            }
         }
 
         private List<DiskStats> ParseDiskstats(IEnumerable<string> diskstats)
