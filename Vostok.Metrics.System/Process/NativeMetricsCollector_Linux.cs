@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Vostok.Metrics.System.Helpers;
 
 // ReSharper disable PossibleInvalidOperationException
@@ -39,7 +40,7 @@ namespace Vostok.Metrics.System.Process
                 var systemTime = systemStat.SystemTime.Value + systemStat.UserTime.Value + systemStat.IdleTime.Value;
                 var processTime = processStat.SystemTime.Value + processStat.UserTime.Value;
 
-                cpuCollector.Collect(metrics, systemTime, processTime);
+                cpuCollector.Collect(metrics, systemTime, processTime, systemStat.CpuCount);
             }
         }
 
@@ -60,6 +61,8 @@ namespace Vostok.Metrics.System.Process
                     if (ulong.TryParse(parts[4], out var itime))
                         result.IdleTime = itime;
                 }
+
+                result.CpuCount = systemStatReader.ReadLines().Count(line => line.StartsWith("cpu")) - 1;
             }
             catch (Exception error)
             {
@@ -125,6 +128,7 @@ namespace Vostok.Metrics.System.Process
         {
             public bool Filled => IdleTime.HasValue && UserTime.HasValue && SystemTime.HasValue;
 
+            public int? CpuCount { get; set; }
             public ulong? IdleTime { get; set; }
             public ulong? UserTime { get; set; }
             public ulong? SystemTime { get; set; }

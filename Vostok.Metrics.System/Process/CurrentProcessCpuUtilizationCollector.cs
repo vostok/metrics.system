@@ -5,12 +5,12 @@ namespace Vostok.Metrics.System.Process
 {
     internal class CpuUtilizationCollector
     {
-        private static readonly int CoresCount = Environment.ProcessorCount;
+        private static readonly int DefaultCoresCount = Environment.ProcessorCount;
 
         private ulong previousSystemTime;
         private ulong previousProcessTime;
 
-        public void Collect(CurrentProcessMetrics metrics, ulong systemTime, ulong processTime)
+        public void Collect(CurrentProcessMetrics metrics, ulong systemTime, ulong processTime, int? systemCores = null)
         {
             var systemTimeDiff = (double) systemTime - previousSystemTime;
             var processTimeDiff = (double) processTime - previousProcessTime;
@@ -22,7 +22,9 @@ namespace Vostok.Metrics.System.Process
             }
             else
             {
-                metrics.CpuUtilizedCores = (CoresCount * processTimeDiff / systemTimeDiff).Clamp(0, CoresCount);
+                var cores = systemCores ?? DefaultCoresCount;
+
+                metrics.CpuUtilizedCores = (cores * processTimeDiff / systemTimeDiff).Clamp(0, cores);
                 metrics.CpuUtilizedFraction = (processTimeDiff / systemTimeDiff).Clamp(0, 1);
             }
 

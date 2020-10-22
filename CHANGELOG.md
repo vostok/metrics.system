@@ -1,3 +1,7 @@
+## 0.2.8 (22-10-2020):
+
+CurrentProcessMetricsCollector: fixed consumed CPU cores metrics inside Linux containers.
+
 ## 0.2.7 (10-10-2020):
 
 Fixed a bug in disk traffic metrics calculation (per second metrics weren't appropriately scaled).
