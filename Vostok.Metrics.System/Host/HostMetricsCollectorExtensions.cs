@@ -50,7 +50,7 @@ namespace Vostok.Metrics.System.Host
             {
                 foreach (var property in typeof(DiskSpaceInfo).GetProperties())
                 {
-                    if (!property.Name.Equals(nameof(DiskSpaceInfo.DiskName)))
+                    if (!property.Name.Equals(nameof(DiskSpaceInfo.DiskName)) && !property.Name.Equals(nameof(DiskSpaceInfo.RootDirectory)))
                     {
                         yield return new MetricDataPoint(
                             Convert.ToDouble(property.GetValue(diskSpaceInfo.Value)),

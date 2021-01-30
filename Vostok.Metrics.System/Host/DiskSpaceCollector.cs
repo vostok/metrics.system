@@ -61,6 +61,7 @@ namespace Vostok.Metrics.System.Host
                 try
                 {
                     result.DiskName = nameFormatter(drive.Name);
+                    result.RootDirectory = drive.RootDirectory.FullName;
                     result.FreeBytes = drive.TotalFreeSpace;
                     result.TotalCapacityBytes = drive.TotalSize;
                     if (result.TotalCapacityBytes != 0)
