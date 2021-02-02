@@ -27,7 +27,7 @@ namespace Vostok.Metrics.System.Host
 
             foreach (var networkUsage in ParseNetworkUsage())
             {
-                var result = new NetworkInterfaceUsageInfo();
+                var result = new NetworkInterfaceUsageInfo {InterfaceName = networkUsage.InterfaceName};
 
                 if (previousNetworkUsageInfo.TryGetValue(networkUsage.InterfaceName, out var value))
                     FillInfo(result, value, networkUsage, deltaSeconds);
@@ -51,8 +51,8 @@ namespace Vostok.Metrics.System.Host
 
             if (deltaSeconds > 0d)
             {
-                toFill.ReceivedBytesPerSecond = (long)(deltaReceivedBytes / deltaSeconds);
-                toFill.SentBytesPerSecond = (long)(deltaSentBytes / deltaSeconds);
+                toFill.ReceivedBytesPerSecond = (long) (deltaReceivedBytes / deltaSeconds);
+                toFill.SentBytesPerSecond = (long) (deltaSentBytes / deltaSeconds);
             }
 
             toFill.BandwidthBytesPerSecond = usage.NetworkMaxMBitsPerSecond * 1000L * 1000L / 8L;
@@ -62,13 +62,15 @@ namespace Vostok.Metrics.System.Host
         {
             var networkInterfacesUsage = new List<NetworkUsage>();
 
+            // NOTE: 'eth' stands for ethernet interface.
+            // NOTE: 'en' stands for ethernet interface in 'Predictable network interface device names scheme'. 
             bool ShouldBeCounted(string interfaceName)
-                => interfaceName.StartsWith("eth") || interfaceName.StartsWith("team");
+                => interfaceName.StartsWith("eth") || interfaceName.StartsWith("en");
+            //  || interfaceName.StartsWith("team") - disabled for now
 
             try
             {
                 // NOTE: Skip first 2 lines because they contain format info. See https://man7.org/linux/man-pages/man5/proc.5.html for details.
-                // NOTE: We don't need info from non ethernet interfaces.
                 foreach (var line in networkUsageReader.ReadLines().Skip(2))
                 {
                     if (FileParser.TrySplitLine(line, 17, out var parts) &&
