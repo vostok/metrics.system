@@ -1,3 +1,9 @@
+## 0.2.9 (02-02-2021):
+
+Added RootDirectory to DiskSpaceInfo.cs
+Disabled `team` interfaces in NetworkUtilizationCollector_Linux due to absence of `speed` file in old kernels.
+Fixed a couple of bugs in NetworkUtilizationCollector_Linux.
+
 ## 0.2.8 (22-10-2020):
 
 CurrentProcessMetricsCollector: fixed consumed CPU cores metrics inside Linux containers.
