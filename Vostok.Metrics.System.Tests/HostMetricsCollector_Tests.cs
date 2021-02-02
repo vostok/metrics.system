@@ -24,7 +24,7 @@ namespace Vostok.Metrics.System.Tests
         {
             var watch = Stopwatch.StartNew();
 
-            while (watch.Elapsed.TotalMilliseconds < 200)
+            while (watch.Elapsed.TotalMilliseconds < 2000)
                 new SpinWait().SpinOnce();
 
             var metrics = collector.Collect();
@@ -55,9 +55,9 @@ namespace Vostok.Metrics.System.Tests
             foreach (var diskSpaceInfo in metrics.DisksSpaceInfo)
             {
                 diskSpaceInfo.Value.DiskName.Should().NotBeNullOrEmpty();
-                diskSpaceInfo.Value.FreeBytes.Should().BeGreaterThan(0);
-                diskSpaceInfo.Value.FreePercent.Should().BeGreaterThan(0);
-                diskSpaceInfo.Value.TotalCapacityBytes.Should().BeGreaterThan(0);
+                diskSpaceInfo.Value.FreeBytes.Should().BeGreaterOrEqualTo(0).And.BeLessOrEqualTo(diskSpaceInfo.Value.TotalCapacityBytes);
+                diskSpaceInfo.Value.FreePercent.Should().BeGreaterOrEqualTo(0);
+                diskSpaceInfo.Value.TotalCapacityBytes.Should().BeGreaterOrEqualTo(0);
             }
         }
 

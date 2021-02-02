@@ -36,13 +36,13 @@ namespace Vostok.Metrics.System.Tests
             var task1 = Task.Run(() =>
             {
                 lock (sync)
-                    Thread.Sleep(200);
+                    Thread.Sleep(2000);
             });
 
             var task2 = Task.Run(() =>
             {
                 lock (sync)
-                    Thread.Sleep(200);
+                    Thread.Sleep(2000);
             });
 
             await Task.WhenAll(task1, task2);
@@ -78,7 +78,7 @@ namespace Vostok.Metrics.System.Tests
         {
             var watch = Stopwatch.StartNew();
 
-            while (watch.Elapsed.TotalMilliseconds < 200)
+            while (watch.Elapsed.TotalMilliseconds < 2000)
                 new SpinWait().SpinOnce();
 
             var metrics = collector.Collect();
