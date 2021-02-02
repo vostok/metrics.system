@@ -68,6 +68,11 @@ namespace Vostok.Metrics.System.Host
                 => interfaceName.StartsWith("eth") || interfaceName.StartsWith("en");
             //  || interfaceName.StartsWith("team") - disabled for now
 
+            IEnumerable<NetworkUsage> FilterDisabledInterfaces(IEnumerable<NetworkUsage> interfaceUsages)
+            {
+                return interfaceUsages.Where(x => x.NetworkMaxMBitsPerSecond != -1);
+            }
+
             try
             {
                 // NOTE: Skip first 2 lines because they contain format info. See https://man7.org/linux/man-pages/man5/proc.5.html for details.
@@ -89,6 +94,7 @@ namespace Vostok.Metrics.System.Host
                 }
 
                 // NOTE: See https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net for details.
+                // NOTE: This value equals -1 if interface is disabled, so we will filter this values out later.
                 foreach (var networkUsage in networkInterfacesUsage)
                     networkUsage.NetworkMaxMBitsPerSecond = int.Parse(File.ReadAllText($"/sys/class/net/{networkUsage.InterfaceName}/speed"));
             }
@@ -97,7 +103,7 @@ namespace Vostok.Metrics.System.Host
                 InternalErrorLogger.Warn(error);
             }
 
-            return networkInterfacesUsage;
+            return FilterDisabledInterfaces(networkInterfacesUsage);
         }
 
         private class NetworkUsage
