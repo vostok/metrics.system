@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
@@ -12,6 +13,8 @@ namespace Vostok.Metrics.System.Host
         private readonly Stopwatch stopwatch = new Stopwatch();
         private readonly ReusableFileReader networkUsageReader = new ReusableFileReader("/proc/net/dev");
         private volatile Dictionary<string, NetworkUsage> previousNetworkUsageInfo = new Dictionary<string, NetworkUsage>();
+        private readonly Regex teamingModeRegex = new Regex("(activebackup)*(roundrobin)*(broadcast)*(loadbalance)*(random)*(lacp)*", RegexOptions.Compiled);
+
 
         public void Dispose()
         {
@@ -64,9 +67,11 @@ namespace Vostok.Metrics.System.Host
 
             // NOTE: 'eth' stands for ethernet interface.
             // NOTE: 'en' stands for ethernet interface in 'Predictable network interface device names scheme'. 
+            // NOTE: 'team' stands for teaming.
             bool ShouldBeCounted(string interfaceName)
-                => interfaceName.StartsWith("eth") || interfaceName.StartsWith("en");
-            //  || interfaceName.StartsWith("team") - disabled for now
+                => interfaceName.StartsWith("eth") || 
+                   interfaceName.StartsWith("en") || 
+                   interfaceName.StartsWith("team");
 
             IEnumerable<NetworkUsage> FilterDisabledInterfaces(IEnumerable<NetworkUsage> interfaceUsages)
             {
@@ -96,7 +101,15 @@ namespace Vostok.Metrics.System.Host
                 // NOTE: See https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net for details.
                 // NOTE: This value equals -1 if interface is disabled, so we will filter this values out later.
                 foreach (var networkUsage in networkInterfacesUsage)
-                    networkUsage.NetworkMaxMBitsPerSecond = int.Parse(File.ReadAllText($"/sys/class/net/{networkUsage.InterfaceName}/speed"));
+                {
+                    if (int.TryParse(File.ReadAllText($"/sys/class/net/{networkUsage.InterfaceName}/speed"), out var speed))
+                        networkUsage.NetworkMaxMBitsPerSecond = speed;
+                    else
+                    {
+                        // NOTE: We don't need zero values. Mark this interface disabled for now. It's speed may be calculated later if it is teaming interface.
+                        networkUsage.NetworkMaxMBitsPerSecond = -1; 
+                    }
+                }
             }
             catch (Exception error)
             {
