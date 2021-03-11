@@ -63,7 +63,7 @@ namespace Vostok.Metrics.System.Host
 
         private IEnumerable<NetworkUsage> ParseNetworkUsage()
         {
-            var networkInterfacesUsage = new List<NetworkUsage>();
+            var networkInterfacesUsage = new Dictionary<string, NetworkUsage>();
 
             // NOTE: 'eth' stands for ethernet interface.
             // NOTE: 'en' stands for ethernet interface in 'Predictable network interface device names scheme'. 
@@ -88,19 +88,19 @@ namespace Vostok.Metrics.System.Host
                         long.TryParse(parts[1], out var receivedBytes) &&
                         long.TryParse(parts[9], out var sentBytes))
                     {
-                        networkInterfacesUsage.Add(
-                            new NetworkUsage
-                            {
-                                InterfaceName = parts[0].TrimEnd(':'),
-                                ReceivedBytes = receivedBytes,
-                                SentBytes = sentBytes
-                            });
+                        var networkUsage = new NetworkUsage
+                        {
+                            InterfaceName = parts[0].TrimEnd(':'),
+                            ReceivedBytes = receivedBytes,
+                            SentBytes = sentBytes
+                        };
+                        networkInterfacesUsage[networkUsage.InterfaceName] = networkUsage;
                     }
                 }
 
                 // NOTE: See https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net for details.
                 // NOTE: This value equals -1 if interface is disabled, so we will filter this values out later.
-                foreach (var networkUsage in networkInterfacesUsage)
+                foreach (var networkUsage in networkInterfacesUsage.Values)
                 {
                     if (int.TryParse(File.ReadAllText($"/sys/class/net/{networkUsage.InterfaceName}/speed"), out var speed))
                         networkUsage.NetworkMaxMBitsPerSecond = speed;
@@ -110,13 +110,30 @@ namespace Vostok.Metrics.System.Host
                         networkUsage.NetworkMaxMBitsPerSecond = -1; 
                     }
                 }
+
+                foreach (var teamingInterface in networkInterfacesUsage.Values.Where(x => x.InterfaceName.StartsWith("team") && x.NetworkMaxMBitsPerSecond == -1))
+                {
+                    
+                }
             }
             catch (Exception error)
             {
                 InternalErrorLogger.Warn(error);
             }
 
-            return FilterDisabledInterfaces(networkInterfacesUsage);
+            return FilterDisabledInterfaces(networkInterfacesUsage.Values);
+        }
+
+        private IEnumerable<string> GetTeamingChildInterfaces(string teamingInterface)
+        {
+            yield break;
+        }
+
+        // We don't handle nested teaming interfaces.
+        // We ignore disabled interfaces.
+        private long CalculateTeamingSpeed(string teamingMode, Dictionary<string, NetworkUsage> usages)
+        {
+            return 0;
         }
 
         private class NetworkUsage

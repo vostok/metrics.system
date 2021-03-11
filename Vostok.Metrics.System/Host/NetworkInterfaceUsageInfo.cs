@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace Vostok.Metrics.System.Host
 {
@@ -9,5 +10,11 @@ namespace Vostok.Metrics.System.Host
         public long SentBytesPerSecond { get; set; }
         public long ReceivedBytesPerSecond { get; set; }
         public long BandwidthBytesPerSecond { get; set; }
+    }
+
+    [PublicAPI]
+    public class TeamingInterfaceUsageInfo : NetworkInterfaceUsageInfo
+    {
+        public List<string> ChildInterfaces { get; set; }
     }
 }
