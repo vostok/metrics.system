@@ -29,7 +29,7 @@ namespace Vostok.Metrics.System.Host
 
             foreach (var networkUsage in ParseNetworkUsage())
             {
-                var result = new NetworkInterfaceUsageInfo {InterfaceName = networkUsage.InterfaceName};
+                var result = CreateInfo(networkUsage);
 
                 if (previousNetworkUsageInfo.TryGetValue(networkUsage.InterfaceName, out var value))
                     FillInfo(result, value, networkUsage, deltaSeconds);
@@ -44,6 +44,20 @@ namespace Vostok.Metrics.System.Host
             previousNetworkUsageInfo = newNetworkUsageInfo;
 
             stopwatch.Restart();
+        }
+
+        private NetworkInterfaceUsageInfo CreateInfo(NetworkUsage usage)
+        {
+            NetworkInterfaceUsageInfo result;
+
+            if (usage is TeamingNetworkUsage teamingNetworkUsage)
+                result = new TeamingInterfaceUsageInfo {ChildInterfaces = teamingNetworkUsage.ChildInterfaces};
+            else
+                result = new NetworkInterfaceUsageInfo();
+
+            result.InterfaceName = usage.InterfaceName;
+
+            return result;
         }
 
         private void FillInfo(NetworkInterfaceUsageInfo toFill, NetworkUsage previousUsage, NetworkUsage usage, double deltaSeconds)
@@ -94,10 +108,7 @@ namespace Vostok.Metrics.System.Host
                 };
             }
 
-            // TODO: Try/catch for each interface instead of all at once.
             // TODO: Remember all interfaces that are used in teaming and calculate total speed accordingly.
-            // TODO: Repair 'FillInfo'.
-            // TODO: Refactor?
             try
             {
                 // NOTE: Skip first 2 lines because they contain format info. See https://man7.org/linux/man-pages/man5/proc.5.html for details.
@@ -117,7 +128,7 @@ namespace Vostok.Metrics.System.Host
                 // NOTE: This value equals -1 if interface is disabled, so we will filter this values out later.
                 foreach (var networkUsage in networkInterfacesUsage.Values)
                 {
-                    if (int.TryParse(File.ReadAllText($"/sys/class/net/{networkUsage.InterfaceName}/speed"), out var speed))
+                    if (TryRead($"/sys/class/net/{networkUsage.InterfaceName}/speed", out var result) && int.TryParse(result, out var speed))
                         networkUsage.NetworkMaxMBitsPerSecond = speed;
                     else
                     {
@@ -178,7 +189,22 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        // NOTE: 'team' stands for teaming.
+        private static bool TryRead(string path, out string result)
+        {
+            try
+            {
+                result = File.ReadAllText(path);
+                return true;
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+
+                result = null;
+                return false;
+            }
+        }
+
         private static bool IsTeamingInterface(string interfaceName) => interfaceName.StartsWith("team");
 
         private class NetworkUsage
