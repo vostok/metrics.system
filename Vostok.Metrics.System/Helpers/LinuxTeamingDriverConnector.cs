@@ -15,6 +15,7 @@ namespace Vostok.Metrics.System.Helpers
         public LinuxTeamingDriverConnector()
         {
             teamdctlPointer = teamdctl_alloc();
+            teamdctl_set_log_priority(teamdctlPointer, 0);
         }
 
         public TeamingCollector Connect(string teamingInterfaceName)
@@ -34,7 +35,10 @@ namespace Vostok.Metrics.System.Helpers
         private static extern void teamdctl_free(
             [In] UIntPtr ctl);
 
-        // TODO: Redirect logging.
+        [DllImport("libteamdctl.so.0")]
+        private static extern void teamdctl_set_log_priority(
+            [In] UIntPtr ctl,
+            [In] int priority);
     }
 
     internal class TeamingCollector : IDisposable
@@ -50,7 +54,7 @@ namespace Vostok.Metrics.System.Helpers
         public IEnumerable<string> GetChildPorts()
         {
             var config = teamdctl_state_get_raw(teamdctlPointer);
-            
+
             var parsedConfig = JObject.Parse(config);
 
             return parsedConfig.Value<JObject>("ports").Properties().Select(x => x.Name);
