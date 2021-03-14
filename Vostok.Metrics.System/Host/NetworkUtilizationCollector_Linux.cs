@@ -110,7 +110,10 @@ namespace Vostok.Metrics.System.Host
                     }
                 }
 
-                foreach (var teamingInterface in networkInterfacesUsage.Values.Where(x => x.InterfaceName.StartsWith("team") && x.NetworkMaxMBitsPerSecond == -1)) { }
+                foreach (var teamingInterface in networkInterfacesUsage.Values.Where(x => x.InterfaceName.StartsWith("team") && x.NetworkMaxMBitsPerSecond == -1))
+                {
+                    
+                }
             }
             catch (Exception error)
             {
@@ -120,39 +123,44 @@ namespace Vostok.Metrics.System.Host
             return FilterDisabledInterfaces(networkInterfacesUsage.Values);
         }
 
-        private long CalculateTeamingSpeed(IReadOnlyDictionary<string, NetworkUsage> usages)
+        private void FillTeamingInfo(IReadOnlyDictionary<string, NetworkUsage> usages, TeamingNetworkUsage teamingUsage)
         {
             var teamingMode = "test";
 
             var configuration = "Test;";
 
-            var childInterfaces = new SimplifiedIntendedTreeParser("ports", 2).Parse(configuration).ToList();
+            teamingUsage.ChildInterfaces = new HashSet<string>(new SimplifiedIntendedTreeParser("ports", 2).Parse(configuration));
 
             // We don't handle nested teaming interfaces.
-            if (!childInterfaces.TrueForAll(x => !x.StartsWith("team")))
+            if (!teamingUsage.ChildInterfaces.All(x => !x.StartsWith("team")))
                 throw new NotSupportedException("Nested teaming interfaces are not supported.");
 
             // We ignore disabled interfaces.
-            var childSpeeds = childInterfaces
+            var childSpeeds = teamingUsage.ChildInterfaces
                .Select(x => usages[x].NetworkMaxMBitsPerSecond)
                .Where(x => x > 0);
 
             switch (teamingMode)
             {
                 case "activebackup":
-                    var activePort = new SimplifiedIntendedTreeParser("ports", 2).Parse(configuration).FirstOrDefault(x => x.StartsWith("active port:"));
+                    var activePort = new SimplifiedIntendedTreeParser("runner", 2).Parse(configuration).FirstOrDefault(x => x.StartsWith("active port:"));
 
                     if (activePort != null && FileParser.TrySplitLine(activePort, 3, out var parts))
-                        return usages[parts.Last()].NetworkMaxMBitsPerSecond;
+                    {
+                        teamingUsage.NetworkMaxMBitsPerSecond = usages[parts.Last()].NetworkMaxMBitsPerSecond;
+                        return;
+                    }
 
                     throw new ArgumentException("Invalid teaming configuration. Missing active port in activebackup.");
                 case "roundrobin":
                 case "random":
                 case "broadcast":
-                    return childSpeeds.Min();
+                    teamingUsage.NetworkMaxMBitsPerSecond = childSpeeds.Min();
+                    return;
                 case "loadbalance":
                 case "lacp":
-                    return childSpeeds.Sum();
+                    teamingUsage.NetworkMaxMBitsPerSecond = childSpeeds.Sum();
+                    return;
                 default:
                     throw new ArgumentException($"Unknown teaming mode {teamingMode}.");
             }
@@ -164,6 +172,11 @@ namespace Vostok.Metrics.System.Host
             public long ReceivedBytes { get; set; }
             public long SentBytes { get; set; }
             public long NetworkMaxMBitsPerSecond { get; set; }
+        }
+
+        private class TeamingNetworkUsage : NetworkUsage
+        {
+            public HashSet<string> ChildInterfaces { get; set; }
         }
     }
 }
