@@ -66,17 +66,38 @@ namespace Vostok.Metrics.System.Host
 
             // NOTE: 'eth' stands for ethernet interface.
             // NOTE: 'en' stands for ethernet interface in 'Predictable network interface device names scheme'. 
-            // NOTE: 'team' stands for teaming.
             bool ShouldBeCounted(string interfaceName)
                 => interfaceName.StartsWith("eth") ||
                    interfaceName.StartsWith("en") ||
-                   interfaceName.StartsWith("team");
+                   IsTeamingInterface(interfaceName);
 
             IEnumerable<NetworkUsage> FilterDisabledInterfaces(IEnumerable<NetworkUsage> interfaceUsages)
+                => interfaceUsages.Where(x => x.NetworkMaxMBitsPerSecond != -1);
+
+            NetworkUsage CreateNetworkUsage(string interfaceName, long receivedBytes, long sentBytes)
             {
-                return interfaceUsages.Where(x => x.NetworkMaxMBitsPerSecond != -1);
+                if (IsTeamingInterface(interfaceName))
+                {
+                    return new TeamingNetworkUsage
+                    {
+                        InterfaceName = interfaceName,
+                        ReceivedBytes = receivedBytes,
+                        SentBytes = sentBytes
+                    };
+                }
+
+                return new NetworkUsage
+                {
+                    InterfaceName = interfaceName,
+                    ReceivedBytes = receivedBytes,
+                    SentBytes = sentBytes
+                };
             }
 
+            // TODO: Try/catch for each interface instead of all at once.
+            // TODO: Remember all interfaces that are used in teaming and calculate total speed accordingly.
+            // TODO: Repair 'FillInfo'.
+            // TODO: Refactor?
             try
             {
                 // NOTE: Skip first 2 lines because they contain format info. See https://man7.org/linux/man-pages/man5/proc.5.html for details.
@@ -87,13 +108,8 @@ namespace Vostok.Metrics.System.Host
                         long.TryParse(parts[1], out var receivedBytes) &&
                         long.TryParse(parts[9], out var sentBytes))
                     {
-                        var networkUsage = new NetworkUsage
-                        {
-                            InterfaceName = parts[0].TrimEnd(':'),
-                            ReceivedBytes = receivedBytes,
-                            SentBytes = sentBytes
-                        };
-                        networkInterfacesUsage[networkUsage.InterfaceName] = networkUsage;
+                        var interfaceName = parts[0].TrimEnd(':');
+                        networkInterfacesUsage[interfaceName] = CreateNetworkUsage(interfaceName, receivedBytes, sentBytes);
                     }
                 }
 
@@ -110,7 +126,12 @@ namespace Vostok.Metrics.System.Host
                     }
                 }
 
-                foreach (var teamingInterface in networkInterfacesUsage.Values.Where(x => x.InterfaceName.StartsWith("team") && x.NetworkMaxMBitsPerSecond == -1)) { }
+                var teamingInterfaces = networkInterfacesUsage.Values
+                   .Where(x => IsTeamingInterface(x.InterfaceName) && x.NetworkMaxMBitsPerSecond == -1)
+                   .Cast<TeamingNetworkUsage>();
+
+                foreach (var teamingInterface in teamingInterfaces)
+                    FillTeamingInfo(networkInterfacesUsage, teamingInterface);
             }
             catch (Exception error)
             {
@@ -134,7 +155,7 @@ namespace Vostok.Metrics.System.Host
             teamingUsage.ChildInterfaces = new HashSet<string>(new SimplifiedIntendedTreeParser("ports", 2).Parse(configuration));
 
             // We don't handle nested teaming interfaces.
-            if (!teamingUsage.ChildInterfaces.All(x => !x.StartsWith("team")))
+            if (!teamingUsage.ChildInterfaces.All(x => !IsTeamingInterface(x)))
                 throw new NotSupportedException("Nested teaming interfaces are not supported.");
 
             // We ignore disabled interfaces.
@@ -149,7 +170,7 @@ namespace Vostok.Metrics.System.Host
 
                     if (activePort != null && FileParser.TrySplitLine(activePort, 3, out var parts))
                     {
-                        teamingUsage.NetworkMaxMBitsPerSecond = usages[parts.Last()].NetworkMaxMBitsPerSecond;
+                        teamingUsage.NetworkMaxMBitsPerSecond = usages[parts[2]].NetworkMaxMBitsPerSecond;
                         return;
                     }
 
@@ -167,6 +188,9 @@ namespace Vostok.Metrics.System.Host
                     throw new ArgumentException($"Unknown teaming mode {teamingMode}.");
             }
         }
+
+        // NOTE: 'team' stands for teaming.
+        private static bool IsTeamingInterface(string interfaceName) => interfaceName.StartsWith("team");
 
         private class NetworkUsage
         {
