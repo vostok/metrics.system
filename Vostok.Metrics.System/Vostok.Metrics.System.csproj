@@ -6,6 +6,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Configurations>Debug;Release</Configurations>
     <LangVersion>7.2</LangVersion>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <VersionPrefix>0.2.10</VersionPrefix>
@@ -43,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" PrivateAssets="all" />
   </ItemGroup>
   
   <Target Name="RepackAssemblies" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
@@ -56,6 +58,6 @@
       <MergeAssemblies Include="$(BinPath)Newtonsoft.Json.dll" />
     </ItemGroup>
     <Exec WorkingDirectory="$(BinPath)" Command="$(ILRepackExecutable) /internalize /renameInternalized /out:$(ResultAssembly) $(ResultAssembly) @(MergeAssemblies->'%(RelativeDir)%(FileName)%(Extension)', ' ')" />
-    <Delete Files="@(MergeAssemblies)"/>
+    <Delete Files="@(MergeAssemblies)" />
   </Target>
 </Project>
