@@ -15,7 +15,6 @@ namespace Vostok.Metrics.System.Host
         private volatile Dictionary<string, NetworkUsage> previousNetworkUsageInfo = new Dictionary<string, NetworkUsage>();
         private readonly Regex teamingModeRegex = new Regex("(activebackup)*(roundrobin)*(broadcast)*(loadbalance)*(random)*(lacp)*", RegexOptions.Compiled);
 
-
         public void Dispose()
         {
             networkUsageReader?.Dispose();
@@ -69,8 +68,8 @@ namespace Vostok.Metrics.System.Host
             // NOTE: 'en' stands for ethernet interface in 'Predictable network interface device names scheme'. 
             // NOTE: 'team' stands for teaming.
             bool ShouldBeCounted(string interfaceName)
-                => interfaceName.StartsWith("eth") || 
-                   interfaceName.StartsWith("en") || 
+                => interfaceName.StartsWith("eth") ||
+                   interfaceName.StartsWith("en") ||
                    interfaceName.StartsWith("team");
 
             IEnumerable<NetworkUsage> FilterDisabledInterfaces(IEnumerable<NetworkUsage> interfaceUsages)
@@ -107,14 +106,11 @@ namespace Vostok.Metrics.System.Host
                     else
                     {
                         // NOTE: We don't need zero values. Mark this interface disabled for now. It's speed may be calculated later if it is teaming interface.
-                        networkUsage.NetworkMaxMBitsPerSecond = -1; 
+                        networkUsage.NetworkMaxMBitsPerSecond = -1;
                     }
                 }
 
-                foreach (var teamingInterface in networkInterfacesUsage.Values.Where(x => x.InterfaceName.StartsWith("team") && x.NetworkMaxMBitsPerSecond == -1))
-                {
-                    
-                }
+                foreach (var teamingInterface in networkInterfacesUsage.Values.Where(x => x.InterfaceName.StartsWith("team") && x.NetworkMaxMBitsPerSecond == -1)) { }
             }
             catch (Exception error)
             {
@@ -126,7 +122,9 @@ namespace Vostok.Metrics.System.Host
 
         private IEnumerable<string> GetTeamingChildInterfaces(string teamingInterface)
         {
-            yield break;
+            var intendedTreeParser = new SimplifiedIntendedTreeParser("ports", 2);
+
+            return intendedTreeParser.Parse();
         }
 
         // We don't handle nested teaming interfaces.

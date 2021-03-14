@@ -15,6 +15,6 @@ namespace Vostok.Metrics.System.Host
     [PublicAPI]
     public class TeamingInterfaceUsageInfo : NetworkInterfaceUsageInfo
     {
-        public List<string> ChildInterfaces { get; set; }
+        public HashSet<string> ChildInterfaces { get; set; }
     }
 }
