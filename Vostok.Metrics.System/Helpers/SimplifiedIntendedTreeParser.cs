@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Vostok.Metrics.System.Helpers
 {
-    #region UsageExample
+    #region IntendedTree usage example
 
     // Example input: 
     /*
@@ -44,7 +45,8 @@ namespace Vostok.Metrics.System.Helpers
     // Example output: 'eno1', 'eno2', 'enp4s0f0', 'enp4s0f1'
 
     #endregion
-
+    
+    [Obsolete]
     internal class SimplifiedIntendedTreeParser
     {
         private readonly string blockName;
