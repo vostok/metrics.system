@@ -40,8 +40,8 @@ namespace Vostok.Metrics.System.Helpers
         runner:
           active port: enp4s0f0
     */
-    // Example output: 'eno1', 'eno2', 'enp4s0f0', 'enp4s0f1'
     // Example parameters: "ports", 2
+    // Example output: 'eno1', 'eno2', 'enp4s0f0', 'enp4s0f1'
 
     #endregion
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
@@ -13,11 +12,12 @@ namespace Vostok.Metrics.System.Host
         private readonly Stopwatch stopwatch = new Stopwatch();
         private readonly ReusableFileReader networkUsageReader = new ReusableFileReader("/proc/net/dev");
         private volatile Dictionary<string, NetworkUsage> previousNetworkUsageInfo = new Dictionary<string, NetworkUsage>();
-        private readonly Regex teamingModeRegex = new Regex("(activebackup)*(roundrobin)*(broadcast)*(loadbalance)*(random)*(lacp)*", RegexOptions.Compiled);
+        private readonly LinuxTeamingDriverConnector teamingConnector = new LinuxTeamingDriverConnector();
 
         public void Dispose()
         {
             networkUsageReader?.Dispose();
+            teamingConnector?.Dispose();
         }
 
         public void Collect(HostMetrics metrics)
@@ -105,15 +105,12 @@ namespace Vostok.Metrics.System.Host
                         networkUsage.NetworkMaxMBitsPerSecond = speed;
                     else
                     {
-                        // NOTE: We don't need zero values. Mark this interface disabled for now. It's speed may be calculated later if it is teaming interface.
+                        // NOTE: We don't need zero values. Mark this interface disabled for now. It's speed may be calculated later if it is a teaming interface.
                         networkUsage.NetworkMaxMBitsPerSecond = -1;
                     }
                 }
 
-                foreach (var teamingInterface in networkInterfacesUsage.Values.Where(x => x.InterfaceName.StartsWith("team") && x.NetworkMaxMBitsPerSecond == -1))
-                {
-                    
-                }
+                foreach (var teamingInterface in networkInterfacesUsage.Values.Where(x => x.InterfaceName.StartsWith("team") && x.NetworkMaxMBitsPerSecond == -1)) { }
             }
             catch (Exception error)
             {
@@ -125,9 +122,14 @@ namespace Vostok.Metrics.System.Host
 
         private void FillTeamingInfo(IReadOnlyDictionary<string, NetworkUsage> usages, TeamingNetworkUsage teamingUsage)
         {
-            var teamingMode = "test";
+            string teamingMode, configuration;
 
-            var configuration = "Test;";
+            using (var collector = teamingConnector.Connect(teamingUsage.InterfaceName))
+            {
+                teamingMode = collector.GetTeamingMode();
+
+                configuration = collector.GetCurrentState();
+            }
 
             teamingUsage.ChildInterfaces = new HashSet<string>(new SimplifiedIntendedTreeParser("ports", 2).Parse(configuration));
 
