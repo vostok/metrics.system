@@ -6,6 +6,8 @@ using Newtonsoft.Json.Linq;
 
 namespace Vostok.Metrics.System.Helpers
 {
+    // Specification: https://github.com/jpirko/libteam/wiki/Infrastructure-Specification
+    // Source code: https://github.com/jpirko/libteam/blob/master/libteamdctl/libteamdctl.c
     internal class LinuxTeamingDriverConnector : IDisposable
     {
         private readonly UIntPtr teamdctlPointer;

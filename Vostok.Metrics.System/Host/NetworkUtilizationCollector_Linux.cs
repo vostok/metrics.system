@@ -161,6 +161,7 @@ namespace Vostok.Metrics.System.Host
                    .Select(x => usages[x].NetworkMaxMBitsPerSecond)
                    .Where(x => x > 0);
 
+                // NOTE: Teaming modes description can be seen here: https://github.com/jpirko/libteam/wiki/Infrastructure-Specification
                 switch (teamingMode)
                 {
                     case "activebackup":
