@@ -50,10 +50,7 @@ namespace Vostok.Metrics.System.Host
         {
             NetworkInterfaceUsageInfo result;
 
-            if (usage is TeamingNetworkUsage teamingNetworkUsage)
-                result = new TeamingInterfaceUsageInfo {ChildInterfaces = teamingNetworkUsage.ChildInterfaces};
-            else
-                result = new NetworkInterfaceUsageInfo();
+            result = usage is TeamingNetworkUsage teamingNetworkUsage ? new TeamingInterfaceUsageInfo {ChildInterfaces = teamingNetworkUsage.ChildInterfaces} : new NetworkInterfaceUsageInfo();
 
             result.InterfaceName = usage.InterfaceName;
 
@@ -88,25 +85,20 @@ namespace Vostok.Metrics.System.Host
             IEnumerable<NetworkUsage> FilterDisabledInterfaces(IEnumerable<NetworkUsage> interfaceUsages)
                 => interfaceUsages.Where(x => x.NetworkMaxMBitsPerSecond != -1);
 
-            NetworkUsage CreateNetworkUsage(string interfaceName, long receivedBytes, long sentBytes)
-            {
-                if (IsTeamingInterface(interfaceName))
-                {
-                    return new TeamingNetworkUsage
+            NetworkUsage CreateNetworkUsage(string interfaceName, long receivedBytes, long sentBytes) =>
+                IsTeamingInterface(interfaceName)
+                    ? new TeamingNetworkUsage
+                    {
+                        InterfaceName = interfaceName,
+                        ReceivedBytes = receivedBytes,
+                        SentBytes = sentBytes
+                    }
+                    : new NetworkUsage
                     {
                         InterfaceName = interfaceName,
                         ReceivedBytes = receivedBytes,
                         SentBytes = sentBytes
                     };
-                }
-
-                return new NetworkUsage
-                {
-                    InterfaceName = interfaceName,
-                    ReceivedBytes = receivedBytes,
-                    SentBytes = sentBytes
-                };
-            }
 
             // TODO: Remember all interfaces that are used in teaming and calculate total speed accordingly.
             try
@@ -137,8 +129,9 @@ namespace Vostok.Metrics.System.Host
                     }
                 }
 
+                // NOTE: We don't check if interface speed was already calculated because we need ChildInterfaces property in any case.
                 var teamingInterfaces = networkInterfacesUsage.Values
-                   .Where(x => IsTeamingInterface(x.InterfaceName) && x.NetworkMaxMBitsPerSecond == -1)
+                   .Where(x => IsTeamingInterface(x.InterfaceName))
                    .Cast<TeamingNetworkUsage>();
 
                 foreach (var teamingInterface in teamingInterfaces)
