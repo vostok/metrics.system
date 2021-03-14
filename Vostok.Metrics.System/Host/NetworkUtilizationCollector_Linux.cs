@@ -120,18 +120,42 @@ namespace Vostok.Metrics.System.Host
             return FilterDisabledInterfaces(networkInterfacesUsage.Values);
         }
 
-        private IEnumerable<string> GetTeamingChildInterfaces(string teamingInterface)
+        private long CalculateTeamingSpeed(IReadOnlyDictionary<string, NetworkUsage> usages)
         {
-            var intendedTreeParser = new SimplifiedIntendedTreeParser("ports", 2);
+            var teamingMode = "test";
 
-            return intendedTreeParser.Parse();
-        }
+            var configuration = "Test;";
 
-        // We don't handle nested teaming interfaces.
-        // We ignore disabled interfaces.
-        private long CalculateTeamingSpeed(string teamingMode, Dictionary<string, NetworkUsage> usages)
-        {
-            return 0;
+            var childInterfaces = new SimplifiedIntendedTreeParser("ports", 2).Parse(configuration).ToList();
+
+            // We don't handle nested teaming interfaces.
+            if (!childInterfaces.TrueForAll(x => !x.StartsWith("team")))
+                throw new NotSupportedException("Nested teaming interfaces are not supported.");
+
+            // We ignore disabled interfaces.
+            var childSpeeds = childInterfaces
+               .Select(x => usages[x].NetworkMaxMBitsPerSecond)
+               .Where(x => x > 0);
+
+            switch (teamingMode)
+            {
+                case "activebackup":
+                    var activePort = new SimplifiedIntendedTreeParser("ports", 2).Parse(configuration).FirstOrDefault(x => x.StartsWith("active port:"));
+
+                    if (activePort != null && FileParser.TrySplitLine(activePort, 3, out var parts))
+                        return usages[parts.Last()].NetworkMaxMBitsPerSecond;
+
+                    throw new ArgumentException("Invalid teaming configuration. Missing active port in activebackup.");
+                case "roundrobin":
+                case "random":
+                case "broadcast":
+                    return childSpeeds.Min();
+                case "loadbalance":
+                case "lacp":
+                    return childSpeeds.Sum();
+                default:
+                    throw new ArgumentException($"Unknown teaming mode {teamingMode}.");
+            }
         }
 
         private class NetworkUsage
