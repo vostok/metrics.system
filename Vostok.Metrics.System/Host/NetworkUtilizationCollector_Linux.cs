@@ -129,9 +129,7 @@ namespace Vostok.Metrics.System.Host
                 }
 
                 // NOTE: We don't check if interface speed was already calculated because we need ChildInterfaces property in any case.
-                var teamingInterfaces = networkInterfacesUsage.Values
-                   .Where(x => IsTeamingInterface(x.InterfaceName))
-                   .Cast<TeamingNetworkUsage>();
+                var teamingInterfaces = networkInterfacesUsage.Values.OfType<TeamingNetworkUsage>();
 
                 foreach (var teamingInterface in teamingInterfaces)
                     FillTeamingInfo(networkInterfacesUsage, teamingInterface);
