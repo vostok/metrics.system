@@ -48,9 +48,9 @@ namespace Vostok.Metrics.System.Host
 
         private NetworkInterfaceUsageInfo CreateInfo(NetworkUsage usage)
         {
-            NetworkInterfaceUsageInfo result;
-
-            result = usage is TeamingNetworkUsage teamingNetworkUsage ? new TeamingInterfaceUsageInfo {ChildInterfaces = teamingNetworkUsage.ChildInterfaces} : new NetworkInterfaceUsageInfo();
+            var result = usage is TeamingNetworkUsage teamingNetworkUsage
+                ? new TeamingInterfaceUsageInfo {ChildInterfaces = teamingNetworkUsage.ChildInterfaces}
+                : new NetworkInterfaceUsageInfo();
 
             result.InterfaceName = usage.InterfaceName;
 
@@ -100,7 +100,6 @@ namespace Vostok.Metrics.System.Host
                         SentBytes = sentBytes
                     };
 
-            // TODO: Remember all interfaces that are used in teaming and calculate total speed accordingly.
             try
             {
                 // NOTE: Skip first 2 lines because they contain format info. See https://man7.org/linux/man-pages/man5/proc.5.html for details.
@@ -186,6 +185,7 @@ namespace Vostok.Metrics.System.Host
         private static bool TryReadSpeed(string interfaceName, out string result)
         {
             var path = $"/sys/class/net/{interfaceName}/speed";
+
             try
             {
                 result = File.ReadAllText(path);
