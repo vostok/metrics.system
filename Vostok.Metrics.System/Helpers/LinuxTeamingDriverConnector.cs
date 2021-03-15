@@ -52,7 +52,9 @@ namespace Vostok.Metrics.System.Helpers
         public TeamingCollector(IntPtr ctl, string teamingInterfaceName)
         {
             teamdctlPointer = ctl;
-            teamdctl_connect(ctl, teamingInterfaceName, null, null);
+
+            if (teamdctl_connect(ctl, teamingInterfaceName, null, null) != 0)
+                throw new Exception("Unable to connect to teaming driver. Note that this operation is possible only under sudo.");
         }
 
         public IEnumerable<string> GetChildPorts()
