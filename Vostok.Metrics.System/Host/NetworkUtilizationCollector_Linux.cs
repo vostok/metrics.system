@@ -120,7 +120,7 @@ namespace Vostok.Metrics.System.Host
                 // NOTE: This value equals -1 if interface is disabled, so we will filter this values out later.
                 foreach (var networkUsage in networkInterfacesUsage.Values)
                 {
-                    if (TryRead($"/sys/class/net/{networkUsage.InterfaceName}/speed", out var result) && int.TryParse(result, out var speed))
+                    if (TryReadSpeed(networkUsage.InterfaceName, out var result) && int.TryParse(result, out var speed))
                         networkUsage.NetworkMaxMBitsPerSecond = speed;
                     else
                     {
@@ -183,8 +183,9 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        private static bool TryRead(string path, out string result)
+        private static bool TryReadSpeed(string interfaceName, out string result)
         {
+            var path = $"/sys/class/net/{interfaceName}/speed";
             try
             {
                 result = File.ReadAllText(path);
@@ -192,7 +193,9 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                // NOTE: We expect teaming interface to not be able to read speed directly.
+                if (!IsTeamingInterface(interfaceName))
+                    InternalErrorLogger.Warn(error);
 
                 result = null;
                 return false;

@@ -10,7 +10,7 @@ namespace Vostok.Metrics.System.Helpers
     // Source code: https://github.com/jpirko/libteam/blob/master/libteamdctl/libteamdctl.c
     internal class LinuxTeamingDriverConnector : IDisposable
     {
-        private readonly UIntPtr teamdctlPointer;
+        private readonly IntPtr teamdctlPointer;
 
         public LinuxTeamingDriverConnector()
         {
@@ -29,23 +29,23 @@ namespace Vostok.Metrics.System.Helpers
         }
 
         [DllImport("libteamdctl.so.0")]
-        private static extern UIntPtr teamdctl_alloc();
+        private static extern IntPtr teamdctl_alloc();
 
         [DllImport("libteamdctl.so.0")]
         private static extern void teamdctl_free(
-            [In] UIntPtr ctl);
+            [In] IntPtr ctl);
 
         [DllImport("libteamdctl.so.0")]
         private static extern void teamdctl_set_log_priority(
-            [In] UIntPtr ctl,
+            [In] IntPtr ctl,
             [In] int priority);
     }
 
     internal class TeamingCollector : IDisposable
     {
-        private readonly UIntPtr teamdctlPointer;
+        private readonly IntPtr teamdctlPointer;
 
-        public TeamingCollector(UIntPtr ctl, string teamingInterfaceName)
+        public TeamingCollector(IntPtr ctl, string teamingInterfaceName)
         {
             teamdctlPointer = ctl;
             teamdctl_connect(ctl, teamingInterfaceName, null, null);
@@ -53,9 +53,9 @@ namespace Vostok.Metrics.System.Helpers
 
         public IEnumerable<string> GetChildPorts()
         {
-            var config = teamdctl_state_get_raw(teamdctlPointer);
+            var config = Marshal.PtrToStringAuto(teamdctl_state_get_raw(teamdctlPointer));
 
-            var parsedConfig = JObject.Parse(config);
+            var parsedConfig = JObject.Parse(config ?? throw new Exception("Unable to get child ports."));
 
             return parsedConfig.Value<JObject>("ports").Properties().Select(x => x.Name);
         }
@@ -83,22 +83,22 @@ namespace Vostok.Metrics.System.Helpers
 
         [DllImport("libteamdctl.so.0")]
         private static extern int teamdctl_connect(
-            [In] UIntPtr ctl,
+            [In] IntPtr ctl,
             [In] string teamName,
             [In] string addr,
             [In] string ctlType);
 
         [DllImport("libteamdctl.so.0")]
         private static extern void teamdctl_disconnect(
-            [In] UIntPtr ctl);
+            [In] IntPtr ctl);
 
         [DllImport("libteamdctl.so.0")]
-        private static extern string teamdctl_state_get_raw(
-            [In] UIntPtr ctl);
+        private static extern IntPtr teamdctl_state_get_raw(
+            [In] IntPtr ctl);
 
         [DllImport("libteamdctl.so.0")]
         private static extern int teamdctl_state_item_value_get(
-            [In] UIntPtr ctl,
+            [In] IntPtr ctl,
             [In] string itemPath,
             [Out] out string value);
     }
