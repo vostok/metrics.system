@@ -10,22 +10,26 @@ namespace Vostok.Metrics.System.Helpers
     // Source code: https://github.com/jpirko/libteam/blob/master/libteamdctl/libteamdctl.c
     internal class LinuxTeamingDriverConnector : IDisposable
     {
-        private readonly IntPtr teamdctlPointer;
-
-        public LinuxTeamingDriverConnector()
-        {
-            teamdctlPointer = teamdctl_alloc();
-            teamdctl_set_log_priority(teamdctlPointer, 0);
-        }
+        private IntPtr teamdctlPointer = IntPtr.Zero;
 
         public TeamingCollector Connect(string teamingInterfaceName)
         {
+            if (teamdctlPointer == IntPtr.Zero)
+                InitializeTeamdctl();
+
             return new TeamingCollector(teamdctlPointer, teamingInterfaceName);
         }
 
         public void Dispose()
         {
-            teamdctl_free(teamdctlPointer);
+            if (teamdctlPointer != IntPtr.Zero)
+                teamdctl_free(teamdctlPointer);
+        }
+
+        private void InitializeTeamdctl()
+        {
+            teamdctlPointer = teamdctl_alloc();
+            teamdctl_set_log_priority(teamdctlPointer, 0);
         }
 
         [DllImport("libteamdctl.so.0")]
