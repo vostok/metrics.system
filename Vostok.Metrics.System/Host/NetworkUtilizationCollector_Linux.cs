@@ -40,10 +40,35 @@ namespace Vostok.Metrics.System.Host
             }
 
             metrics.NetworkInterfacesUsageInfo = networkInterfacesUsageInfo;
+            
+            FillAggregatedNetworkInfo(metrics);
 
             previousNetworkUsageInfo = newNetworkUsageInfo;
 
             stopwatch.Restart();
+        }
+
+        private void FillAggregatedNetworkInfo(HostMetrics toFill)
+        {
+            var usedInterfaces = new HashSet<string>();
+
+            foreach (var teamingInterface in toFill.NetworkInterfacesUsageInfo.Values.OfType<TeamingInterfaceUsageInfo>())
+            {
+                usedInterfaces.UnionWith(teamingInterface.ChildInterfaces);
+                usedInterfaces.Add(teamingInterface.InterfaceName);
+
+                toFill.NetworkSentBytesPerSecond += teamingInterface.SentBytesPerSecond;
+                toFill.NetworkReceivedBytesPerSecond += teamingInterface.ReceivedBytesPerSecond;
+                toFill.NetworkBandwidthBytesPerSecond += teamingInterface.BandwidthBytesPerSecond;
+            }
+
+            foreach (var basicInterface in toFill.NetworkInterfacesUsageInfo.Values
+               .Where(x => !usedInterfaces.Contains(x.InterfaceName)))
+            {
+                toFill.NetworkSentBytesPerSecond += basicInterface.SentBytesPerSecond;
+                toFill.NetworkReceivedBytesPerSecond += basicInterface.ReceivedBytesPerSecond;
+                toFill.NetworkBandwidthBytesPerSecond += basicInterface.BandwidthBytesPerSecond;
+            }
         }
 
         private NetworkInterfaceUsageInfo CreateInfo(NetworkUsage usage)

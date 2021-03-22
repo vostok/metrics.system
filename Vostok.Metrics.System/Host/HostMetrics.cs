@@ -96,23 +96,17 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// Amount of network sent bytes per second (across all interfaces).
         /// </summary>
-        public long NetworkSentBytesPerSecond => NetworkInterfacesUsageInfo.Values
-           .Where(x => !(x is TeamingInterfaceUsageInfo))
-           .Sum(x => x.SentBytesPerSecond);
+        public long NetworkSentBytesPerSecond { get; set; }
 
         /// <summary>
         /// Amount of network received bytes per second (across all interfaces).
         /// </summary>
-        public long NetworkReceivedBytesPerSecond => NetworkInterfacesUsageInfo.Values
-           .Where(x => !(x is TeamingInterfaceUsageInfo))
-           .Sum(x => x.ReceivedBytesPerSecond);
+        public long NetworkReceivedBytesPerSecond { get; set; }
 
         /// <summary>
         /// Maximum host network speed (across all interfaces).
         /// </summary>
-        public long NetworkBandwidthBytesPerSecond => NetworkInterfacesUsageInfo.Values
-           .Where(x => !(x is TeamingInterfaceUsageInfo))
-           .Sum(x => x.BandwidthBytesPerSecond);
+        public long NetworkBandwidthBytesPerSecond { get; set; }
 
         /// <summary>
         /// <para>Utilized percent of the output network bandwidth (relative to all interfaces).</para>
