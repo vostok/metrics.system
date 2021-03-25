@@ -1,3 +1,7 @@
+## 0.3.10 (25-03-2021):
+
+Added support for `team` interfaces. 
+
 ## 0.2.9 (02-02-2021):
 
 Added RootDirectory to DiskSpaceInfo.cs
