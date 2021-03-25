@@ -106,7 +106,7 @@ namespace Vostok.Metrics.System.Process
                     if (FileParser.TryParseLong(line, "FDSize", out var fdSize))
                         result.FileDescriptorsSize = (int) fdSize;
 
-                    if (FileParser.TryParseLong(line, "VmRSS", out var vmRss))
+                    if (FileParser.TryParseLong(line, "RssAnon", out var vmRss))
                         result.VirtualMemoryResident = vmRss * 1024L;
 
                     if (FileParser.TryParseLong(line, "VmData", out var vmData))
