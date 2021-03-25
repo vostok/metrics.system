@@ -157,7 +157,8 @@ namespace Vostok.Metrics.System.Host
                 var teamingInterfaces = networkInterfacesUsage.Values.OfType<TeamingNetworkUsage>();
 
                 foreach (var teamingInterface in teamingInterfaces)
-                    FillTeamingInfo(networkInterfacesUsage, teamingInterface);
+                    if (!TryFillTeamingInfo(networkInterfacesUsage, teamingInterface, out var error))
+                        InternalErrorLogger.Warn(error);
             }
             catch (Exception error)
             {
@@ -165,6 +166,22 @@ namespace Vostok.Metrics.System.Host
             }
 
             return FilterDisabledInterfaces(networkInterfacesUsage.Values);
+        }
+
+        private bool TryFillTeamingInfo(IReadOnlyDictionary<string, NetworkUsage> usages, TeamingNetworkUsage teamingUsage, out Exception exception)
+        {
+            try
+            {
+                FillTeamingInfo(usages, teamingUsage);
+            }
+            catch (Exception error)
+            {
+                exception = error;
+                return false;
+            }
+            
+            exception = null;
+            return true;
         }
 
         private void FillTeamingInfo(IReadOnlyDictionary<string, NetworkUsage> usages, TeamingNetworkUsage teamingUsage)
