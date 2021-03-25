@@ -1,4 +1,4 @@
-## 0.3.10 (25-03-2021):
+## 0.2.10 (25-03-2021):
 
 Added support for `team` interfaces. 
 
