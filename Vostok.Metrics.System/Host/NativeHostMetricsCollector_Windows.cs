@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Vostok.Metrics.System.Helpers;
 using Vostok.Sys.Metrics.PerfCounters;
@@ -154,6 +155,10 @@ namespace Vostok.Metrics.System.Host
                 }
 
                 metrics.NetworkInterfacesUsageInfo = networkInterfacesUsageInfo;
+
+                metrics.NetworkSentBytesPerSecond = networkInterfacesUsageInfo.Values.Sum(x => x.SentBytesPerSecond);
+                metrics.NetworkReceivedBytesPerSecond = networkInterfacesUsageInfo.Values.Sum(x => x.ReceivedBytesPerSecond);
+                metrics.NetworkBandwidthBytesPerSecond = networkInterfacesUsageInfo.Values.Sum(x => x.BandwidthBytesPerSecond);
             }
             catch (Exception error)
             {

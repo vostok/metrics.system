@@ -12,10 +12,12 @@ namespace Vostok.Metrics.System.Host
         private readonly Stopwatch stopwatch = new Stopwatch();
         private readonly ReusableFileReader networkUsageReader = new ReusableFileReader("/proc/net/dev");
         private volatile Dictionary<string, NetworkUsage> previousNetworkUsageInfo = new Dictionary<string, NetworkUsage>();
+        private readonly LinuxTeamingDriverConnector teamingConnector = new LinuxTeamingDriverConnector();
 
         public void Dispose()
         {
             networkUsageReader?.Dispose();
+            teamingConnector?.Dispose();
         }
 
         public void Collect(HostMetrics metrics)
@@ -27,7 +29,7 @@ namespace Vostok.Metrics.System.Host
 
             foreach (var networkUsage in ParseNetworkUsage())
             {
-                var result = new NetworkInterfaceUsageInfo {InterfaceName = networkUsage.InterfaceName};
+                var result = CreateInfo(networkUsage);
 
                 if (previousNetworkUsageInfo.TryGetValue(networkUsage.InterfaceName, out var value))
                     FillInfo(result, value, networkUsage, deltaSeconds);
@@ -38,10 +40,46 @@ namespace Vostok.Metrics.System.Host
             }
 
             metrics.NetworkInterfacesUsageInfo = networkInterfacesUsageInfo;
+            
+            FillAggregatedNetworkInfo(metrics);
 
             previousNetworkUsageInfo = newNetworkUsageInfo;
 
             stopwatch.Restart();
+        }
+
+        private void FillAggregatedNetworkInfo(HostMetrics toFill)
+        {
+            var usedInterfaces = new HashSet<string>();
+
+            foreach (var teamingInterface in toFill.NetworkInterfacesUsageInfo.Values.OfType<TeamingInterfaceUsageInfo>())
+            {
+                usedInterfaces.UnionWith(teamingInterface.ChildInterfaces);
+                usedInterfaces.Add(teamingInterface.InterfaceName);
+
+                toFill.NetworkSentBytesPerSecond += teamingInterface.SentBytesPerSecond;
+                toFill.NetworkReceivedBytesPerSecond += teamingInterface.ReceivedBytesPerSecond;
+                toFill.NetworkBandwidthBytesPerSecond += teamingInterface.BandwidthBytesPerSecond;
+            }
+
+            foreach (var basicInterface in toFill.NetworkInterfacesUsageInfo.Values
+               .Where(x => !usedInterfaces.Contains(x.InterfaceName)))
+            {
+                toFill.NetworkSentBytesPerSecond += basicInterface.SentBytesPerSecond;
+                toFill.NetworkReceivedBytesPerSecond += basicInterface.ReceivedBytesPerSecond;
+                toFill.NetworkBandwidthBytesPerSecond += basicInterface.BandwidthBytesPerSecond;
+            }
+        }
+
+        private NetworkInterfaceUsageInfo CreateInfo(NetworkUsage usage)
+        {
+            var result = usage is TeamingNetworkUsage teamingNetworkUsage
+                ? new TeamingInterfaceUsageInfo {ChildInterfaces = teamingNetworkUsage.ChildInterfaces}
+                : new NetworkInterfaceUsageInfo();
+
+            result.InterfaceName = usage.InterfaceName;
+
+            return result;
         }
 
         private void FillInfo(NetworkInterfaceUsageInfo toFill, NetworkUsage previousUsage, NetworkUsage usage, double deltaSeconds)
@@ -60,18 +98,32 @@ namespace Vostok.Metrics.System.Host
 
         private IEnumerable<NetworkUsage> ParseNetworkUsage()
         {
-            var networkInterfacesUsage = new List<NetworkUsage>();
+            var networkInterfacesUsage = new Dictionary<string, NetworkUsage>();
 
             // NOTE: 'eth' stands for ethernet interface.
             // NOTE: 'en' stands for ethernet interface in 'Predictable network interface device names scheme'. 
             bool ShouldBeCounted(string interfaceName)
-                => interfaceName.StartsWith("eth") || interfaceName.StartsWith("en");
-            //  || interfaceName.StartsWith("team") - disabled for now
+                => interfaceName.StartsWith("eth") ||
+                   interfaceName.StartsWith("en") ||
+                   IsTeamingInterface(interfaceName);
 
             IEnumerable<NetworkUsage> FilterDisabledInterfaces(IEnumerable<NetworkUsage> interfaceUsages)
-            {
-                return interfaceUsages.Where(x => x.NetworkMaxMBitsPerSecond != -1);
-            }
+                => interfaceUsages.Where(x => x.NetworkMaxMBitsPerSecond != -1);
+
+            NetworkUsage CreateNetworkUsage(string interfaceName, long receivedBytes, long sentBytes) =>
+                IsTeamingInterface(interfaceName)
+                    ? new TeamingNetworkUsage
+                    {
+                        InterfaceName = interfaceName,
+                        ReceivedBytes = receivedBytes,
+                        SentBytes = sentBytes
+                    }
+                    : new NetworkUsage
+                    {
+                        InterfaceName = interfaceName,
+                        ReceivedBytes = receivedBytes,
+                        SentBytes = sentBytes
+                    };
 
             try
             {
@@ -83,28 +135,114 @@ namespace Vostok.Metrics.System.Host
                         long.TryParse(parts[1], out var receivedBytes) &&
                         long.TryParse(parts[9], out var sentBytes))
                     {
-                        networkInterfacesUsage.Add(
-                            new NetworkUsage
-                            {
-                                InterfaceName = parts[0].TrimEnd(':'),
-                                ReceivedBytes = receivedBytes,
-                                SentBytes = sentBytes
-                            });
+                        var interfaceName = parts[0].TrimEnd(':');
+                        networkInterfacesUsage[interfaceName] = CreateNetworkUsage(interfaceName, receivedBytes, sentBytes);
                     }
                 }
 
                 // NOTE: See https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net for details.
                 // NOTE: This value equals -1 if interface is disabled, so we will filter this values out later.
-                foreach (var networkUsage in networkInterfacesUsage)
-                    networkUsage.NetworkMaxMBitsPerSecond = int.Parse(File.ReadAllText($"/sys/class/net/{networkUsage.InterfaceName}/speed"));
+                foreach (var networkUsage in networkInterfacesUsage.Values)
+                {
+                    if (TryReadSpeed(networkUsage.InterfaceName, out var result) && int.TryParse(result, out var speed))
+                        networkUsage.NetworkMaxMBitsPerSecond = speed;
+                    else
+                    {
+                        // NOTE: We don't need zero values. Mark this interface disabled for now. It's speed may be calculated later if it is a teaming interface.
+                        networkUsage.NetworkMaxMBitsPerSecond = -1;
+                    }
+                }
+
+                // NOTE: We don't check if interface speed was already calculated because we need ChildInterfaces property in any case.
+                var teamingInterfaces = networkInterfacesUsage.Values.OfType<TeamingNetworkUsage>();
+
+                foreach (var teamingInterface in teamingInterfaces)
+                    if (!TryFillTeamingInfo(networkInterfacesUsage, teamingInterface, out var error))
+                        InternalErrorLogger.Warn(error);
             }
             catch (Exception error)
             {
                 InternalErrorLogger.Warn(error);
             }
 
-            return FilterDisabledInterfaces(networkInterfacesUsage);
+            return FilterDisabledInterfaces(networkInterfacesUsage.Values);
         }
+
+        private bool TryFillTeamingInfo(IReadOnlyDictionary<string, NetworkUsage> usages, TeamingNetworkUsage teamingUsage, out Exception exception)
+        {
+            try
+            {
+                FillTeamingInfo(usages, teamingUsage);
+            }
+            catch (Exception error)
+            {
+                exception = error;
+                return false;
+            }
+            
+            exception = null;
+            return true;
+        }
+
+        private void FillTeamingInfo(IReadOnlyDictionary<string, NetworkUsage> usages, TeamingNetworkUsage teamingUsage)
+        {
+            using (var collector = teamingConnector.Connect(teamingUsage.InterfaceName))
+            {
+                var teamingMode = collector.GetTeamingMode();
+                teamingUsage.ChildInterfaces = new HashSet<string>(collector.GetChildPorts());
+
+                // We don't handle nested teaming interfaces.
+                if (!teamingUsage.ChildInterfaces.All(x => !IsTeamingInterface(x)))
+                    throw new NotSupportedException("Nested teaming interfaces are not supported.");
+
+                // We ignore disabled interfaces.
+                var childSpeeds = teamingUsage.ChildInterfaces
+                   .Select(x => usages[x].NetworkMaxMBitsPerSecond)
+                   .Where(x => x > 0);
+
+                // NOTE: Teaming modes description can be seen here: https://github.com/jpirko/libteam/wiki/Infrastructure-Specification
+                switch (teamingMode)
+                {
+                    case "activebackup":
+                        var activePort = collector.GetActivebackupRunnerPort();
+                        teamingUsage.NetworkMaxMBitsPerSecond = usages[activePort].NetworkMaxMBitsPerSecond;
+                        return;
+                    case "roundrobin":
+                    case "random":
+                    case "broadcast":
+                        teamingUsage.NetworkMaxMBitsPerSecond = childSpeeds.Min();
+                        return;
+                    case "loadbalance":
+                    case "lacp":
+                        teamingUsage.NetworkMaxMBitsPerSecond = childSpeeds.Sum();
+                        return;
+                    default:
+                        throw new ArgumentException($"Unknown teaming mode {teamingMode}.");
+                }
+            }
+        }
+
+        private static bool TryReadSpeed(string interfaceName, out string result)
+        {
+            var path = $"/sys/class/net/{interfaceName}/speed";
+
+            try
+            {
+                result = File.ReadAllText(path);
+                return true;
+            }
+            catch (Exception error)
+            {
+                // NOTE: We expect teaming interface to not be able to read speed directly.
+                if (!IsTeamingInterface(interfaceName))
+                    InternalErrorLogger.Warn(error);
+
+                result = null;
+                return false;
+            }
+        }
+
+        private static bool IsTeamingInterface(string interfaceName) => interfaceName.StartsWith("team");
 
         private class NetworkUsage
         {
@@ -112,6 +250,11 @@ namespace Vostok.Metrics.System.Host
             public long ReceivedBytes { get; set; }
             public long SentBytes { get; set; }
             public long NetworkMaxMBitsPerSecond { get; set; }
+        }
+
+        private class TeamingNetworkUsage : NetworkUsage
+        {
+            public HashSet<string> ChildInterfaces { get; set; }
         }
     }
 }

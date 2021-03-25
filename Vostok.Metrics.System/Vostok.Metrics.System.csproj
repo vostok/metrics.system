@@ -6,6 +6,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Configurations>Debug;Release</Configurations>
     <LangVersion>7.2</LangVersion>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <VersionPrefix>0.2.10</VersionPrefix>
@@ -41,4 +43,21 @@
       <HintPath>..\..\vostok.sys.metrics.perfcounters\Vostok.Sys.Metrics.PerfCounters\bin\Release\netstandard2.0\Vostok.Sys.Metrics.PerfCounters.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <Target Name="RepackAssemblies" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <ILRepackExecutable>dotnet "$(MSBuildThisFileDirectory)../../vostok.devtools.ilrepack.bin/netcoreapp2.1/ILRepack.Core.dll"</ILRepackExecutable>
+      <BinPath>$(ProjectDir)$(OutputPath)</BinPath>
+      <ResultAssembly>$(BinPath)$(AssemblyName).dll</ResultAssembly>
+    </PropertyGroup>
+    <ItemGroup>
+      <MergeAssemblies Include="$(BinPath)Newtonsoft.Json.dll" />
+    </ItemGroup>
+    <Exec WorkingDirectory="$(BinPath)" Command="$(ILRepackExecutable) /internalize /renameInternalized /out:$(ResultAssembly) $(ResultAssembly) @(MergeAssemblies->'%(RelativeDir)%(FileName)%(Extension)', ' ')" />
+    <Delete Files="@(MergeAssemblies)" />
+  </Target>
 </Project>
