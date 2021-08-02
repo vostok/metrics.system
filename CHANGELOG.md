@@ -1,3 +1,7 @@
+## 0.2.11 (02-08-2021):
+
+Added disk number in order to collect usage info from devices with Xen type. 
+
 ## 0.2.10 (25-03-2021):
 
 Added support for `team` interfaces. 
