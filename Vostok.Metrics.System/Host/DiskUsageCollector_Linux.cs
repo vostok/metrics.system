@@ -138,17 +138,17 @@ namespace Vostok.Metrics.System.Host
 
         #region Disk Numbers
 
-        private readonly HashSet<int> diskNumbers = new HashSet<int> {8, 65, 66, 67, 68, 69, 70, 71, 128, 129, 130, 131, 132, 133, 134, 135};
+        private static readonly HashSet<int> DiskNumbers = new HashSet<int> {8, 65, 66, 67, 68, 69, 70, 71, 128, 129, 130, 131, 132, 133, 134, 135, 202};
 
         // NOTE: Disk numbers are listed here: https://www.kernel.org/doc/html/v4.12/admin-guide/devices.html
-        private bool IsDiskNumber(string number)
+        private static bool IsDiskNumber(string number)
         {
-            return int.TryParse(number, out var value) && diskNumbers.Contains(value);
+            return int.TryParse(number, out var value) && DiskNumbers.Contains(value);
         }
 
         // NOTE: Every 16th minor device number is associated with a whole disk (Not just partition)
         // NOTE: See https://www.kernel.org/doc/html/v4.12/admin-guide/devices.html (SCSI disk devices) for details.
-        private bool IsWholeDiskNumber(string number)
+        private static bool IsWholeDiskNumber(string number)
         {
             return int.TryParse(number, out var value) && value % 16 == 0;
         }
