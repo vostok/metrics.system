@@ -162,7 +162,7 @@ namespace Vostok.Metrics.System.Process
         /// <para>Note that this metric returns a diff (increment) between two consecutive observations: its value strongly depends on the observation period.</para>
         /// </summary>
         public int LockContentionCount { get; set; }
-        
+
         /// <summary>
         /// Number of active timers in a process. An active timer is scheduled to fire sometime in the future.
         /// </summary>
@@ -172,5 +172,20 @@ namespace Vostok.Metrics.System.Process
         /// Current process uptime in seconds.
         /// </summary>
         public double UptimeSeconds { get; set; }
+
+        /// <summary>
+        /// Count of tcp outgoing socket connections created during the scrape period.
+        /// </summary>
+        public long OutgoingConnectionsCount { get; set; }
+
+        /// <summary>
+        /// Count of tcp incoming socket connections created during the scrape period.
+        /// </summary>
+        public long IncomingConnectionsCount { get; set; }
+        
+        /// <summary>
+        /// Count of all failed tcp connections during the scrape period.
+        /// </summary>
+        public long FailedConnectionsCount { get; set; }
     }
 }

@@ -47,7 +47,9 @@ namespace Vostok.Metrics.System.Process
         private readonly CurrentProcessMetricsSettings settings;
         private readonly Action<CurrentProcessMetrics> nativeCollector;
         private readonly Action disposeNativeCollector;
-
+        
+        private readonly CurrentProcessSocketMonitor socketMonitor= new CurrentProcessSocketMonitor();
+        
         private readonly DeltaCollector lockContentionCount = new DeltaCollector(LockContentionCountProvider);
         private readonly DeltaCollector exceptionsCount = new DeltaCollector(() => ExceptionsCountProvider());
         private readonly DeltaCollector allocatedBytes = new DeltaCollector(() => TotalAllocatedBytesProvider(false));
@@ -69,6 +71,7 @@ namespace Vostok.Metrics.System.Process
         public void Dispose()
         {
             disposeNativeCollector?.Invoke();
+            socketMonitor?.Dispose();
         }
 
         public CurrentProcessMetricsCollector()
@@ -105,6 +108,8 @@ namespace Vostok.Metrics.System.Process
             CollectNativeMetrics(metrics);
 
             CollectLimitsMetrics(metrics);
+
+            CollectSocketMetrics(metrics);
 
             return metrics;
         }
@@ -169,5 +174,8 @@ namespace Vostok.Metrics.System.Process
             if (metrics.MemoryLimit > 0)
                 metrics.MemoryUtilizedFraction = ((double) metrics.MemoryResident / metrics.MemoryLimit).Clamp(0, 1);
         }
+        
+        private void CollectSocketMetrics(CurrentProcessMetrics metrics) =>
+            socketMonitor.Collect(metrics);
     }
 }
