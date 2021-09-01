@@ -12,6 +12,7 @@ notests *default:
     - vostok.commons.collections/src
     - vostok.commons.helpers/src
     - vostok.commons.time/src
+    - vostok.commons.environment/src
     - vostok.devtools
     - vostok.logging.abstractions
     - vostok.metrics
