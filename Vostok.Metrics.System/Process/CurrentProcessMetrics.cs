@@ -174,18 +174,45 @@ namespace Vostok.Metrics.System.Process
         public double UptimeSeconds { get; set; }
 
         /// <summary>
-        /// Count of tcp outgoing socket connections created during the scrape period.
+        /// <para>Count of all dns lookups that occurred during the scrape period.</para>
+        /// <para>Note that this metric returns a diff (increment) between two consecutive observations: its value strongly depends on the observation period.</para>
         /// </summary>
-        public long OutgoingConnectionsCount { get; set; }
+        public int DnsLookupsCount { get; set; }
 
         /// <summary>
-        /// Count of tcp incoming socket connections created during the scrape period.
+        /// <para>Count of all failed dns lookups that occurred during the scrape period.</para>
+        /// <para>Note that this metric returns a diff (increment) between two consecutive observations: its value strongly depends on the observation period.</para>
         /// </summary>
-        public long IncomingConnectionsCount { get; set; }
-        
+        public int FailedDnsLookupsCount { get; set; }
+
         /// <summary>
-        /// Count of all failed tcp connections during the scrape period.
+        /// <para>Count of tcp outgoing socket connections created during the scrape period.</para>
+        /// <para>Note that this metric returns a diff (increment) between two consecutive observations: its value strongly depends on the observation period.</para>
         /// </summary>
-        public long FailedConnectionsCount { get; set; }
+        public int OutgoingTcpConnectionsCount { get; set; }
+
+        /// <summary>
+        /// <para>Count of tcp incoming socket connections created during the scrape period.</para>
+        /// <para>Note that this metric returns a diff (increment) between two consecutive observations: its value strongly depends on the observation period.</para>
+        /// </summary>
+        public int IncomingTcpConnectionsCount { get; set; }
+
+        /// <summary>
+        /// <para>Count of all failed tcp connections during the scrape period.</para>
+        /// <para>Note that this metric returns a diff (increment) between two consecutive observations: its value strongly depends on the observation period.</para>
+        /// </summary>
+        public int FailedTcpConnectionsCount { get; set; }
+
+        /// <summary>
+        /// <para>Count of datagrams sent during the scrape period.</para>
+        /// <para>Note that this metric returns a diff (increment) between two consecutive observations: its value strongly depends on the observation period.</para>
+        /// </summary>
+        public long OutgoingDatagramsCount { get; set; }
+
+        /// <summary>
+        /// <para>Count of datagrams received during the scrape period.</para>
+        /// <para>Note that this metric returns a diff (increment) between two consecutive observations: its value strongly depends on the observation period.</para>
+        /// </summary>
+        public long IncomingDatagramsCount { get; set; }
     }
 }
