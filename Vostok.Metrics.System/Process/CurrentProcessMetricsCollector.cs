@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using JetBrains.Annotations;
+using Vostok.Metrics.System.Dns;
 using Vostok.Metrics.System.Helpers;
 using Vostok.Metrics.System.Host;
 
@@ -47,9 +48,12 @@ namespace Vostok.Metrics.System.Process
         private readonly CurrentProcessMetricsSettings settings;
         private readonly Action<CurrentProcessMetrics> nativeCollector;
         private readonly Action disposeNativeCollector;
-        
-        private readonly CurrentProcessSocketMonitor socketMonitor= new CurrentProcessSocketMonitor();
-        
+
+        private readonly CurrentProcessSocketMonitor socketMonitor = new CurrentProcessSocketMonitor();
+
+        private readonly DnsMonitor dnsMonitor = new DnsMonitor();
+        private readonly CurrentProcessDnsObserver dnsObserver;
+
         private readonly DeltaCollector lockContentionCount = new DeltaCollector(LockContentionCountProvider);
         private readonly DeltaCollector exceptionsCount = new DeltaCollector(() => ExceptionsCountProvider());
         private readonly DeltaCollector allocatedBytes = new DeltaCollector(() => TotalAllocatedBytesProvider(false));
@@ -71,17 +75,21 @@ namespace Vostok.Metrics.System.Process
         public void Dispose()
         {
             disposeNativeCollector?.Invoke();
-            socketMonitor?.Dispose();
+            socketMonitor.Dispose();
+            dnsMonitor.Dispose();
         }
 
         public CurrentProcessMetricsCollector()
-            : this (null)
+            : this(null)
         {
         }
 
         public CurrentProcessMetricsCollector(CurrentProcessMetricsSettings settings)
         {
             this.settings = settings ?? new CurrentProcessMetricsSettings();
+
+            dnsObserver = new CurrentProcessDnsObserver();
+            dnsMonitor.Subscribe(dnsObserver);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 nativeCollector = new NativeMetricsCollector_Windows().Collect;
@@ -110,6 +118,8 @@ namespace Vostok.Metrics.System.Process
             CollectLimitsMetrics(metrics);
 
             CollectSocketMetrics(metrics);
+
+            CollectDnsMetrics(metrics);
 
             return metrics;
         }
@@ -174,8 +184,11 @@ namespace Vostok.Metrics.System.Process
             if (metrics.MemoryLimit > 0)
                 metrics.MemoryUtilizedFraction = ((double) metrics.MemoryResident / metrics.MemoryLimit).Clamp(0, 1);
         }
-        
+
         private void CollectSocketMetrics(CurrentProcessMetrics metrics) =>
             socketMonitor.Collect(metrics);
+
+        private void CollectDnsMetrics(CurrentProcessMetrics metrics) =>
+            dnsObserver.Collect(metrics);
     }
 }
