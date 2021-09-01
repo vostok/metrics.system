@@ -9,17 +9,17 @@ namespace Vostok.Metrics.System.Dns
 {
     /// <summary>
     /// <para><see cref="DnsMonitor"/>Emits notifications about every dns lookup in current process.</para>
-    /// <para>Should only be used on .NET Core 5.0+ due to unavailability events in earlier versions.</para>
+    /// <para>Should only be used on .NET Core 5.0+ due to unavailability of DNS events in earlier versions.</para>
     /// <para>Subscribe to receive instances of <see cref="DnsLookupInfo"/>.</para>
     /// <para>Remember to dispose of the monitor when it's no longer needed.</para>
     /// </summary>
     [PublicAPI]
     public class DnsMonitor : EventListener, IObservable<DnsLookupInfo>
     {
-        private static readonly AsyncLocal<LookupInfo> LookupStartTime = new AsyncLocal<LookupInfo>();
         private const string SourceName = "System.Net.NameResolution";
-        private readonly BroadcastObservable<DnsLookupInfo> observable
-            = new BroadcastObservable<DnsLookupInfo>();
+
+        // NOTE: We check certain events in System.Net.NameResolution event source.
+        // NOTE: See https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.NameResolution/src/System/Net/NameResolutionTelemetry.cs for details.
 
         #region EventId
 
@@ -28,6 +28,12 @@ namespace Vostok.Metrics.System.Dns
         private const int ResolutionFailedEventId = 3;
 
         #endregion
+
+        // NOTE: Method call for the event is executed in the same synchronization context, so we can track the start and end of the dns lookup
+        private readonly AsyncLocal<LookupInfo> lookupStartTime = new AsyncLocal<LookupInfo>();
+
+        private readonly BroadcastObservable<DnsLookupInfo> observable
+            = new BroadcastObservable<DnsLookupInfo>();
 
         public IDisposable Subscribe(IObserver<DnsLookupInfo> observer) =>
             observable.Subscribe(observer);
@@ -43,11 +49,11 @@ namespace Vostok.Metrics.System.Dns
             if (!observable.HasObservers)
                 return;
             var id = eventData.EventId;
-            
+
             switch (id)
             {
                 case ResolutionStartEventId:
-                    LookupStartTime.Value = new LookupInfo(DateTime.Now);
+                    lookupStartTime.Value = new LookupInfo(DateTime.Now);
                     break;
                 case ResolutionStopEventId:
                     ReportLookupInfo();
@@ -60,21 +66,21 @@ namespace Vostok.Metrics.System.Dns
 
         private void ReportLookupInfo()
         {
-            var lookupInfo = LookupStartTime.Value;
+            var lookupInfo = lookupStartTime.Value;
             if (lookupInfo.StartTime == default)
                 return;
 
             var info = new DnsLookupInfo(lookupInfo.IsFailed, DateTime.Now - lookupInfo.StartTime);
-            Task.Run(() => observable.Push(info)).ConfigureAwait(false);
+            Task.Run(() => observable.Push(info));
         }
 
         private void FailedLookup()
         {
-            var lookupInfo = LookupStartTime.Value;
+            var lookupInfo = lookupStartTime.Value;
             if (lookupInfo.StartTime == default)
                 return;
             lookupInfo.IsFailed = true;
-            LookupStartTime.Value = lookupInfo;
+            lookupStartTime.Value = lookupInfo;
         }
 
         private struct LookupInfo

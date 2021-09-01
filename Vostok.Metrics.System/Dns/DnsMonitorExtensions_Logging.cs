@@ -33,7 +33,7 @@ namespace Vostok.Metrics.System.Dns
                     return;
 
                 log.Info(
-                    "Dns lookup occured with duration = {LookupDuration}. " +
+                    "Dns lookup occured with duration: {LookupDuration}. " +
                     "Successfully: {Successfully}",
                     new
                     {
