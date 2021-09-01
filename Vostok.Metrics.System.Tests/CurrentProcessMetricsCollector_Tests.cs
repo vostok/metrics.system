@@ -210,7 +210,7 @@ namespace Vostok.Metrics.System.Tests
             collector.Collect();
 
             for (var i = 0; i < datagramsCount; i++)
-                client.Send(bytes, bytes.Length, new IPEndPoint(IPAddress.Loopback, 1010));
+                client.Send(bytes, bytes.Length, new IPEndPoint(IPAddress.Loopback, 11000));
 
             Thread.Sleep(2000);
             var metrics = collector.Collect();
@@ -224,12 +224,12 @@ namespace Vostok.Metrics.System.Tests
             RuntimeIgnore.IgnoreIfIsNotDotNet50AndNewer();
 
             var sender = new UdpClient();
-            using var receiver = new UdpClient(1010);
+            using var receiver = new UdpClient(11000);
             IPEndPoint remoteIp = null;
             var bytes = new byte[30];
             const int datagramsCount = 5;
 
-            Parallel.For(0, datagramsCount, i => sender.Send(bytes, bytes.Length, new IPEndPoint(IPAddress.Loopback, 1010)));
+            Parallel.For(0, datagramsCount, i => sender.Send(bytes, bytes.Length, new IPEndPoint(IPAddress.Loopback, 11000)));
 
             for (var i = 0; i < datagramsCount; i++)
                 receiver.Receive(ref remoteIp);
