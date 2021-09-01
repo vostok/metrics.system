@@ -3,8 +3,8 @@
   <Import Project="..\..\vostok.devtools\library-common-props\Test-Project.props" />
   <Import Project="..\..\vostok.devtools\git-commit-to-assembly-title\Vostok.Tools.GitCommit2AssemblyTitle.props" />
   <PropertyGroup>
-    <LangVersion>7.2</LangVersion>
-    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>8</LangVersion>
+    <TargetFrameworks>net5.0;netcoreapp3.1;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
