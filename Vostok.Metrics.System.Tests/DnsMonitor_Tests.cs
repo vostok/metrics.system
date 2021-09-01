@@ -7,6 +7,7 @@ using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Commons.Testing;
 using Vostok.Metrics.System.Dns;
+using Vostok.Metrics.System.Tests.Helpers;
 using DNS = System.Net.Dns;
 
 namespace Vostok.Metrics.System.Tests
@@ -16,6 +17,12 @@ namespace Vostok.Metrics.System.Tests
     {
         private List<DnsLookupInfo> collections;
         private DnsMonitor monitor;
+
+        [OneTimeSetUp]
+        public void FixtureSetup()
+        {
+            RuntimeIgnore.IgnoreIfIsNotDotNet50AndNewer();
+        }
 
         [SetUp]
         public void TestSetup()
@@ -73,7 +80,6 @@ namespace Vostok.Metrics.System.Tests
 
             Math.Abs(stopWatch.ElapsedMilliseconds - latency.TotalMilliseconds).Should().BeLessThan(1);
         }
-        
 
         public void OnNext(DnsLookupInfo value)
             => collections.Add(value);
