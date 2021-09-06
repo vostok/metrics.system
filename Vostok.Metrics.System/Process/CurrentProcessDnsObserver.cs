@@ -1,4 +1,5 @@
 ﻿using System;
+using Vostok.Commons.Environment;
 using Vostok.Metrics.System.Dns;
 using Vostok.Metrics.System.Helpers;
 
@@ -11,6 +12,8 @@ namespace Vostok.Metrics.System.Process
 
         public void Collect(CurrentProcessMetrics metrics)
         {
+            if (!RuntimeDetector.IsDotNet50AndNewer)
+                return;
             metrics.DnsLookupsCount = lookupsCounter.CollectAndReset();
             metrics.FailedDnsLookupsCount = failedLookupsCounter.CollectAndReset();
         }

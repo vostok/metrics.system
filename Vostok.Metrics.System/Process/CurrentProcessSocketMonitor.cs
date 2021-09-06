@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
+using Vostok.Commons.Environment;
 using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Process
@@ -44,6 +45,8 @@ namespace Vostok.Metrics.System.Process
 
         public void Collect(CurrentProcessMetrics metrics)
         {
+            if (!RuntimeDetector.IsDotNet50AndNewer)
+                return;
             metrics.OutgoingTcpConnectionsCount = outgoingTcpConnectionsCounter.CollectAndReset();
             metrics.IncomingTcpConnectionsCount = incomingTcpConnectionsCounter.CollectAndReset();
             metrics.FailedTcpConnectionsCount = failedTcpConnectionsCounter.CollectAndReset();
@@ -60,7 +63,7 @@ namespace Vostok.Metrics.System.Process
                     EventKeywords.All,
                     new Dictionary<string, string>
                     {
-                        {"EventCounterIntervalSec", "0.1"}
+                        {"EventCounterIntervalSec", "10"}
                     });
         }
 
