@@ -5,7 +5,7 @@ namespace Vostok.Metrics.System.Tests.Helpers
 {
     internal static class RuntimeIgnore
     {
-        public static void IgnoreIfIsNotDotNet50AndNewer()
+        public static void IgnoreIfNotDotNet50AndNewer()
         {
             if (!RuntimeDetector.IsDotNet50AndNewer)
                 Assert.Ignore("Only supported on net5.0 and newer");

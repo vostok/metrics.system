@@ -21,7 +21,7 @@ namespace Vostok.Metrics.System.Tests
         [OneTimeSetUp]
         public void FixtureSetup()
         {
-            RuntimeIgnore.IgnoreIfIsNotDotNet50AndNewer();
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
         }
 
         [SetUp]

@@ -119,7 +119,7 @@ namespace Vostok.Metrics.System.Tests
         [Test]
         public void Should_measure_outgoing_tcp_socket_connections()
         {
-            RuntimeIgnore.IgnoreIfIsNotDotNet50AndNewer();
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
 
             var client = new HttpClient();
 
@@ -135,7 +135,7 @@ namespace Vostok.Metrics.System.Tests
         [Test]
         public void Should_measure_incoming_tcp_socket_connections()
         {
-            RuntimeIgnore.IgnoreIfIsNotDotNet50AndNewer();
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
 
             const int connectionCount = 10;
             var ipEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 11000);
@@ -168,7 +168,7 @@ namespace Vostok.Metrics.System.Tests
         [Test]
         public void Should_measure_failed_tcp_socket_connections()
         {
-            RuntimeIgnore.IgnoreIfIsNotDotNet50AndNewer();
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
 
             const int connectionCount = 10;
             var wrongEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 11000);
@@ -198,7 +198,7 @@ namespace Vostok.Metrics.System.Tests
         [Test]
         public void Should_measure_outgoing_datagrams_count()
         {
-            RuntimeIgnore.IgnoreIfIsNotDotNet50AndNewer();
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
 
             using var client = new UdpClient();
             var bytes = new byte[30];
@@ -206,13 +206,13 @@ namespace Vostok.Metrics.System.Tests
 
             // NOTE: Counter in System.Net.Sockets event source collect the total number of datagrams sent since the process started
             // NOTE: So we invoke Collect to update the counter
-            Thread.Sleep(2000);
+            Thread.Sleep(10000);
             collector.Collect();
 
             for (var i = 0; i < datagramsCount; i++)
                 client.Send(bytes, bytes.Length, new IPEndPoint(IPAddress.Loopback, 11000));
 
-            Thread.Sleep(2000);
+            Thread.Sleep(10000);
             var metrics = collector.Collect();
 
             metrics.OutgoingDatagramsCount.Should().Be(datagramsCount);
@@ -221,7 +221,7 @@ namespace Vostok.Metrics.System.Tests
         [Test]
         public void Should_measure_incoming_datagrams_count()
         {
-            RuntimeIgnore.IgnoreIfIsNotDotNet50AndNewer();
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
 
             var sender = new UdpClient();
             using var receiver = new UdpClient(11000);
@@ -234,7 +234,7 @@ namespace Vostok.Metrics.System.Tests
             for (var i = 0; i < datagramsCount; i++)
                 receiver.Receive(ref remoteIp);
 
-            Thread.Sleep(2000);
+            Thread.Sleep(10000);
             sender.Dispose();
 
             var metrics = collector.Collect();
