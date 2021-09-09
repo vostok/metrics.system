@@ -1,3 +1,7 @@
+## 0.3.1 (09-09-2021):
+
+Removed obsolete files
+
 ## 0.3.0 (09-09-2021):
 
 Added DNS metrics:
