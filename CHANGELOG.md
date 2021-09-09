@@ -1,3 +1,13 @@
+## 0.3.0 (09-09-2021):
+
+Added DNS metrics:
+- DNS lookups count
+- Summary of DNS lookup time 
+
+Added sockets metrics:
+- TCP connections count
+- UDP connections count
+
 ## 0.2.11 (02-08-2021):
 
 Added disk number in order to collect usage info from devices with Xen type. 
