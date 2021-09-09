@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Metrics.System.Process;
+using Vostok.Metrics.System.Tests.Helpers;
 
 namespace Vostok.Metrics.System.Tests
 {
@@ -17,6 +21,7 @@ namespace Vostok.Metrics.System.Tests
         [SetUp]
         public void TestSetup()
         {
+            collector?.Dispose();
             collector = new CurrentProcessMetricsCollector();
             collector.Collect();
         }
@@ -109,6 +114,133 @@ namespace Vostok.Metrics.System.Tests
             metrics.GcGen1Collections.Should().BeGreaterThan(0);
             metrics.GcGen2Collections.Should().BeGreaterThan(0);
             metrics.GcHeapSize.Should().BeGreaterThan(0);
+        }
+
+        [Test]
+        public void Should_measure_outgoing_tcp_socket_connections()
+        {
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
+
+            var client = new HttpClient();
+
+            client.GetAsync("https://www.google.com/").GetAwaiter().GetResult();
+
+            var metrics = collector.Collect();
+
+            metrics.OutgoingTcpConnectionsCount.Should().Be(1);
+            metrics.IncomingTcpConnectionsCount.Should().Be(0);
+            metrics.FailedTcpConnectionsCount.Should().Be(0);
+        }
+
+        [Test]
+        public void Should_measure_incoming_tcp_socket_connections()
+        {
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
+
+            const int connectionCount = 10;
+            var ipEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 11000);
+
+            var sListener = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
+
+            sListener.Bind(ipEndPoint);
+            sListener.Listen(10);
+
+            Parallel.For(0,
+                connectionCount,
+                i =>
+                {
+                    using var sender = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
+                    sender.Connect(ipEndPoint);
+                });
+
+            for (var i = 0; i < connectionCount; i++)
+            {
+                sListener.Accept();
+            }
+
+            var metrics = collector.Collect();
+
+            metrics.OutgoingTcpConnectionsCount.Should().Be(connectionCount);
+            metrics.IncomingTcpConnectionsCount.Should().Be(connectionCount);
+            metrics.FailedTcpConnectionsCount.Should().Be(0);
+        }
+
+        [Test]
+        public void Should_measure_failed_tcp_socket_connections()
+        {
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
+
+            const int connectionCount = 10;
+            var wrongEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 11000);
+
+            Parallel.For(0,
+                connectionCount,
+                i =>
+                {
+                    using var sender = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
+                    try
+                    {
+                        sender.Connect(wrongEndPoint);
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
+                });
+
+            var metrics = collector.Collect();
+
+            metrics.FailedTcpConnectionsCount.Should().Be(connectionCount);
+            metrics.OutgoingTcpConnectionsCount.Should().Be(connectionCount);
+            metrics.IncomingTcpConnectionsCount.Should().Be(0);
+        }
+
+        [Test]
+        public void Should_measure_outgoing_datagrams_count()
+        {
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
+
+            using var client = new UdpClient();
+            var bytes = new byte[30];
+            const int datagramsCount = 5;
+
+            // NOTE: Counter in System.Net.Sockets event source collect the total number of datagrams sent since the process started
+            // NOTE: So we invoke Collect to update the counter
+            Thread.Sleep(10000);
+            collector.Collect();
+
+            for (var i = 0; i < datagramsCount; i++)
+                client.Send(bytes, bytes.Length, new IPEndPoint(IPAddress.Loopback, 11000));
+
+            Thread.Sleep(10000);
+            var metrics = collector.Collect();
+
+            metrics.OutgoingDatagramsCount.Should().Be(datagramsCount);
+        }
+
+        [Test]
+        public void Should_measure_incoming_datagrams_count()
+        {
+            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
+
+            var sender = new UdpClient();
+            using var receiver = new UdpClient(11000);
+            IPEndPoint remoteIp = null;
+            var bytes = new byte[30];
+            const int datagramsCount = 5;
+
+            Parallel.For(0, datagramsCount, i => sender.Send(bytes, bytes.Length, new IPEndPoint(IPAddress.Loopback, 11000)));
+
+            for (var i = 0; i < datagramsCount; i++)
+                receiver.Receive(ref remoteIp);
+
+            Thread.Sleep(10000);
+            sender.Dispose();
+
+            var metrics = collector.Collect();
+
+            metrics.IncomingDatagramsCount.Should().Be(datagramsCount);
+            metrics.OutgoingDatagramsCount.Should().Be(datagramsCount);
         }
     }
 }
