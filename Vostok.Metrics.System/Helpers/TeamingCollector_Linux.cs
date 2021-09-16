@@ -8,11 +8,11 @@ namespace Vostok.Metrics.System.Helpers
 {
     // Specification: https://github.com/jpirko/libteam/wiki/Infrastructure-Specification
     // Source code: https://github.com/jpirko/libteam/blob/master/libteamdctl/libteamdctl.c
-    internal class TeamingCollector : IDisposable
+    internal class TeamingCollector_Linux : IDisposable
     {
         private readonly IntPtr teamdctlPointer;
 
-        public TeamingCollector(IntPtr ctl, string teamingInterfaceName)
+        public TeamingCollector_Linux(IntPtr ctl, string teamingInterfaceName)
         {
             teamdctlPointer = ctl;
 
@@ -55,7 +55,7 @@ namespace Vostok.Metrics.System.Helpers
             [In] IntPtr ctl,
             [In] string teamName,
             [In] string addr,
-            [In] string ctlType);
+            [In] string cliType);
 
         [DllImport("libteamdctl.so.0")]
         private static extern void teamdctl_disconnect(
