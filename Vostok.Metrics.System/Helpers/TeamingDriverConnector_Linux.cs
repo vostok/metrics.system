@@ -26,7 +26,7 @@ namespace Vostok.Metrics.System.Helpers
         private void InitializeTeamdctl()
         {
             teamdctlPointer = teamdctl_alloc();
-            teamdctl_set_log_priority(teamdctlPointer, 5);
+            teamdctl_set_log_priority(teamdctlPointer, 0);
         }
 
         [DllImport("libteamdctl.so.0")]

@@ -16,7 +16,7 @@ namespace Vostok.Metrics.System.Helpers
         {
             teamdctlPointer = ctl;
 
-            if (teamdctl_connect(ctl, teamingInterfaceName, null, null) != 0)
+            if (teamdctl_connect(ctl, teamingInterfaceName, null, "dbus") != 0)
                 throw new Exception("Unable to connect to teaming driver. Note that this operation is possible only under sudo.");
         }
 
