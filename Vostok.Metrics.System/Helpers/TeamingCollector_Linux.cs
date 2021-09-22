@@ -16,6 +16,9 @@ namespace Vostok.Metrics.System.Helpers
         {
             teamdctlPointer = ctl;
 
+            // NOTE (tsup): We use 'dbus' because underlying teamdctl 'usock' implementation which is based on sockets uses 'select' which has
+            // a limit of 1024 and panics in case of broken limit.
+            // See https://lists.fedorahosted.org/archives/list/libteam@lists.fedorahosted.org/thread/RJ3QADG6IFGJHNTPJ3CC3DUNEUNS6HIT/
             if (teamdctl_connect(ctl, teamingInterfaceName, null, "dbus") != 0)
                 throw new Exception("Unable to connect to teaming driver. Note that this operation is possible only under sudo.");
         }
