@@ -1,3 +1,9 @@
+## 0.3.2 (22-09-2021):
+
+Fixed a couple of bugs:
+- Teaming collector doesn't panic now when file descriptors count is larger than 1024
+- Collect file descriptors count on linux instead of allocated size
+
 ## 0.3.1 (09-09-2021):
 
 Removed obsolete files
