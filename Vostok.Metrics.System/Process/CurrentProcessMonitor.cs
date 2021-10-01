@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Commons.Collections;
 using Vostok.Metrics.System.Helpers;
@@ -41,15 +40,12 @@ namespace Vostok.Metrics.System.Process
 
         public void Dispose()
         {
-            Task.Run(() =>
+            lock (guard)
             {
-                lock (guard)
-                {
-                    foreach (var disposablePeriodicObservable in observables)
-                        disposablePeriodicObservable.Value.Dispose();
-                    observables = null;
-                }
-            });
+                foreach (var disposablePeriodicObservable in observables)
+                    disposablePeriodicObservable.Value.Dispose();
+                observables = null;
+            }
         }
 
         private DisposablePeriodicObservable<CurrentProcessMetrics> BuildObservable(TimeSpan period)
