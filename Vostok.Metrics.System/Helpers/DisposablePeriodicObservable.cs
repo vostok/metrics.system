@@ -2,7 +2,7 @@
 
 namespace Vostok.Metrics.System.Helpers
 {
-    public class DisposablePeriodicObservable<T> : IObservable<T>, IDisposable
+    internal class DisposablePeriodicObservable<T> : IObservable<T>, IDisposable
     {
         private readonly PeriodicObservable<T> periodicObservable;
         private readonly Action onDispose;

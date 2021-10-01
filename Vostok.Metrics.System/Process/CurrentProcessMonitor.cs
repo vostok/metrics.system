@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Vostok.Commons.Collections;
 using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Process
