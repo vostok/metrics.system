@@ -1,3 +1,8 @@
+## 0.3.3 (07-10-2021):
+
+Made `CurrentProcessMonitor` and `HostMonitor` `IDisposable`. 
+Methods like `ObserveMetrics` now return `IDisposable`.
+
 ## 0.3.2 (22-09-2021):
 
 Fixed a couple of bugs:
