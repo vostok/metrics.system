@@ -113,7 +113,7 @@ namespace Vostok.Metrics.System.Host
         {
             try
             {
-                return cpuInfoReader.ReadLines().Count(x => x.Contains("Processor"));
+                return cpuInfoReader.ReadLines().Count(x => x.Contains("processor"));
             }
             catch (Exception error)
             {
