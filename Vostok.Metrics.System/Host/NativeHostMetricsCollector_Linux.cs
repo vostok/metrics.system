@@ -13,17 +13,24 @@ namespace Vostok.Metrics.System.Host
         private readonly HostMetricsSettings settings;
 
         private readonly Regex pidRegex = new Regex("[0-9]+$", RegexOptions.Compiled);
+
+        // See https://man7.org/linux/man-pages/man5/proc.5.html for information about each file
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
         private readonly ReusableFileReader vmStatReader = new ReusableFileReader("/proc/vmstat");
         private readonly ReusableFileReader descriptorInfoReader = new ReusableFileReader("/proc/sys/fs/file-nr");
-        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
+        private readonly ReusableFileReader cpuInfoReader = new ReusableFileReader("/proc/cpuinfo");
+
+        private readonly HostCpuUtilizationCollector cpuCollector;
         private readonly NetworkUtilizationCollector_Linux networkCollector = new NetworkUtilizationCollector_Linux();
         private readonly DerivativeCollector hardPageFaultCollector = new DerivativeCollector();
         private readonly DiskUsageCollector_Linux diskUsageCollector = new DiskUsageCollector_Linux();
 
         public NativeHostMetricsCollector_Linux(HostMetricsSettings settings)
-            => this.settings = settings;
+        {
+            this.settings = settings;
+            cpuCollector = new HostCpuUtilizationCollector(GetProcessorCount);
+        }
 
         public void Dispose()
         {
@@ -100,6 +107,19 @@ namespace Vostok.Metrics.System.Host
             }
 
             return result;
+        }
+
+        private int? GetProcessorCount()
+        {
+            try
+            {
+                return cpuInfoReader.ReadLines().Count(x => x.Contains("Processor"));
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+                return null;
+            }
         }
 
         private MemoryInfo ReadMemoryInfo()

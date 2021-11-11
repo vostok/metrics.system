@@ -10,7 +10,20 @@ namespace Vostok.Metrics.System.Host
     internal class NativeHostMetricsCollector_Windows : IDisposable
     {
         private readonly HostMetricsSettings settings;
-        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
+        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector(() =>
+        {
+            try
+            {
+                GetNativeSystemInfo(out var info);
+                WinMetricsCollectorHelper.ThrowOnError();
+                return (int)info.dwNumberOfProcessors;
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+                return null;
+            }
+        });
 
         private readonly IPerformanceCounter<Observation<NetworkUsage>[]> networkUsageCounter = PerformanceCounterFactory.Default
            .Create<NetworkUsage>()
@@ -90,6 +103,9 @@ namespace Vostok.Metrics.System.Host
         private static extern bool GetPerformanceInfo(
             [Out] out PERFORMANCE_INFORMATION ppsmemCounters,
             [In] int cb);
+
+        [DllImport("kernel32.dll", SetLastError=true)]
+        private static extern void GetNativeSystemInfo([Out] out SYSTEM_INFO info);
 
         private void CollectCpuUtilization(HostMetrics metrics)
         {
@@ -239,6 +255,22 @@ namespace Vostok.Metrics.System.Host
             public readonly uint HandleCount;
             public readonly uint ProcessCount;
             public readonly uint ThreadCount;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SYSTEM_INFO
+        {
+            public readonly ushort wProcessorArchitecture;
+            public readonly ushort wReserved;
+            public readonly uint dwPageSize;
+            public readonly IntPtr lpMinimumApplicationAddress;
+            public readonly IntPtr lpMaximumApplicationAddress;
+            public readonly IntPtr dwActiveProcessorMask;
+            public readonly uint dwNumberOfProcessors;
+            public readonly uint dwProcessorType;
+            public readonly uint dwAllocationGranularity;
+            public readonly ushort wProcessorLevel;
+            public readonly ushort wProcessorRevision;
         }
     }
 }
