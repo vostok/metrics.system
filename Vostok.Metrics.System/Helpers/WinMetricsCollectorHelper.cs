@@ -31,8 +31,8 @@ namespace Vostok.Metrics.System.Helpers
 
             public ulong ToUInt64()
             {
-                var high = (ulong)dwHighDateTime;
-                var low = (ulong)dwLowDateTime;
+                var high = (ulong) dwHighDateTime;
+                var low = (ulong) dwLowDateTime;
                 return (high << 32) | low;
             }
         }

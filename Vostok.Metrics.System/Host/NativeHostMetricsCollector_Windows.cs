@@ -10,20 +10,7 @@ namespace Vostok.Metrics.System.Host
     internal class NativeHostMetricsCollector_Windows : IDisposable
     {
         private readonly HostMetricsSettings settings;
-        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector(() =>
-        {
-            try
-            {
-                GetNativeSystemInfo(out var info);
-                WinMetricsCollectorHelper.ThrowOnError();
-                return (int)info.dwNumberOfProcessors;
-            }
-            catch (Exception error)
-            {
-                InternalErrorLogger.Warn(error);
-                return null;
-            }
-        });
+        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector(GetProcessorCount);
 
         private readonly IPerformanceCounter<Observation<NetworkUsage>[]> networkUsageCounter = PerformanceCounterFactory.Default
            .Create<NetworkUsage>()
@@ -104,7 +91,7 @@ namespace Vostok.Metrics.System.Host
             [Out] out PERFORMANCE_INFORMATION ppsmemCounters,
             [In] int cb);
 
-        [DllImport("kernel32.dll", SetLastError=true)]
+        [DllImport("kernel32.dll", SetLastError = true)]
         private static extern void GetNativeSystemInfo([Out] out SYSTEM_INFO info);
 
         private void CollectCpuUtilization(HostMetrics metrics)
@@ -210,6 +197,23 @@ namespace Vostok.Metrics.System.Host
             catch (Exception error)
             {
                 InternalErrorLogger.Warn(error);
+            }
+        }
+
+        private static int? GetProcessorCount()
+        {
+            {
+                try
+                {
+                    GetNativeSystemInfo(out var info);
+                    WinMetricsCollectorHelper.ThrowOnError();
+                    return (int)info.dwNumberOfProcessors;
+                }
+                catch (Exception error)
+                {
+                    InternalErrorLogger.Warn(error);
+                    return null;
+                }
             }
         }
 
