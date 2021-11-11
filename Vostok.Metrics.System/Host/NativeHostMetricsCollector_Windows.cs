@@ -207,7 +207,7 @@ namespace Vostok.Metrics.System.Host
                 {
                     GetNativeSystemInfo(out var info);
                     WinMetricsCollectorHelper.ThrowOnError();
-                    return (int)info.dwNumberOfProcessors;
+                    return (int) info.NumberOfProcessors;
                 }
                 catch (Exception error)
                 {
@@ -264,17 +264,17 @@ namespace Vostok.Metrics.System.Host
         [StructLayout(LayoutKind.Sequential)]
         private struct SYSTEM_INFO
         {
-            public readonly ushort wProcessorArchitecture;
-            public readonly ushort wReserved;
-            public readonly uint dwPageSize;
-            public readonly IntPtr lpMinimumApplicationAddress;
-            public readonly IntPtr lpMaximumApplicationAddress;
-            public readonly IntPtr dwActiveProcessorMask;
-            public readonly uint dwNumberOfProcessors;
-            public readonly uint dwProcessorType;
-            public readonly uint dwAllocationGranularity;
-            public readonly ushort wProcessorLevel;
-            public readonly ushort wProcessorRevision;
+            public readonly ushort ProcessorArchitecture;
+            public readonly ushort Reserved;
+            public readonly uint PageSize;
+            public readonly IntPtr MinimumApplicationAddress;
+            public readonly IntPtr MaximumApplicationAddress;
+            public readonly IntPtr ActiveProcessorMask;
+            public readonly uint NumberOfProcessors;
+            public readonly uint ProcessorType;
+            public readonly uint AllocationGranularity;
+            public readonly ushort ProcessorLevel;
+            public readonly ushort ProcessorRevision;
         }
     }
 }
