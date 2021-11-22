@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NETSTANDARD1_5_OR_GREATER
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -17,12 +18,6 @@ namespace Vostok.Metrics.System.Tests
     {
         private List<DnsLookupInfo> collections;
         private DnsMonitor monitor;
-
-        [OneTimeSetUp]
-        public void FixtureSetup()
-        {
-            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
-        }
 
         [SetUp]
         public void TestSetup()
@@ -93,3 +88,4 @@ namespace Vostok.Metrics.System.Tests
         }
     }
 }
+#endif
