@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD1_5_OR_GREATER
+﻿#if NET5_0 || NET6_0
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

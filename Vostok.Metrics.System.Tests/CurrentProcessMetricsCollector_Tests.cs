@@ -121,7 +121,7 @@ namespace Vostok.Metrics.System.Tests
             metrics.GcHeapSize.Should().BeGreaterThan(0);
         }
 
-#if NETSTANDARD1_5_OR_GREATER
+#if NET5_0 || NET6_0
         [Test]
         public void Should_measure_outgoing_tcp_socket_connections()
         {
