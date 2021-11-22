@@ -36,8 +36,8 @@ namespace Vostok.Metrics.System.Helpers
             if (reader == null)
                 reader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete));
 
-            if (RuntimeDetector.IsDotNet60AndNewer)
-                reader.BaseStream.Seek(0, SeekOrigin.Current);
+            // if (RuntimeDetector.IsDotNet60AndNewer)
+            //     reader.BaseStream.Seek(0, SeekOrigin.Current);
 
             reader.BaseStream.Seek(0, SeekOrigin.Begin);
             reader.DiscardBufferedData();
