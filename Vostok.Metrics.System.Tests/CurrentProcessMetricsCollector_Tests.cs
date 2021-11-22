@@ -19,11 +19,16 @@ namespace Vostok.Metrics.System.Tests
         private CurrentProcessMetricsCollector collector;
 
         [SetUp]
-        public void TestSetup()
+        public void SetUp()
         {
-            collector?.Dispose();
             collector = new CurrentProcessMetricsCollector();
             collector.Collect();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            collector.Dispose();
         }
 
         [Test]
