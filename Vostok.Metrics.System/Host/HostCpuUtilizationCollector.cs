@@ -5,10 +5,15 @@ namespace Vostok.Metrics.System.Host
 {
     internal class HostCpuUtilizationCollector
     {
-        private static readonly int CoresCount = Environment.ProcessorCount;
-
+        private readonly Func<int?> coresCountProvider;
+        private int previousCoresCount = Environment.ProcessorCount;
         private ulong previousSystemTime;
         private ulong previousIdleTime;
+
+        public HostCpuUtilizationCollector(Func<int?> coresCountProvider)
+        {
+            this.coresCountProvider = coresCountProvider;
+        }
 
         public void Collect(HostMetrics metrics, ulong systemTime, ulong idleTime)
         {
@@ -16,7 +21,7 @@ namespace Vostok.Metrics.System.Host
             var idleTimeDiff = (double)idleTime - previousIdleTime;
             var spentTimeDiff = 1 - idleTimeDiff / systemTimeDiff;
 
-            metrics.CpuTotalCores = Environment.ProcessorCount;
+            metrics.CpuTotalCores = previousCoresCount = coresCountProvider() ?? previousCoresCount;
 
             if (previousSystemTime == 0 || systemTimeDiff <= 0)
             {
@@ -25,7 +30,7 @@ namespace Vostok.Metrics.System.Host
             }
             else
             {
-                metrics.CpuUtilizedCores = (CoresCount * spentTimeDiff).Clamp(0, CoresCount);
+                metrics.CpuUtilizedCores = (metrics.CpuTotalCores * spentTimeDiff).Clamp(0, metrics.CpuTotalCores);
                 metrics.CpuUtilizedFraction = spentTimeDiff.Clamp(0, 1);
             }
 

@@ -10,7 +10,7 @@ namespace Vostok.Metrics.System.Host
     internal class NativeHostMetricsCollector_Windows : IDisposable
     {
         private readonly HostMetricsSettings settings;
-        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
+        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector(GetProcessorCount);
 
         private readonly IPerformanceCounter<Observation<NetworkUsage>[]> networkUsageCounter = PerformanceCounterFactory.Default
            .Create<NetworkUsage>()
@@ -90,6 +90,9 @@ namespace Vostok.Metrics.System.Host
         private static extern bool GetPerformanceInfo(
             [Out] out PERFORMANCE_INFORMATION ppsmemCounters,
             [In] int cb);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern void GetNativeSystemInfo([Out] out SYSTEM_INFO info);
 
         private void CollectCpuUtilization(HostMetrics metrics)
         {
@@ -197,6 +200,23 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
+        private static int? GetProcessorCount()
+        {
+            {
+                try
+                {
+                    GetNativeSystemInfo(out var info);
+                    WinMetricsCollectorHelper.ThrowOnError();
+                    return (int) info.NumberOfProcessors;
+                }
+                catch (Exception error)
+                {
+                    InternalErrorLogger.Warn(error);
+                    return null;
+                }
+            }
+        }
+
         private class MemoryInfo
         {
             public long PageFaultsPerSecond { get; set; }
@@ -239,6 +259,22 @@ namespace Vostok.Metrics.System.Host
             public readonly uint HandleCount;
             public readonly uint ProcessCount;
             public readonly uint ThreadCount;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SYSTEM_INFO
+        {
+            public readonly ushort ProcessorArchitecture;
+            public readonly ushort Reserved;
+            public readonly uint PageSize;
+            public readonly IntPtr MinimumApplicationAddress;
+            public readonly IntPtr MaximumApplicationAddress;
+            public readonly IntPtr ActiveProcessorMask;
+            public readonly uint NumberOfProcessors;
+            public readonly uint ProcessorType;
+            public readonly uint AllocationGranularity;
+            public readonly ushort ProcessorLevel;
+            public readonly ushort ProcessorRevision;
         }
     }
 }

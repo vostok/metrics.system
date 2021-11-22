@@ -1,3 +1,7 @@
+## 0.3.4 (15-11-2021):
+
+Make host cpu collection OS specific since `Environment.ProcessorCount` depends on the process.
+
 ## 0.3.3 (07-10-2021):
 
 Made `CurrentProcessMonitor` and `HostMonitor` `IDisposable`. 
