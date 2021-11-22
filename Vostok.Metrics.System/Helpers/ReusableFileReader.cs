@@ -37,6 +37,7 @@ namespace Vostok.Metrics.System.Helpers
             {
                 reader?.BaseStream.Dispose();
                 reader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete));
+                return;
             }
 
             reader.BaseStream.Seek(0, SeekOrigin.Begin);
