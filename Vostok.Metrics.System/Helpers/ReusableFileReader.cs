@@ -33,10 +33,9 @@ namespace Vostok.Metrics.System.Helpers
 
         private void Reset()
         {
-            if (reader == null || RuntimeDetector.IsDotNet60AndNewer)
+            if (reader == null)
             {
-                reader?.BaseStream.Dispose();
-                reader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete));
+                reader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 1));
                 return;
             }
 
