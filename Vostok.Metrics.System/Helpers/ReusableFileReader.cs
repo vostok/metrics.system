@@ -35,6 +35,7 @@ namespace Vostok.Metrics.System.Helpers
         {
             if (reader == null)
             {
+                // note (kungurtsev, 23.11.2021): buffer size = 1 for disabling FileStream buffering strategy
                 reader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 1));
                 return;
             }
