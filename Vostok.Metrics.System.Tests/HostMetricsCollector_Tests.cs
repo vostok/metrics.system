@@ -18,6 +18,12 @@ namespace Vostok.Metrics.System.Tests
             collector = new HostMetricsCollector();
             collector.Collect();
         }
+        
+        [TearDown]
+        public void TearDown()
+        {
+            collector.Dispose();
+        }
 
         [Test]
         public void Should_measure_cpu_utilization()
