@@ -1,3 +1,7 @@
+## 0.3.5 (23-11-2021):
+
+Fixed net6.0 compability (#21).
+
 ## 0.3.4 (15-11-2021):
 
 Make host cpu collection OS specific since `Environment.ProcessorCount` depends on the process.
