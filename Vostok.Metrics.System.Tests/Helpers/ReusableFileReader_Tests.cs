@@ -11,7 +11,7 @@ namespace Vostok.Metrics.System.Tests.Helpers
     internal class ReusableFileReader_Tests
     {
         [Test]
-        public void Should_work()
+        public void Should_be_reusable()
         {
             var path = Path.GetTempFileName();
             using var reader = new ReusableFileReader(path);
