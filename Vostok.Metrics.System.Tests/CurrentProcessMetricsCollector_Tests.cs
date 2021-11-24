@@ -31,6 +31,8 @@ namespace Vostok.Metrics.System.Tests
             collector.Dispose();
         }
 
+#if NETCOREAPP3_1_OR_GREATER
+        
         [Test]
         public void Should_measure_active_timers_count()
         {
@@ -78,6 +80,8 @@ namespace Vostok.Metrics.System.Tests
                 collector.Collect().ExceptionsCount.Should().BeGreaterOrEqualTo(i);
             }
         }
+        
+#endif
 
         [Test]
         public void Should_measure_handles_count()
