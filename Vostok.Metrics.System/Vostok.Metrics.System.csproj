@@ -50,7 +50,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" PrivateAssets="all" />
   </ItemGroup>
   
-  <Target Name="RepackAssemblies" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+  <Target Name="RepackAssemblies" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' And '$(TargetFramework)' != ''">
     <PropertyGroup>
       <ILRepackExecutable>dotnet --roll-forward Major "$(MSBuildThisFileDirectory)../../vostok.devtools.ilrepack.bin/netcoreapp2.1/ILRepack.Core.dll"</ILRepackExecutable>
       <BinPath>$(ProjectDir)$(OutputPath)</BinPath>
