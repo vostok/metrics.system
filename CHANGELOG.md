@@ -1,3 +1,7 @@
+## 06-12-2021:
+
+Added `net6.0` target.
+
 ## 0.3.6 (23-11-2021):
 
 Fixed net6.0 compability (#21).
