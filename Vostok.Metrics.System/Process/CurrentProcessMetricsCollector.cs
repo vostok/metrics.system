@@ -5,7 +5,6 @@ using System.Threading;
 using JetBrains.Annotations;
 using Vostok.Metrics.System.Dns;
 using Vostok.Metrics.System.Helpers;
-using Vostok.Metrics.System.Host;
 
 namespace Vostok.Metrics.System.Process
 {
@@ -61,17 +60,6 @@ namespace Vostok.Metrics.System.Process
         private readonly DeltaCollector gen1Collections = new DeltaCollector(() => GcCollectionCountProvider(1));
         private readonly DeltaCollector gen2Collections = new DeltaCollector(() => GcCollectionCountProvider(2));
 
-        private readonly Lazy<long> totalHostMemory = new Lazy<long>(
-            () =>
-            {
-                var settings = HostMetricsSettings.CreateDisabled();
-
-                settings.CollectMemoryMetrics = true;
-
-                using (var collector = new HostMetricsCollector(settings))
-                    return collector.Collect().MemoryTotal;
-            });
-
         public void Dispose()
         {
             disposeNativeCollector?.Invoke();
@@ -109,7 +97,7 @@ namespace Vostok.Metrics.System.Process
 
             CollectThreadPoolMetrics(metrics);
 
-            CollectGCMetrics(metrics);
+            CollectGcMetrics(metrics);
 
             CollectMiscMetrics(metrics);
 
@@ -146,7 +134,7 @@ namespace Vostok.Metrics.System.Process
                 metrics.ThreadPoolIoUtilizedFraction = ((double)metrics.ThreadPoolBusyIo / metrics.ThreadPoolMinIo).Clamp(0, 1);
         }
 
-        private void CollectGCMetrics(CurrentProcessMetrics metrics)
+        private void CollectGcMetrics(CurrentProcessMetrics metrics)
         {
             metrics.GcAllocatedBytes = allocatedBytes.Collect();
             metrics.GcGen0Collections = (int) gen0Collections.Collect();
@@ -174,15 +162,15 @@ namespace Vostok.Metrics.System.Process
 
         private void CollectLimitsMetrics(CurrentProcessMetrics metrics)
         {
-            metrics.CpuLimitCores = settings.CpuCoresLimitProvider?.Invoke() ?? Environment.ProcessorCount;
+            metrics.CpuLimitCores = settings.CpuCoresLimitProvider?.Invoke();
 
             if (metrics.CpuLimitCores > 0)
-                metrics.CpuUtilizedFraction = (metrics.CpuUtilizedCores / metrics.CpuLimitCores).Clamp(0, 1);
+                metrics.CpuUtilizedFraction = (metrics.CpuUtilizedCores / metrics.CpuLimitCores.Value).Clamp(0, 1);
 
-            metrics.MemoryLimit = settings.MemoryBytesLimitProvider?.Invoke() ?? totalHostMemory.Value;
+            metrics.MemoryLimit = settings.MemoryBytesLimitProvider?.Invoke();
 
             if (metrics.MemoryLimit > 0)
-                metrics.MemoryUtilizedFraction = ((double) metrics.MemoryResident / metrics.MemoryLimit).Clamp(0, 1);
+                metrics.MemoryUtilizedFraction = ((double) metrics.MemoryResident / metrics.MemoryLimit.Value).Clamp(0, 1);
         }
 
         private void CollectSocketMetrics(CurrentProcessMetrics metrics) =>
