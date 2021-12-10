@@ -15,15 +15,16 @@ namespace Vostok.Metrics.System.Process
 
         /// <summary>
         /// <para>Number of CPU cores allowed to use by current process.</para>
+        /// <para>Defaults to <see cref="Environment.ProcessorCount"/> if there's no externally imposed limit.</para>
         /// </summary>
-        public double? CpuLimitCores { get; set; }
+        public double CpuLimitCores { get; set; }
 
         /// <summary>
         /// <para>Fraction of the CPU resources consumed by current process (relative to <see cref="CpuLimitCores"/>).</para>
         /// <para>This metric has a value between 0 and 1.</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
-        public double? CpuUtilizedFraction { get; set; }
+        public double CpuUtilizedFraction { get; set; }
 
         /// <summary>
         /// <para>Amount of physical RAM consumed by current process in bytes.</para>
@@ -39,14 +40,15 @@ namespace Vostok.Metrics.System.Process
 
         /// <summary>
         /// <para>Amount of physical memory allowed to use by current process.</para>
+        /// <para>Defaults to total physical memory on host if there's no externally imposed limit.</para>
         /// </summary>
-        public long? MemoryLimit { get; set; }
+        public long MemoryLimit { get; set; }
 
         /// <summary>
         /// <para>Fraction of the memory resources consumed by current process (<see cref="MemoryResident"/> relative to <see cref="MemoryLimit"/>).</para>
         /// <para>This metric has a value between 0 and 1.</para>
         /// </summary>
-        public double? MemoryUtilizedFraction { get; set; }
+        public double MemoryUtilizedFraction { get; set; }
 
         /// <summary>
         /// Total size of all GC heaps in bytes.
