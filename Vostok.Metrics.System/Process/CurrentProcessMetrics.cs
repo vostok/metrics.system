@@ -25,6 +25,11 @@ namespace Vostok.Metrics.System.Process
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
         public double CpuUtilizedFraction { get; set; }
+        
+        /// <summary>
+        /// Whether or not there's externally imposed cpu limit.
+        /// </summary>
+        public bool HasCpuLimit { get; set; }
 
         /// <summary>
         /// <para>Amount of physical RAM consumed by current process in bytes.</para>
@@ -44,6 +49,11 @@ namespace Vostok.Metrics.System.Process
         /// </summary>
         public long MemoryLimit { get; set; }
 
+        /// <summary>
+        /// Whether or not there's externally imposed memory limit.
+        /// </summary>
+        public bool HasMemoryLimit { get; set; }
+        
         /// <summary>
         /// <para>Fraction of the memory resources consumed by current process (<see cref="MemoryResident"/> relative to <see cref="MemoryLimit"/>).</para>
         /// <para>This metric has a value between 0 and 1.</para>
