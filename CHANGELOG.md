@@ -1,3 +1,7 @@
+## 0.3.9 (10-12-2021):
+
+Added nullable cpu & memory limit properties.
+
 ## 0.3.8 (06-12-2021):
 
 Added `net6.0` target.
