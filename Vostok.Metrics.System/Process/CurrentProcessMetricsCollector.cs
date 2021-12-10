@@ -72,13 +72,6 @@ namespace Vostok.Metrics.System.Process
                     return collector.Collect().MemoryTotal;
             });
 
-        public void Dispose()
-        {
-            disposeNativeCollector?.Invoke();
-            socketMonitor.Dispose();
-            dnsMonitor.Dispose();
-        }
-
         public CurrentProcessMetricsCollector()
             : this(null)
         {
@@ -100,6 +93,13 @@ namespace Vostok.Metrics.System.Process
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
             }
+        }
+
+        public void Dispose()
+        {
+            disposeNativeCollector?.Invoke();
+            socketMonitor.Dispose();
+            dnsMonitor.Dispose();
         }
 
         [NotNull]
@@ -135,7 +135,7 @@ namespace Vostok.Metrics.System.Process
 
             metrics.ThreadPoolBusyWorkers = maxWorkerThreads - availableWorkerThreads;
             metrics.ThreadPoolBusyIo = maxIocpThreads - availableIocpThreads;
-            
+
             metrics.ThreadPoolTotalCount = ThreadPoolTotalCountProvider();
             metrics.ThreadPoolQueueLength = ThreadPoolQueueLengthProvider();
 
@@ -149,22 +149,22 @@ namespace Vostok.Metrics.System.Process
         private void CollectGCMetrics(CurrentProcessMetrics metrics)
         {
             metrics.GcAllocatedBytes = allocatedBytes.Collect();
-            metrics.GcGen0Collections = (int) gen0Collections.Collect();
-            metrics.GcGen1Collections = (int) gen1Collections.Collect();
-            metrics.GcGen2Collections = (int) gen2Collections.Collect();
+            metrics.GcGen0Collections = (int)gen0Collections.Collect();
+            metrics.GcGen1Collections = (int)gen1Collections.Collect();
+            metrics.GcGen2Collections = (int)gen2Collections.Collect();
 
             metrics.GcHeapSize = GC.GetTotalMemory(false);
-            metrics.GcGen0Size = (long) GcGenerationSizeProvider(0);
-            metrics.GcGen1Size = (long) GcGenerationSizeProvider(1);
-            metrics.GcGen2Size = (long) GcGenerationSizeProvider(2);
-            metrics.GcLOHSize = (long) GcGenerationSizeProvider(3);
+            metrics.GcGen0Size = (long)GcGenerationSizeProvider(0);
+            metrics.GcGen1Size = (long)GcGenerationSizeProvider(1);
+            metrics.GcGen2Size = (long)GcGenerationSizeProvider(2);
+            metrics.GcLOHSize = (long)GcGenerationSizeProvider(3);
             metrics.GcTimePercent = GcTimeLastPercentProvider();
         }
 
         private void CollectMiscMetrics(CurrentProcessMetrics metrics)
         {
-            metrics.LockContentionCount = (int) lockContentionCount.Collect();
-            metrics.ExceptionsCount = (int) exceptionsCount.Collect();
+            metrics.LockContentionCount = (int)lockContentionCount.Collect();
+            metrics.ExceptionsCount = (int)exceptionsCount.Collect();
             metrics.ActiveTimersCount = ActiveTimersCountProvider();
             metrics.UptimeSeconds = UptimeMeter.Elapsed.TotalSeconds;
         }
@@ -174,15 +174,17 @@ namespace Vostok.Metrics.System.Process
 
         private void CollectLimitsMetrics(CurrentProcessMetrics metrics)
         {
-            metrics.CpuLimitCores = settings.CpuCoresLimitProvider?.Invoke() ?? Environment.ProcessorCount;
+            metrics.NullableCpuLimitCores = settings.CpuCoresLimitProvider?.Invoke();
+            metrics.CpuLimitCores = metrics.NullableCpuLimitCores ?? Environment.ProcessorCount;
 
             if (metrics.CpuLimitCores > 0)
                 metrics.CpuUtilizedFraction = (metrics.CpuUtilizedCores / metrics.CpuLimitCores).Clamp(0, 1);
 
-            metrics.MemoryLimit = settings.MemoryBytesLimitProvider?.Invoke() ?? totalHostMemory.Value;
+            metrics.NullableMemoryLimit = settings.MemoryBytesLimitProvider?.Invoke();
+            metrics.MemoryLimit = metrics.NullableMemoryLimit ?? totalHostMemory.Value;
 
             if (metrics.MemoryLimit > 0)
-                metrics.MemoryUtilizedFraction = ((double) metrics.MemoryResident / metrics.MemoryLimit).Clamp(0, 1);
+                metrics.MemoryUtilizedFraction = ((double)metrics.MemoryResident / metrics.MemoryLimit).Clamp(0, 1);
         }
 
         private void CollectSocketMetrics(CurrentProcessMetrics metrics) =>

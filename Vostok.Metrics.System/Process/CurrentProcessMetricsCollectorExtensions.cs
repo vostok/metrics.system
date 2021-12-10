@@ -23,6 +23,7 @@ namespace Vostok.Metrics.System.Process
             foreach (var property in typeof(CurrentProcessMetrics).GetProperties())
             {
                 var value = property.GetValue(metrics);
+
                 if (value != null)
                     yield return new MetricDataPoint(Convert.ToDouble(value), (WellKnownTagKeys.Name, property.Name));
             }
