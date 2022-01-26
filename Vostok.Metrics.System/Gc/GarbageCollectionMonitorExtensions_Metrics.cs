@@ -25,7 +25,7 @@ namespace Vostok.Metrics.System.Gc
 
         /// <inheritdoc cref="ReportMetrics(Vostok.Metrics.System.Gc.GarbageCollectionMonitor,Vostok.Metrics.IMetricContext)"/>
         [NotNull]
-        public static IDisposable ReportMetrics([NotNull] this GarbageCollectionMonitor monitor, [NotNull] IMetricContext metricContext, TimeSpan period)
+        public static IDisposable ReportMetrics([NotNull] this GarbageCollectionMonitor monitor, [NotNull] IMetricContext metricContext, [CanBeNull] TimeSpan? period)
             => monitor.Subscribe(new ReportingObserver(metricContext, period));
 
         private class ReportingObserver : IObserver<GarbageCollectionInfo>
