@@ -1,3 +1,7 @@
+## 0.3.10 (26-01-2022):
+
+Added extensions to GC Monitor for overriding default metrics reporting period.
+
 ## 0.3.9 (10-12-2021):
 
 Added nullable cpu & memory limit properties.
