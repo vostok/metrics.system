@@ -1,3 +1,7 @@
+## 0.3.11 (26-01-2022):
+
+Add nullable timespan to GC monitor extension
+
 ## 0.3.10 (26-01-2022):
 
 Added extensions to GC Monitor for overriding default metrics reporting period.
