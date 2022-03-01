@@ -8,7 +8,7 @@ namespace Vostok.Metrics.System.Tests;
 internal class HostMonitor_Tests
 {
     [Test]
-    public void CurrentProcessMonitor_ShouldNotThrow_OnMultipleDisposeCalls()
+    public void HostMonitor_ShouldNotThrow_OnMultipleDisposeCalls()
     {
         var monitor = new HostMonitor();
         monitor.Dispose();
