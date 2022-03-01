@@ -42,8 +42,12 @@ namespace Vostok.Metrics.System.Host
         {
             lock (guard)
             {
+                if (observables == null)
+                    return;
+                
                 foreach (var disposablePeriodicObservable in observables)
                     disposablePeriodicObservable.Value.Dispose();
+
                 observables = null;
             }
         }
