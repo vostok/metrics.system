@@ -8,7 +8,7 @@
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
-    <VersionPrefix>0.3.12</VersionPrefix>
+    <VersionPrefix>0.3.13</VersionPrefix>
   </PropertyGroup>
   <PropertyGroup>
     <Title>Vostok.Metrics.System</Title>
