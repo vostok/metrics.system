@@ -1,3 +1,7 @@
+## 0.3.22 (02-03-2022):
+
+Allow multiple dispose calls of `HostMonitor` and `CurrentProcessMonitor`.
+
 ## 0.3.11 (26-01-2022):
 
 Add nullable timespan to GC monitor extension
