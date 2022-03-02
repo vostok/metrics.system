@@ -1,4 +1,4 @@
-## 0.3.22 (02-03-2022):
+## 0.3.12 (02-03-2022):
 
 Allow multiple dispose calls of `HostMonitor` and `CurrentProcessMonitor`.
 
