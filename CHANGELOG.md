@@ -1,3 +1,42 @@
+## 0.3.12 (02-03-2022):
+
+Allow multiple dispose calls of `HostMonitor` and `CurrentProcessMonitor`.
+
+## 0.3.11 (26-01-2022):
+
+Add nullable timespan to GC monitor extension
+
+## 0.3.10 (26-01-2022):
+
+Added extensions to GC Monitor for overriding default metrics reporting period.
+
+## 0.3.9 (10-12-2021):
+
+Added nullable cpu & memory limit properties.
+
+## 0.3.8 (06-12-2021):
+
+Added `net6.0` target.
+
+## 0.3.6 (23-11-2021):
+
+Fixed `net6.0` compability (#21).
+
+## 0.3.4 (15-11-2021):
+
+Make host cpu collection OS specific since `Environment.ProcessorCount` depends on the process.
+
+## 0.3.3 (07-10-2021):
+
+Made `CurrentProcessMonitor` and `HostMonitor` `IDisposable`. 
+Methods like `ObserveMetrics` now return `IDisposable`.
+
+## 0.3.2 (22-09-2021):
+
+Fixed a couple of bugs:
+- Teaming collector doesn't panic now when file descriptors count is larger than 1024
+- Collect file descriptors count on linux instead of allocated size
+
 ## 0.3.1 (09-09-2021):
 
 Removed obsolete files

@@ -5,16 +5,16 @@ namespace Vostok.Metrics.System.Helpers
 {
     // Specification: https://github.com/jpirko/libteam/wiki/Infrastructure-Specification
     // Source code: https://github.com/jpirko/libteam/blob/master/libteamdctl/libteamdctl.c
-    internal class LinuxTeamingDriverConnector : IDisposable
+    internal class TeamingDriverConnector_Linux : IDisposable
     {
         private IntPtr teamdctlPointer = IntPtr.Zero;
 
-        public TeamingCollector Connect(string teamingInterfaceName)
+        public TeamingCollector_Linux Connect(string teamingInterfaceName)
         {
             if (teamdctlPointer == IntPtr.Zero)
                 InitializeTeamdctl();
 
-            return new TeamingCollector(teamdctlPointer, teamingInterfaceName);
+            return new TeamingCollector_Linux(teamdctlPointer, teamingInterfaceName);
         }
 
         public void Dispose()

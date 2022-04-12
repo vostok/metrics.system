@@ -19,13 +19,20 @@ namespace Vostok.Metrics.System.Tests
         private CurrentProcessMetricsCollector collector;
 
         [SetUp]
-        public void TestSetup()
+        public void SetUp()
         {
-            collector?.Dispose();
             collector = new CurrentProcessMetricsCollector();
             collector.Collect();
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            collector.Dispose();
+        }
+
+#if NETCOREAPP3_1_OR_GREATER
+        
         [Test]
         public void Should_measure_active_timers_count()
         {
@@ -73,6 +80,8 @@ namespace Vostok.Metrics.System.Tests
                 collector.Collect().ExceptionsCount.Should().BeGreaterOrEqualTo(i);
             }
         }
+        
+#endif
 
         [Test]
         public void Should_measure_handles_count()
@@ -116,11 +125,10 @@ namespace Vostok.Metrics.System.Tests
             metrics.GcHeapSize.Should().BeGreaterThan(0);
         }
 
+#if NET5_0 || NET6_0
         [Test]
         public void Should_measure_outgoing_tcp_socket_connections()
         {
-            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
-
             var client = new HttpClient();
 
             client.GetAsync("https://www.google.com/").GetAwaiter().GetResult();
@@ -135,8 +143,6 @@ namespace Vostok.Metrics.System.Tests
         [Test]
         public void Should_measure_incoming_tcp_socket_connections()
         {
-            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
-
             const int connectionCount = 10;
             var ipEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 11000);
 
@@ -168,8 +174,6 @@ namespace Vostok.Metrics.System.Tests
         [Test]
         public void Should_measure_failed_tcp_socket_connections()
         {
-            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
-
             const int connectionCount = 10;
             var wrongEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 11000);
 
@@ -198,8 +202,6 @@ namespace Vostok.Metrics.System.Tests
         [Test]
         public void Should_measure_outgoing_datagrams_count()
         {
-            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
-
             using var client = new UdpClient();
             var bytes = new byte[30];
             const int datagramsCount = 5;
@@ -221,8 +223,6 @@ namespace Vostok.Metrics.System.Tests
         [Test]
         public void Should_measure_incoming_datagrams_count()
         {
-            RuntimeIgnore.IgnoreIfNotDotNet50AndNewer();
-
             var sender = new UdpClient();
             using var receiver = new UdpClient(11000);
             IPEndPoint remoteIp = null;
@@ -242,5 +242,6 @@ namespace Vostok.Metrics.System.Tests
             metrics.IncomingDatagramsCount.Should().Be(datagramsCount);
             metrics.OutgoingDatagramsCount.Should().Be(datagramsCount);
         }
+#endif
     }
 }

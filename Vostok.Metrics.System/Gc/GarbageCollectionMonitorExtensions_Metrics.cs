@@ -23,19 +23,28 @@ namespace Vostok.Metrics.System.Gc
         public static IDisposable ReportMetrics([NotNull] this GarbageCollectionMonitor monitor, [NotNull] IMetricContext metricContext)
             => monitor.Subscribe(new ReportingObserver(metricContext));
 
+        /// <inheritdoc cref="ReportMetrics(Vostok.Metrics.System.Gc.GarbageCollectionMonitor,Vostok.Metrics.IMetricContext)"/>
+        [NotNull]
+        public static IDisposable ReportMetrics([NotNull] this GarbageCollectionMonitor monitor, [NotNull] IMetricContext metricContext, [CanBeNull] TimeSpan? period)
+            => monitor.Subscribe(new ReportingObserver(metricContext, period));
+
         private class ReportingObserver : IObserver<GarbageCollectionInfo>
         {
-            private static readonly FloatingGaugeConfig config = new FloatingGaugeConfig
-            {
-                ResetOnScrape = true,
-                Unit = WellKnownUnits.Milliseconds
-            };
-
             private readonly IMetricGroup1<IFloatingGauge> gcTotalDuration;
             private readonly IMetricGroup1<IFloatingGauge> gcLongestDuration;
 
-            public ReportingObserver(IMetricContext metricContext)
+            // ReSharper disable once IntroduceOptionalParameters.Local
+            public ReportingObserver(IMetricContext metricContext) : this(metricContext, null) {}
+
+            public ReportingObserver(IMetricContext metricContext, TimeSpan? period)
             {
+                var config = new FloatingGaugeConfig
+                {
+                    ResetOnScrape = true,
+                    Unit = WellKnownUnits.Milliseconds,
+                    ScrapePeriod = period
+                };
+
                 gcTotalDuration = metricContext.CreateFloatingGauge("GcTotalDurationMs", "GcType", config);
                 gcLongestDuration = metricContext.CreateFloatingGauge("GcLongestDurationMs", "GcType", config);
             }

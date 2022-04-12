@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NETCOREAPP3_1_OR_GREATER
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
@@ -36,13 +37,17 @@ namespace Vostok.Metrics.System.Tests
             GC.Collect(1, GCCollectionMode.Forced);
             GC.Collect(2, GCCollectionMode.Forced);
 
-            Action assertion = () => collections.Should().HaveCountGreaterOrEqualTo(3);
+            Action assertion = () =>
+            {
+                lock (collections)
+                {
+                    collections.Should().Contain(gc => gc.Generation == 0 && gc.Reason == GarbageCollectionReason.Induced);
+                    collections.Should().Contain(gc => gc.Generation == 1 && gc.Reason == GarbageCollectionReason.Induced);
+                    collections.Should().Contain(gc => gc.Generation == 2 && gc.Reason == GarbageCollectionReason.Induced);
+                }
+            };
 
             assertion.ShouldPassIn(5.Seconds());
-
-            collections.Should().Contain(gc => gc.Generation == 0 && gc.Reason == GarbageCollectionReason.Induced);
-            collections.Should().Contain(gc => gc.Generation == 1 && gc.Reason == GarbageCollectionReason.Induced);
-            collections.Should().Contain(gc => gc.Generation == 2 && gc.Reason == GarbageCollectionReason.Induced);
         }
 
         [Test]
@@ -50,15 +55,25 @@ namespace Vostok.Metrics.System.Tests
         {
             GC.Collect();
 
-            Action assertion = () => collections.Should().NotBeEmpty();
+            Action assertion = () =>
+            {
+                lock (collections)
+                {
+                    collections.Should().NotBeEmpty();
+                    collections.First().StartTimestamp.Should().BeCloseTo(DateTimeOffset.Now, 5.Seconds());
+                }
+            };
 
             assertion.ShouldPassIn(5.Seconds());
-
-            collections.First().StartTimestamp.Should().BeCloseTo(DateTimeOffset.Now, 5.Seconds());
         }
 
         public void OnNext(GarbageCollectionInfo value)
-            => collections.Add(value);
+        {
+            lock (collections)
+            {
+                collections.Add(value);
+            }
+        }
 
         public void OnError(Exception error)
         {
@@ -69,3 +84,4 @@ namespace Vostok.Metrics.System.Tests
         }
     }
 }
+#endif

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Vostok.Metrics.System.Helpers;
 
@@ -26,8 +27,8 @@ namespace Vostok.Metrics.System.Process
             var processStat = ReadProcessStat();
             var processStatus = ReadProcessStatus();
 
-            if (processStatus.FileDescriptorsSize.HasValue)
-                metrics.HandlesCount = processStatus.FileDescriptorsSize.Value;
+            if (processStatus.FileDescriptorsCount.HasValue)
+                metrics.HandlesCount = processStatus.FileDescriptorsCount.Value;
 
             if (processStatus.VirtualMemoryResident.HasValue)
                 metrics.MemoryResident = processStatus.VirtualMemoryResident.Value;
@@ -101,11 +102,18 @@ namespace Vostok.Metrics.System.Process
 
             try
             {
+                result.FileDescriptorsCount = Directory.EnumerateFiles("/proc/self/fd/").Count();
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // NOTE: Ignored due to process already exited so we don't have to count it's file descriptors count.
+                result.FileDescriptorsCount = 0;
+            }
+
+            try
+            {
                 foreach (var line in processStatusReader.ReadLines())
                 {
-                    if (FileParser.TryParseLong(line, "FDSize", out var fdSize))
-                        result.FileDescriptorsSize = (int) fdSize;
-
                     if (FileParser.TryParseLong(line, "RssAnon", out var vmRss))
                         result.VirtualMemoryResident = vmRss * 1024L;
 
@@ -144,9 +152,9 @@ namespace Vostok.Metrics.System.Process
 
         private class ProcessStatus
         {
-            public bool Filled => FileDescriptorsSize.HasValue && VirtualMemoryResident.HasValue && VirtualMemoryData.HasValue;
+            public bool Filled => FileDescriptorsCount.HasValue && VirtualMemoryResident.HasValue && VirtualMemoryData.HasValue;
 
-            public int? FileDescriptorsSize { get; set; }
+            public int? FileDescriptorsCount { get; set; }
             public long? VirtualMemoryResident { get; set; }
             public long? VirtualMemoryData { get; set; }
         }

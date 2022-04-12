@@ -13,8 +13,8 @@ namespace Vostok.Metrics.System.Process
         /// <para>Enables reporting of system metrics of the current process.</para>
         /// <para>Note that provided <see cref="IMetricContext"/> should contain tags sufficient to decouple these metrics from others.</para>
         /// </summary>
-        public static void ReportMetrics([NotNull] this CurrentProcessMetricsCollector collector, [NotNull] IMetricContext metricContext, TimeSpan? period = null)
-            => metricContext.CreateMultiFuncGauge(() => ProvideMetrics(collector), new FuncGaugeConfig {ScrapePeriod = period});
+        public static IDisposable ReportMetrics([NotNull] this CurrentProcessMetricsCollector collector, [NotNull] IMetricContext metricContext, TimeSpan? period = null)
+            => metricContext.CreateMultiFuncGauge(() => ProvideMetrics(collector), new FuncGaugeConfig {ScrapePeriod = period}) as IDisposable;
 
         private static IEnumerable<MetricDataPoint> ProvideMetrics(CurrentProcessMetricsCollector collector)
         {
@@ -23,6 +23,7 @@ namespace Vostok.Metrics.System.Process
             foreach (var property in typeof(CurrentProcessMetrics).GetProperties())
             {
                 var value = property.GetValue(metrics);
+
                 if (value != null)
                     yield return new MetricDataPoint(Convert.ToDouble(value), (WellKnownTagKeys.Name, property.Name));
             }

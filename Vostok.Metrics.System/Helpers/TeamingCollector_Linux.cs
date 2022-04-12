@@ -8,15 +8,18 @@ namespace Vostok.Metrics.System.Helpers
 {
     // Specification: https://github.com/jpirko/libteam/wiki/Infrastructure-Specification
     // Source code: https://github.com/jpirko/libteam/blob/master/libteamdctl/libteamdctl.c
-    internal class TeamingCollector : IDisposable
+    internal class TeamingCollector_Linux : IDisposable
     {
         private readonly IntPtr teamdctlPointer;
 
-        public TeamingCollector(IntPtr ctl, string teamingInterfaceName)
+        public TeamingCollector_Linux(IntPtr ctl, string teamingInterfaceName)
         {
             teamdctlPointer = ctl;
 
-            if (teamdctl_connect(ctl, teamingInterfaceName, null, null) != 0)
+            // NOTE (tsup): We use 'dbus' because underlying teamdctl 'usock' implementation which is based on sockets uses 'select' which has
+            // a limit of 1024 and panics in case of broken limit.
+            // See https://lists.fedorahosted.org/archives/list/libteam@lists.fedorahosted.org/thread/RJ3QADG6IFGJHNTPJ3CC3DUNEUNS6HIT/
+            if (teamdctl_connect(ctl, teamingInterfaceName, null, "dbus") != 0)
                 throw new Exception("Unable to connect to teaming driver. Note that this operation is possible only under sudo.");
         }
 
@@ -55,7 +58,7 @@ namespace Vostok.Metrics.System.Helpers
             [In] IntPtr ctl,
             [In] string teamName,
             [In] string addr,
-            [In] string ctlType);
+            [In] string cliType);
 
         [DllImport("libteamdctl.so.0")]
         private static extern void teamdctl_disconnect(

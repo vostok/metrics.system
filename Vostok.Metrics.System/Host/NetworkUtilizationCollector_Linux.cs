@@ -12,7 +12,7 @@ namespace Vostok.Metrics.System.Host
         private readonly Stopwatch stopwatch = new Stopwatch();
         private readonly ReusableFileReader networkUsageReader = new ReusableFileReader("/proc/net/dev");
         private volatile Dictionary<string, NetworkUsage> previousNetworkUsageInfo = new Dictionary<string, NetworkUsage>();
-        private readonly LinuxTeamingDriverConnector teamingConnector = new LinuxTeamingDriverConnector();
+        private readonly TeamingDriverConnector_Linux teamingConnector = new TeamingDriverConnector_Linux();
 
         public void Dispose()
         {

@@ -20,6 +20,11 @@ namespace Vostok.Metrics.System.Process
         public double CpuLimitCores { get; set; }
 
         /// <summary>
+        /// <para>Number of CPU cores allowed to use by current process.</para>
+        /// </summary>
+        public double? NullableCpuLimitCores { get; set; }
+
+        /// <summary>
         /// <para>Fraction of the CPU resources consumed by current process (relative to <see cref="CpuLimitCores"/>).</para>
         /// <para>This metric has a value between 0 and 1.</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
@@ -43,6 +48,11 @@ namespace Vostok.Metrics.System.Process
         /// <para>Defaults to total physical memory on host if there's no externally imposed limit.</para>
         /// </summary>
         public long MemoryLimit { get; set; }
+
+        /// <summary>
+        /// <para>Amount of physical memory allowed to use by current process.</para>
+        /// </summary>
+        public long? NullableMemoryLimit { get; set; }
 
         /// <summary>
         /// <para>Fraction of the memory resources consumed by current process (<see cref="MemoryResident"/> relative to <see cref="MemoryLimit"/>).</para>

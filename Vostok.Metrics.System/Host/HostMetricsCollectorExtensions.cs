@@ -16,13 +16,13 @@ namespace Vostok.Metrics.System.Host
         /// <para>Enables reporting of system metrics of the host.</para>
         /// <para>Note that provided <see cref="IMetricContext"/> should contain tags sufficient to decouple these metrics from others.</para>
         /// </summary>
-        public static void ReportMetrics(
+        public static IDisposable ReportMetrics(
             [NotNull] this HostMetricsCollector collector,
             [NotNull] IMetricContext metricContext,
             TimeSpan? period = null)
             => metricContext.CreateMultiFuncGauge(
                 () => ProvideMetrics(collector),
-                new FuncGaugeConfig {ScrapePeriod = period});
+                new FuncGaugeConfig {ScrapePeriod = period}) as IDisposable;
 
         private static IEnumerable<MetricDataPoint> ProvideMetrics(HostMetricsCollector collector)
         {

@@ -3,14 +3,12 @@
   <Import Project="..\..\vostok.devtools\library-common-props\Main-Project.props" />
   <Import Project="..\..\vostok.devtools\git-commit-to-assembly-title\Vostok.Tools.GitCommit2AssemblyTitle.props" />
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <Configurations>Debug;Release</Configurations>
-    <LangVersion>7.2</LangVersion>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
-    <VersionPrefix>0.3.2</VersionPrefix>
+    <VersionPrefix>0.3.13</VersionPrefix>
   </PropertyGroup>
   <PropertyGroup>
     <Title>Vostok.Metrics.System</Title>
@@ -26,6 +24,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\CircularBuffer.cs" Link="Commons\CircularBuffer.cs" />
+    <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\DictionaryExtensions.cs" Link="Commons\DictionaryExtensions.cs" />
     <Compile Include="..\..\vostok.commons.environment\Vostok.Commons.Environment\RuntimeDetector.cs" Link="Commons\RuntimeDetector.cs" />
     <Compile Include="..\..\vostok.commons.helpers\Vostok.Commons.Helpers\Observable\BroadcastObservable.cs" Link="Commons\BroadcastObservable.cs" />
     <Compile Include="..\..\vostok.commons.time\Vostok.Commons.Time\TimeSpanFormatting.cs" Link="Commons\TimeSpanFormatting.cs" />
@@ -33,23 +32,23 @@
   <ItemGroup>
     <Reference Include="Vostok.Logging.Abstractions">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vostok.logging.abstractions\Vostok.Logging.Abstractions\bin\Release\netstandard2.0\Vostok.Logging.Abstractions.dll</HintPath>
+      <HintPath>..\..\vostok.logging.abstractions\Vostok.Logging.Abstractions\bin\Release\$(ReferencesFramework)\Vostok.Logging.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Vostok.Metrics">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vostok.metrics\Vostok.Metrics\bin\Release\netstandard2.0\Vostok.Metrics.dll</HintPath>
+      <HintPath>..\..\vostok.metrics\Vostok.Metrics\bin\Release\$(ReferencesFramework)\Vostok.Metrics.dll</HintPath>
     </Reference>
     <Reference Include="Vostok.Sys.Metrics.PerfCounters">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\vostok.sys.metrics.perfcounters\Vostok.Sys.Metrics.PerfCounters\bin\Release\netstandard2.0\Vostok.Sys.Metrics.PerfCounters.dll</HintPath>
+      <HintPath>..\..\vostok.sys.metrics.perfcounters\Vostok.Sys.Metrics.PerfCounters\bin\Release\$(ReferencesFramework)\Vostok.Sys.Metrics.PerfCounters.dll</HintPath>
     </Reference>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" PrivateAssets="all" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" PrivateAssets="all" />
   </ItemGroup>
   
-  <Target Name="RepackAssemblies" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+  <Target Name="RepackAssemblies" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' And '$(TargetFramework)' != ''">
     <PropertyGroup>
       <ILRepackExecutable>dotnet --roll-forward Major "$(MSBuildThisFileDirectory)../../vostok.devtools.ilrepack.bin/netcoreapp2.1/ILRepack.Core.dll"</ILRepackExecutable>
       <BinPath>$(ProjectDir)$(OutputPath)</BinPath>

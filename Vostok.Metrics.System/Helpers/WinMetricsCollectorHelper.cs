@@ -7,9 +7,14 @@ namespace Vostok.Metrics.System.Helpers
     {
         public static void ThrowOnError()
         {
-            var exception = new Win32Exception();
+            var code = Marshal.GetLastWin32Error();
 
-            throw new Win32Exception(exception.ErrorCode, exception.Message + $" Error code = {exception.ErrorCode} (0x{exception.ErrorCode:X}).");
+            if (code != 0)
+            {
+                var exception = new Win32Exception(Marshal.GetLastWin32Error());
+
+                throw new Win32Exception(exception.ErrorCode, exception.Message + $" Error code = {exception.ErrorCode} (0x{exception.ErrorCode:X}).");
+            }
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]
