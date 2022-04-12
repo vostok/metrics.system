@@ -139,6 +139,6 @@ namespace Vostok.Metrics.System.Host
         /// <summary>
         /// Amount of total TCP connections count.
         /// </summary>
-        public int TcpConnectionsTotalCount => TcpStates.Sum(x => x.Value);
+        public int TcpConnectionsTotalCount => TcpStates?.Sum(x => x.Value) ?? 0;
     }
 }
