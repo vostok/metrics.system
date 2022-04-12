@@ -1,8 +1,13 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections;
+using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
+using Vostok.Metrics.Senders;
 using Vostok.Metrics.System.Host;
 
 namespace Vostok.Metrics.System.Tests
@@ -108,6 +113,35 @@ namespace Vostok.Metrics.System.Tests
             metrics.NetworkSentBytesPerSecond.Should().BeGreaterThan(0);
             metrics.NetworkInUtilizedPercent.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
             metrics.NetworkOutUtilizedPercent.Should().BeGreaterThan(0).And.BeLessOrEqualTo(100);
+        }
+
+        [TestCaseSource(nameof(SettingsSetup))]
+        public void Should_report_host_metrics(Action<HostMetricsSettings> settingsSetup)
+        {
+            var settings = HostMetricsSettings.CreateDisabled();
+            var exception = null as Exception;
+            var context = new MetricContext(new MetricContextConfig(new DevNullMetricEventSender()) {ErrorCallback = contextException => exception = contextException});
+
+            settingsSetup(settings);
+            collector = new HostMetricsCollector(settings);
+            collector.ReportMetrics(context, 1.Milliseconds());
+            Task.Delay(100).Wait();
+
+            exception.Should().BeNull();
+        }
+
+        private static IEnumerable SettingsSetup()
+        {
+            return new Action<HostMetricsSettings>[]
+            {
+                settings => settings.CollectCpuMetrics = true,
+                settings => settings.CollectMemoryMetrics = true,
+                settings => settings.CollectDiskSpaceMetrics = true,
+                settings => settings.CollectDiskUsageMetrics = true,
+                settings => settings.CollectNetworkUsageMetrics = true,
+                settings => settings.CollectTcpStateMetrics = true,
+                settings => settings.CollectMiscMetrics = true,
+            };
         }
     }
 }
