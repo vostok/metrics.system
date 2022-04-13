@@ -5,6 +5,7 @@ using System.Net.NetworkInformation;
 using JetBrains.Annotations;
 using Vostok.Metrics.Models;
 using Vostok.Metrics.Primitives.Gauge;
+using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
 {
@@ -37,7 +38,7 @@ namespace Vostok.Metrics.System.Host
                 }
             }
 
-            foreach (var tcpState in metrics.TcpStates)
+            foreach (var tcpState in metrics.TcpStates.OrEmptyIfNull())
             {
                 yield return new MetricDataPoint(
                     Convert.ToDouble(tcpState.Value),
@@ -46,7 +47,7 @@ namespace Vostok.Metrics.System.Host
                 );
             }
 
-            foreach (var diskSpaceInfo in metrics.DisksSpaceInfo)
+            foreach (var diskSpaceInfo in metrics.DisksSpaceInfo.OrEmptyIfNull())
             {
                 foreach (var property in typeof(DiskSpaceInfo).GetProperties())
                 {
@@ -61,7 +62,7 @@ namespace Vostok.Metrics.System.Host
                 }
             }
 
-            foreach (var diskUsageInfo in metrics.DisksUsageInfo)
+            foreach (var diskUsageInfo in metrics.DisksUsageInfo.OrEmptyIfNull())
             {
                 foreach (var property in typeof(DiskUsageInfo).GetProperties())
                 {
