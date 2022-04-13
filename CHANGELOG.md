@@ -1,3 +1,7 @@
+## 0.3.13 (13-04-2022):
+
+Fixed NRE on `HostMetrics` reporting
+
 ## 0.3.12 (02-03-2022):
 
 Allow multiple dispose calls of `HostMonitor` and `CurrentProcessMonitor`.
