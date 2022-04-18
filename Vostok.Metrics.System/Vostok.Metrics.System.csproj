@@ -57,7 +57,7 @@
     <ItemGroup>
       <MergeAssemblies Include="$(BinPath)Newtonsoft.Json.dll" />
     </ItemGroup>
-    <Exec WorkingDirectory="$(BinPath)" Command="$(ILRepackExecutable) /internalize /renameInternalized /out:$(ResultAssembly) $(ResultAssembly) @(MergeAssemblies->'%(RelativeDir)%(FileName)%(Extension)', ' ')" />
+    <Exec WorkingDirectory="$(BinPath)" Command="$(ILRepackExecutable) /internalize /renameInternalized /out:&quot;$(ResultAssembly)&quot; &quot;$(ResultAssembly)&quot; @(MergeAssemblies->'&quot;%(RelativeDir)%(FileName)%(Extension)&quot;', ' ')" />
     <Delete Files="@(MergeAssemblies)" />
   </Target>
 </Project>
