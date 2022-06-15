@@ -1,3 +1,7 @@
+## 0.3.14 (15-06-2022):
+
+Extended useful Linux network interfaces list for proper network usage metric collection.
+
 ## 0.3.13 (13-04-2022):
 
 Fixed NRE on `HostMetrics` reporting
