@@ -102,9 +102,13 @@ namespace Vostok.Metrics.System.Host
 
             // NOTE: 'eth' stands for ethernet interface.
             // NOTE: 'en' stands for ethernet interface in 'Predictable network interface device names scheme'. 
+            // NOTE: 'em' stands for Lan-On-Motherboard interfaces.
+            // NOTE: 'p' stands for PCI add-in interfaces.
             bool ShouldBeCounted(string interfaceName)
                 => interfaceName.StartsWith("eth") ||
                    interfaceName.StartsWith("en") ||
+                   interfaceName.StartsWith("em") ||
+                   interfaceName.StartsWith("p") ||
                    IsTeamingInterface(interfaceName);
 
             IEnumerable<NetworkUsage> FilterDisabledInterfaces(IEnumerable<NetworkUsage> interfaceUsages)
