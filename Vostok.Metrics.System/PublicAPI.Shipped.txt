@@ -1,0 +1,269 @@
+override Vostok.Metrics.System.Dns.DnsMonitor.OnEventSourceCreated(System.Diagnostics.Tracing.EventSource eventSource) -> void
+override Vostok.Metrics.System.Dns.DnsMonitor.OnEventWritten(System.Diagnostics.Tracing.EventWrittenEventArgs eventData) -> void
+override Vostok.Metrics.System.Gc.GarbageCollectionMonitor.OnEventSourceCreated(System.Diagnostics.Tracing.EventSource source) -> void
+override Vostok.Metrics.System.Gc.GarbageCollectionMonitor.OnEventWritten(System.Diagnostics.Tracing.EventWrittenEventArgs event) -> void
+static Vostok.Metrics.System.Dns.DnsMonitorExtensions_Logging.LogLookups(this Vostok.Metrics.System.Dns.DnsMonitor monitor, Vostok.Logging.Abstractions.ILog log, System.Predicate<Vostok.Metrics.System.Dns.DnsLookupInfo> filter) -> System.IDisposable
+static Vostok.Metrics.System.Dns.DnsMonitorExtensions_Metrics.ReportMetrics(this Vostok.Metrics.System.Dns.DnsMonitor monitor, Vostok.Metrics.IMetricContext metricContext, System.TimeSpan? period = null) -> System.IDisposable
+static Vostok.Metrics.System.Gc.GarbageCollectionMonitorExtensions_Logging.LogCollections(this Vostok.Metrics.System.Gc.GarbageCollectionMonitor monitor, Vostok.Logging.Abstractions.ILog log, System.Predicate<Vostok.Metrics.System.Gc.GarbageCollectionInfo> filter) -> System.IDisposable
+static Vostok.Metrics.System.Gc.GarbageCollectionMonitorExtensions_Metrics.ReportMetrics(this Vostok.Metrics.System.Gc.GarbageCollectionMonitor monitor, Vostok.Metrics.IMetricContext metricContext) -> System.IDisposable
+static Vostok.Metrics.System.Gc.GarbageCollectionMonitorExtensions_Metrics.ReportMetrics(this Vostok.Metrics.System.Gc.GarbageCollectionMonitor monitor, Vostok.Metrics.IMetricContext metricContext, System.TimeSpan? period) -> System.IDisposable
+static Vostok.Metrics.System.Host.HostMetricsCollectorExtensions.ReportMetrics(this Vostok.Metrics.System.Host.HostMetricsCollector collector, Vostok.Metrics.IMetricContext metricContext, System.TimeSpan? period = null) -> System.IDisposable
+static Vostok.Metrics.System.Host.HostMetricsSettings.CreateDisabled() -> Vostok.Metrics.System.Host.HostMetricsSettings
+static Vostok.Metrics.System.Host.HostMonitorExtensions.LogPeriodically(this Vostok.Metrics.System.Host.HostMonitor monitor, Vostok.Logging.Abstractions.ILog log, System.TimeSpan period) -> System.IDisposable
+static Vostok.Metrics.System.Process.CurrentProcessMetricsCollectorExtensions.ReportMetrics(this Vostok.Metrics.System.Process.CurrentProcessMetricsCollector collector, Vostok.Metrics.IMetricContext metricContext, System.TimeSpan? period = null) -> System.IDisposable
+static Vostok.Metrics.System.Process.CurrentProcessMonitorExtensions.LogPeriodically(this Vostok.Metrics.System.Process.CurrentProcessMonitor monitor, Vostok.Logging.Abstractions.ILog log, System.TimeSpan period) -> System.IDisposable
+Vostok.Metrics.System.Dns.DnsLookupInfo
+Vostok.Metrics.System.Dns.DnsLookupInfo.DnsLookupInfo(bool isFailed, System.TimeSpan latency) -> void
+Vostok.Metrics.System.Dns.DnsLookupInfo.IsFailed.get -> bool
+Vostok.Metrics.System.Dns.DnsLookupInfo.Latency.get -> System.TimeSpan
+Vostok.Metrics.System.Dns.DnsMonitor
+Vostok.Metrics.System.Dns.DnsMonitor.DnsMonitor() -> void
+Vostok.Metrics.System.Dns.DnsMonitor.Subscribe(System.IObserver<Vostok.Metrics.System.Dns.DnsLookupInfo> observer) -> System.IDisposable
+Vostok.Metrics.System.Dns.DnsMonitorExtensions_Logging
+Vostok.Metrics.System.Dns.DnsMonitorExtensions_Metrics
+Vostok.Metrics.System.Gc.GarbageCollectionInfo
+Vostok.Metrics.System.Gc.GarbageCollectionInfo.Duration.get -> System.TimeSpan
+Vostok.Metrics.System.Gc.GarbageCollectionInfo.GarbageCollectionInfo(System.DateTimeOffset startTimestamp, System.TimeSpan duration, int generation, int number, Vostok.Metrics.System.Gc.GarbageCollectionType type, Vostok.Metrics.System.Gc.GarbageCollectionReason reason) -> void
+Vostok.Metrics.System.Gc.GarbageCollectionInfo.Generation.get -> int
+Vostok.Metrics.System.Gc.GarbageCollectionInfo.Number.get -> int
+Vostok.Metrics.System.Gc.GarbageCollectionInfo.Reason.get -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionInfo.StartTimestamp.get -> System.DateTimeOffset
+Vostok.Metrics.System.Gc.GarbageCollectionInfo.Type.get -> Vostok.Metrics.System.Gc.GarbageCollectionType
+Vostok.Metrics.System.Gc.GarbageCollectionMonitor
+Vostok.Metrics.System.Gc.GarbageCollectionMonitor.GarbageCollectionMonitor() -> void
+Vostok.Metrics.System.Gc.GarbageCollectionMonitor.Subscribe(System.IObserver<Vostok.Metrics.System.Gc.GarbageCollectionInfo> observer) -> System.IDisposable
+Vostok.Metrics.System.Gc.GarbageCollectionMonitorExtensions_Logging
+Vostok.Metrics.System.Gc.GarbageCollectionMonitorExtensions_Metrics
+Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.AllocLarge = 4 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.AllocSmall = 0 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.Empty = 3 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.Induced = 1 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.InducedCompacting = 10 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.InducedLowMemory = 9 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.InducedNotForced = 7 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.Internal = 8 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.LowMemory = 2 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.LowMemoryHost = 11 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.OutOfSpaceLOH = 6 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.OutOfSpaceSOH = 5 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionReason.PMFullGC = 12 -> Vostok.Metrics.System.Gc.GarbageCollectionReason
+Vostok.Metrics.System.Gc.GarbageCollectionType
+Vostok.Metrics.System.Gc.GarbageCollectionType.BackgroundGC = 1 -> Vostok.Metrics.System.Gc.GarbageCollectionType
+Vostok.Metrics.System.Gc.GarbageCollectionType.ForegroundGC = 2 -> Vostok.Metrics.System.Gc.GarbageCollectionType
+Vostok.Metrics.System.Gc.GarbageCollectionType.NonConcurrentGC = 0 -> Vostok.Metrics.System.Gc.GarbageCollectionType
+Vostok.Metrics.System.Host.DiskSpaceInfo
+Vostok.Metrics.System.Host.DiskSpaceInfo.DiskName.get -> string
+Vostok.Metrics.System.Host.DiskSpaceInfo.DiskName.set -> void
+Vostok.Metrics.System.Host.DiskSpaceInfo.DiskSpaceInfo() -> void
+Vostok.Metrics.System.Host.DiskSpaceInfo.FreeBytes.get -> long
+Vostok.Metrics.System.Host.DiskSpaceInfo.FreeBytes.set -> void
+Vostok.Metrics.System.Host.DiskSpaceInfo.FreePercent.get -> double
+Vostok.Metrics.System.Host.DiskSpaceInfo.FreePercent.set -> void
+Vostok.Metrics.System.Host.DiskSpaceInfo.RootDirectory.get -> string
+Vostok.Metrics.System.Host.DiskSpaceInfo.RootDirectory.set -> void
+Vostok.Metrics.System.Host.DiskSpaceInfo.TotalCapacityBytes.get -> long
+Vostok.Metrics.System.Host.DiskSpaceInfo.TotalCapacityBytes.set -> void
+Vostok.Metrics.System.Host.DiskUsageInfo
+Vostok.Metrics.System.Host.DiskUsageInfo.BytesReadPerSecond.get -> long
+Vostok.Metrics.System.Host.DiskUsageInfo.BytesReadPerSecond.set -> void
+Vostok.Metrics.System.Host.DiskUsageInfo.BytesWrittenPerSecond.get -> long
+Vostok.Metrics.System.Host.DiskUsageInfo.BytesWrittenPerSecond.set -> void
+Vostok.Metrics.System.Host.DiskUsageInfo.CurrentQueueLength.get -> long
+Vostok.Metrics.System.Host.DiskUsageInfo.CurrentQueueLength.set -> void
+Vostok.Metrics.System.Host.DiskUsageInfo.DiskName.get -> string
+Vostok.Metrics.System.Host.DiskUsageInfo.DiskName.set -> void
+Vostok.Metrics.System.Host.DiskUsageInfo.DiskUsageInfo() -> void
+Vostok.Metrics.System.Host.DiskUsageInfo.ReadAverageMsLatency.get -> long
+Vostok.Metrics.System.Host.DiskUsageInfo.ReadAverageMsLatency.set -> void
+Vostok.Metrics.System.Host.DiskUsageInfo.ReadsPerSecond.get -> long
+Vostok.Metrics.System.Host.DiskUsageInfo.ReadsPerSecond.set -> void
+Vostok.Metrics.System.Host.DiskUsageInfo.UtilizedPercent.get -> double
+Vostok.Metrics.System.Host.DiskUsageInfo.UtilizedPercent.set -> void
+Vostok.Metrics.System.Host.DiskUsageInfo.WriteAverageMsLatency.get -> long
+Vostok.Metrics.System.Host.DiskUsageInfo.WriteAverageMsLatency.set -> void
+Vostok.Metrics.System.Host.DiskUsageInfo.WritesPerSecond.get -> long
+Vostok.Metrics.System.Host.DiskUsageInfo.WritesPerSecond.set -> void
+Vostok.Metrics.System.Host.HostMetrics
+Vostok.Metrics.System.Host.HostMetrics.CpuTotalCores.get -> int
+Vostok.Metrics.System.Host.HostMetrics.CpuTotalCores.set -> void
+Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedCores.get -> double
+Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedCores.set -> void
+Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedFraction.get -> double
+Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedFraction.set -> void
+Vostok.Metrics.System.Host.HostMetrics.DisksSpaceInfo.get -> System.Collections.Generic.Dictionary<string, Vostok.Metrics.System.Host.DiskSpaceInfo>
+Vostok.Metrics.System.Host.HostMetrics.DisksSpaceInfo.set -> void
+Vostok.Metrics.System.Host.HostMetrics.DisksUsageInfo.get -> System.Collections.Generic.Dictionary<string, Vostok.Metrics.System.Host.DiskUsageInfo>
+Vostok.Metrics.System.Host.HostMetrics.DisksUsageInfo.set -> void
+Vostok.Metrics.System.Host.HostMetrics.HandleCount.get -> int
+Vostok.Metrics.System.Host.HostMetrics.HandleCount.set -> void
+Vostok.Metrics.System.Host.HostMetrics.HostMetrics() -> void
+Vostok.Metrics.System.Host.HostMetrics.MemoryAvailable.get -> long
+Vostok.Metrics.System.Host.HostMetrics.MemoryAvailable.set -> void
+Vostok.Metrics.System.Host.HostMetrics.MemoryCached.get -> long
+Vostok.Metrics.System.Host.HostMetrics.MemoryCached.set -> void
+Vostok.Metrics.System.Host.HostMetrics.MemoryFree.get -> long
+Vostok.Metrics.System.Host.HostMetrics.MemoryFree.set -> void
+Vostok.Metrics.System.Host.HostMetrics.MemoryKernel.get -> long
+Vostok.Metrics.System.Host.HostMetrics.MemoryKernel.set -> void
+Vostok.Metrics.System.Host.HostMetrics.MemoryTotal.get -> long
+Vostok.Metrics.System.Host.HostMetrics.MemoryTotal.set -> void
+Vostok.Metrics.System.Host.HostMetrics.NetworkBandwidthBytesPerSecond.get -> long
+Vostok.Metrics.System.Host.HostMetrics.NetworkBandwidthBytesPerSecond.set -> void
+Vostok.Metrics.System.Host.HostMetrics.NetworkInterfacesUsageInfo.get -> System.Collections.Generic.Dictionary<string, Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo>
+Vostok.Metrics.System.Host.HostMetrics.NetworkInterfacesUsageInfo.set -> void
+Vostok.Metrics.System.Host.HostMetrics.NetworkInUtilizedPercent.get -> double
+Vostok.Metrics.System.Host.HostMetrics.NetworkOutUtilizedPercent.get -> double
+Vostok.Metrics.System.Host.HostMetrics.NetworkReceivedBytesPerSecond.get -> long
+Vostok.Metrics.System.Host.HostMetrics.NetworkReceivedBytesPerSecond.set -> void
+Vostok.Metrics.System.Host.HostMetrics.NetworkSentBytesPerSecond.get -> long
+Vostok.Metrics.System.Host.HostMetrics.NetworkSentBytesPerSecond.set -> void
+Vostok.Metrics.System.Host.HostMetrics.PageFaultsPerSecond.get -> long
+Vostok.Metrics.System.Host.HostMetrics.PageFaultsPerSecond.set -> void
+Vostok.Metrics.System.Host.HostMetrics.ProcessCount.get -> int
+Vostok.Metrics.System.Host.HostMetrics.ProcessCount.set -> void
+Vostok.Metrics.System.Host.HostMetrics.TcpConnectionsTotalCount.get -> int
+Vostok.Metrics.System.Host.HostMetrics.TcpStates.get -> System.Collections.Generic.Dictionary<System.Net.NetworkInformation.TcpState, int>
+Vostok.Metrics.System.Host.HostMetrics.TcpStates.set -> void
+Vostok.Metrics.System.Host.HostMetrics.ThreadCount.get -> int
+Vostok.Metrics.System.Host.HostMetrics.ThreadCount.set -> void
+Vostok.Metrics.System.Host.HostMetricsCollector
+Vostok.Metrics.System.Host.HostMetricsCollector.Collect() -> Vostok.Metrics.System.Host.HostMetrics
+Vostok.Metrics.System.Host.HostMetricsCollector.Dispose() -> void
+Vostok.Metrics.System.Host.HostMetricsCollector.HostMetricsCollector() -> void
+Vostok.Metrics.System.Host.HostMetricsCollector.HostMetricsCollector(Vostok.Metrics.System.Host.HostMetricsSettings settings) -> void
+Vostok.Metrics.System.Host.HostMetricsCollectorExtensions
+Vostok.Metrics.System.Host.HostMetricsSettings
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectCpuMetrics.get -> bool
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectCpuMetrics.set -> void
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectDiskSpaceMetrics.get -> bool
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectDiskSpaceMetrics.set -> void
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectDiskUsageMetrics.get -> bool
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectDiskUsageMetrics.set -> void
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectMemoryMetrics.get -> bool
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectMemoryMetrics.set -> void
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectMiscMetrics.get -> bool
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectMiscMetrics.set -> void
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectNetworkUsageMetrics.get -> bool
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectNetworkUsageMetrics.set -> void
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectTcpStateMetrics.get -> bool
+Vostok.Metrics.System.Host.HostMetricsSettings.CollectTcpStateMetrics.set -> void
+Vostok.Metrics.System.Host.HostMetricsSettings.HostMetricsSettings() -> void
+Vostok.Metrics.System.Host.HostMonitor
+Vostok.Metrics.System.Host.HostMonitor.Dispose() -> void
+Vostok.Metrics.System.Host.HostMonitor.HostMonitor() -> void
+Vostok.Metrics.System.Host.HostMonitor.HostMonitor(Vostok.Metrics.System.Host.HostMetricsSettings settings) -> void
+Vostok.Metrics.System.Host.HostMonitor.ObserveMetrics(System.TimeSpan period) -> System.IObservable<Vostok.Metrics.System.Host.HostMetrics>
+Vostok.Metrics.System.Host.HostMonitorExtensions
+Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo
+Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo.BandwidthBytesPerSecond.get -> long
+Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo.BandwidthBytesPerSecond.set -> void
+Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo.InterfaceName.get -> string
+Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo.InterfaceName.set -> void
+Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo.NetworkInterfaceUsageInfo() -> void
+Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo.ReceivedBytesPerSecond.get -> long
+Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo.ReceivedBytesPerSecond.set -> void
+Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo.SentBytesPerSecond.get -> long
+Vostok.Metrics.System.Host.NetworkInterfaceUsageInfo.SentBytesPerSecond.set -> void
+Vostok.Metrics.System.Host.TeamingInterfaceUsageInfo
+Vostok.Metrics.System.Host.TeamingInterfaceUsageInfo.ChildInterfaces.get -> System.Collections.Generic.HashSet<string>
+Vostok.Metrics.System.Host.TeamingInterfaceUsageInfo.ChildInterfaces.set -> void
+Vostok.Metrics.System.Host.TeamingInterfaceUsageInfo.TeamingInterfaceUsageInfo() -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ActiveTimersCount.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ActiveTimersCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CpuLimitCores.get -> double
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CpuLimitCores.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CpuUtilizedCores.get -> double
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CpuUtilizedCores.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CpuUtilizedFraction.get -> double
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CpuUtilizedFraction.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CurrentProcessMetrics() -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.DnsLookupsCount.get -> int?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.DnsLookupsCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ExceptionsCount.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ExceptionsCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.FailedDnsLookupsCount.get -> int?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.FailedDnsLookupsCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.FailedTcpConnectionsCount.get -> int?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.FailedTcpConnectionsCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcAllocatedBytes.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcAllocatedBytes.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen0Collections.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen0Collections.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen0Size.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen0Size.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen1Collections.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen1Collections.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen1Size.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen1Size.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen2Collections.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen2Collections.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen2Size.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcGen2Size.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcHeapSize.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcHeapSize.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcLOHSize.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcLOHSize.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcTimePercent.get -> double
+Vostok.Metrics.System.Process.CurrentProcessMetrics.GcTimePercent.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.HandlesCount.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.HandlesCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.IncomingDatagramsCount.get -> long?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.IncomingDatagramsCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.IncomingTcpConnectionsCount.get -> int?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.IncomingTcpConnectionsCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.LockContentionCount.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.LockContentionCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.MemoryLimit.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.MemoryLimit.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.MemoryPrivate.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.MemoryPrivate.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.MemoryResident.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.MemoryResident.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.MemoryUtilizedFraction.get -> double
+Vostok.Metrics.System.Process.CurrentProcessMetrics.MemoryUtilizedFraction.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.NullableCpuLimitCores.get -> double?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.NullableCpuLimitCores.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.NullableMemoryLimit.get -> long?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.NullableMemoryLimit.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.OutgoingDatagramsCount.get -> long?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.OutgoingDatagramsCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.OutgoingTcpConnectionsCount.get -> int?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.OutgoingTcpConnectionsCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolBusyIo.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolBusyIo.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolBusyWorkers.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolBusyWorkers.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolIoUtilizedFraction.get -> double
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolIoUtilizedFraction.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolMinIo.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolMinIo.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolMinWorkers.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolMinWorkers.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolQueueLength.get -> long
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolQueueLength.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolTotalCount.get -> int
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolTotalCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolWorkersUtilizedFraction.get -> double
+Vostok.Metrics.System.Process.CurrentProcessMetrics.ThreadPoolWorkersUtilizedFraction.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.UptimeSeconds.get -> double
+Vostok.Metrics.System.Process.CurrentProcessMetrics.UptimeSeconds.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetricsCollector
+Vostok.Metrics.System.Process.CurrentProcessMetricsCollector.Collect() -> Vostok.Metrics.System.Process.CurrentProcessMetrics
+Vostok.Metrics.System.Process.CurrentProcessMetricsCollector.CurrentProcessMetricsCollector() -> void
+Vostok.Metrics.System.Process.CurrentProcessMetricsCollector.CurrentProcessMetricsCollector(Vostok.Metrics.System.Process.CurrentProcessMetricsSettings settings) -> void
+Vostok.Metrics.System.Process.CurrentProcessMetricsCollector.Dispose() -> void
+Vostok.Metrics.System.Process.CurrentProcessMetricsCollectorExtensions
+Vostok.Metrics.System.Process.CurrentProcessMetricsSettings
+Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.CpuCoresLimitProvider.get -> System.Func<double?>
+Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.CpuCoresLimitProvider.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.CurrentProcessMetricsSettings() -> void
+Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.MemoryBytesLimitProvider.get -> System.Func<long?>
+Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.MemoryBytesLimitProvider.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMonitor
+Vostok.Metrics.System.Process.CurrentProcessMonitor.CurrentProcessMonitor() -> void
+Vostok.Metrics.System.Process.CurrentProcessMonitor.CurrentProcessMonitor(Vostok.Metrics.System.Process.CurrentProcessMetricsSettings settings) -> void
+Vostok.Metrics.System.Process.CurrentProcessMonitor.Dispose() -> void
+Vostok.Metrics.System.Process.CurrentProcessMonitor.ObserveMetrics(System.TimeSpan period) -> System.IObservable<Vostok.Metrics.System.Process.CurrentProcessMetrics>
+Vostok.Metrics.System.Process.CurrentProcessMonitorExtensions
