@@ -25,6 +25,11 @@ namespace Vostok.Metrics.System.Process
         public double? NullableCpuLimitCores { get; set; }
 
         /// <summary>
+        /// <para>Number of CPU cores allowed to use by cgroups for current process.</para>
+        /// </summary>
+        public double? CgroupCpuLimitCores { get; set; }
+
+        /// <summary>
         /// <para>Fraction of the CPU resources consumed by current process (relative to <see cref="CpuLimitCores"/>).</para>
         /// <para>This metric has a value between 0 and 1.</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
@@ -53,6 +58,11 @@ namespace Vostok.Metrics.System.Process
         /// <para>Amount of physical memory allowed to use by current process.</para>
         /// </summary>
         public long? NullableMemoryLimit { get; set; }
+
+        /// <summary>
+        /// <para>Amount of physical memory allowed to use by cgroups for current process.</para>
+        /// </summary>
+        public long? CgroupMemoryLimit { get; set; }
 
         /// <summary>
         /// <para>Fraction of the memory resources consumed by current process (<see cref="MemoryResident"/> relative to <see cref="MemoryLimit"/>).</para>

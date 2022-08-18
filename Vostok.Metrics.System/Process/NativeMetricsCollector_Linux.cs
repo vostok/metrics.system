@@ -9,9 +9,16 @@ namespace Vostok.Metrics.System.Process
 {
     internal class NativeMetricsCollector_Linux : IDisposable
     {
+        private const string cgroupMemoryLimitFileName = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
+        private const string cgroupCpuCfsQuotaFileName = "/sys/fs/cgroup/cpu/cpu.cfs_quota_us";
+        private const string cgroupCpuCfsPerioFileName = "/sys/fs/cgroup/cpu/cpu.cfs_period_us";
+
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader processStatReader = new ReusableFileReader("/proc/self/stat");
         private readonly ReusableFileReader processStatusReader = new ReusableFileReader("/proc/self/status");
+        private readonly ReusableFileReader cgroupMemoryLimitReader = new ReusableFileReader(cgroupMemoryLimitFileName);
+        private readonly ReusableFileReader cgroupCpuCfsQuotaReader = new ReusableFileReader(cgroupCpuCfsQuotaFileName);
+        private readonly ReusableFileReader cgroupCpuCfsPeriodReader = new ReusableFileReader(cgroupCpuCfsPerioFileName);
         private readonly CpuUtilizationCollector cpuCollector = new CpuUtilizationCollector();
 
         public void Dispose()
@@ -26,6 +33,7 @@ namespace Vostok.Metrics.System.Process
             var systemStat = ReadSystemStat();
             var processStat = ReadProcessStat();
             var processStatus = ReadProcessStatus();
+            var cgroupStatus = ReadCgroupStatus();
 
             if (processStatus.FileDescriptorsCount.HasValue)
                 metrics.HandlesCount = processStatus.FileDescriptorsCount.Value;
@@ -43,6 +51,9 @@ namespace Vostok.Metrics.System.Process
 
                 cpuCollector.Collect(metrics, systemTime, processTime, systemStat.CpuCount);
             }
+
+            metrics.CgroupCpuLimitCores = cgroupStatus.CpuLimit;
+            metrics.CgroupMemoryLimit = cgroupStatus.MemoryLimit;
         }
 
         private SystemStat ReadSystemStat()
@@ -132,6 +143,28 @@ namespace Vostok.Metrics.System.Process
             return result;
         }
 
+        private ProcessCgroupStatus ReadCgroupStatus()
+        {
+            var result = new ProcessCgroupStatus();
+
+            if (File.Exists(cgroupMemoryLimitFileName))
+            {
+                if (long.TryParse(cgroupMemoryLimitReader.ReadFirstLine(), out var memoryLimit))
+                    result.MemoryLimit = memoryLimit;
+            }
+
+            if (File.Exists(cgroupCpuCfsPerioFileName) && File.Exists(cgroupCpuCfsQuotaFileName))
+            {
+                if (long.TryParse(cgroupCpuCfsPeriodReader.ReadFirstLine(), out var cpuPeriod)
+                    && long.TryParse(cgroupCpuCfsQuotaReader.ReadFirstLine(), out var cpuQuota))
+                {
+                    result.CpuLimit = (double) cpuQuota / cpuPeriod;
+                }
+            }
+
+            return result;
+        }
+
         private class SystemStat
         {
             public bool Filled => IdleTime.HasValue && UserTime.HasValue && SystemTime.HasValue;
@@ -157,6 +190,12 @@ namespace Vostok.Metrics.System.Process
             public int? FileDescriptorsCount { get; set; }
             public long? VirtualMemoryResident { get; set; }
             public long? VirtualMemoryData { get; set; }
+        }
+
+        private class ProcessCgroupStatus
+        {
+            public double? CpuLimit { get; set; }
+            public long? MemoryLimit { get; set; }
         }
     }
 }

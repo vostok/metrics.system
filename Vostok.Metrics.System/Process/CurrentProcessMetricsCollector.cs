@@ -174,13 +174,13 @@ namespace Vostok.Metrics.System.Process
 
         private void CollectLimitsMetrics(CurrentProcessMetrics metrics)
         {
-            metrics.NullableCpuLimitCores = settings.CpuCoresLimitProvider?.Invoke();
+            metrics.NullableCpuLimitCores = settings.CpuCoresLimitProvider?.Invoke() ?? metrics.CgroupCpuLimitCores;
             metrics.CpuLimitCores = metrics.NullableCpuLimitCores ?? Environment.ProcessorCount;
 
             if (metrics.CpuLimitCores > 0)
                 metrics.CpuUtilizedFraction = (metrics.CpuUtilizedCores / metrics.CpuLimitCores).Clamp(0, 1);
 
-            metrics.NullableMemoryLimit = settings.MemoryBytesLimitProvider?.Invoke();
+            metrics.NullableMemoryLimit = settings.MemoryBytesLimitProvider?.Invoke() ?? metrics.CgroupMemoryLimit;
             metrics.MemoryLimit = metrics.NullableMemoryLimit ?? totalHostMemory.Value;
 
             if (metrics.MemoryLimit > 0)
