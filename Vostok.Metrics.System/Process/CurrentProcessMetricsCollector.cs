@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using JetBrains.Annotations;
+using Vostok.Commons.Helpers.Counters;
 using Vostok.Metrics.System.Dns;
 using Vostok.Metrics.System.Helpers;
 using Vostok.Metrics.System.Host;

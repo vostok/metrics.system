@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Vostok.Commons.Helpers.Counters;
 
 namespace Vostok.Metrics.System.Helpers
 {
