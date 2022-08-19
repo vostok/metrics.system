@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
 using Vostok.Commons.Environment;
-using Vostok.Metrics.System.Helpers;
+using Vostok.Commons.Helpers.Counters;
+using Vostok.Commons.Helpers.Diagnostics;
 
 namespace Vostok.Metrics.System.Process
 {
@@ -84,26 +84,11 @@ namespace Vostok.Metrics.System.Process
 
         private void CollectCounterValue(EventWrittenEventArgs eventData)
         {
-            if (TryGetCounterValue(eventData, SentDatagramsCounterName, out var value))
+            if (EventHelper.TryGetCounterValue(eventData, SentDatagramsCounterName, out var value))
                 Interlocked.Exchange(ref outgoingDatagrams, value);
 
-            if (TryGetCounterValue(eventData, ReceivedDatagramsCounterName, out value))
+            if (EventHelper.TryGetCounterValue(eventData, ReceivedDatagramsCounterName, out value))
                 Interlocked.Exchange(ref incomingDatagrams, value);
-        }
-
-        private static bool TryGetCounterValue(EventWrittenEventArgs eventData, string counterName, out long value)
-        {
-            value = 0;
-            if (eventData.Payload?.Count <= 0
-                || !(eventData.Payload?[0] is IDictionary<string, object> data)
-                || !data.TryGetValue("Name", out var n)
-                || !(n is string name)
-                || name != counterName) return false;
-
-            if (!data.TryGetValue("Mean", out var mean))
-                return false;
-            value = Convert.ToInt64(mean);
-            return true;
         }
 
         private static bool IsIncoming(int eventId) =>

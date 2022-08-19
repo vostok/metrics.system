@@ -1,7 +1,7 @@
 ﻿using System;
 using Vostok.Commons.Environment;
+using Vostok.Commons.Helpers.Counters;
 using Vostok.Metrics.System.Dns;
-using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Process
 {
