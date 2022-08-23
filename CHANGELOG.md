@@ -1,3 +1,7 @@
+## 0.3.15 (23-08-2022):
+
+Apply common helpers and counters from `Vostok.Commons.Helpers`.
+
 ## 0.3.14 (15-06-2022):
 
 Extended useful Linux network interfaces list for proper network usage metric collection.
