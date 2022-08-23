@@ -1,0 +1,4 @@
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CgroupCpuLimitCores.get -> double?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CgroupCpuLimitCores.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CgroupMemoryLimit.get -> long?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CgroupMemoryLimit.set -> void

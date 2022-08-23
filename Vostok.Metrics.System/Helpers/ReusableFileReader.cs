@@ -19,6 +19,23 @@ namespace Vostok.Metrics.System.Helpers
 
             return reader.ReadLine();
         }
+        public bool TryReadFirstLine(out string line)
+        {
+            line = null;
+            
+            if (!File.Exists(path))
+                return false;
+            
+            try
+            {
+                line = ReadFirstLine();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         public IEnumerable<string> ReadLines()
         {
