@@ -1,4 +1,4 @@
-override Vostok.Metrics.System.Dns.DnsMonitor.OnEventSourceCreated(System.Diagnostics.Tracing.EventSource eventSource) -> void
+﻿override Vostok.Metrics.System.Dns.DnsMonitor.OnEventSourceCreated(System.Diagnostics.Tracing.EventSource eventSource) -> void
 override Vostok.Metrics.System.Dns.DnsMonitor.OnEventWritten(System.Diagnostics.Tracing.EventWrittenEventArgs eventData) -> void
 override Vostok.Metrics.System.Gc.GarbageCollectionMonitor.OnEventSourceCreated(System.Diagnostics.Tracing.EventSource source) -> void
 override Vostok.Metrics.System.Gc.GarbageCollectionMonitor.OnEventWritten(System.Diagnostics.Tracing.EventWrittenEventArgs event) -> void
@@ -172,6 +172,10 @@ Vostok.Metrics.System.Host.TeamingInterfaceUsageInfo.TeamingInterfaceUsageInfo()
 Vostok.Metrics.System.Process.CurrentProcessMetrics
 Vostok.Metrics.System.Process.CurrentProcessMetrics.ActiveTimersCount.get -> long
 Vostok.Metrics.System.Process.CurrentProcessMetrics.ActiveTimersCount.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CgroupCpuLimitCores.get -> double?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CgroupCpuLimitCores.set -> void
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CgroupMemoryLimit.get -> long?
+Vostok.Metrics.System.Process.CurrentProcessMetrics.CgroupMemoryLimit.set -> void
 Vostok.Metrics.System.Process.CurrentProcessMetrics.CpuLimitCores.get -> double
 Vostok.Metrics.System.Process.CurrentProcessMetrics.CpuLimitCores.set -> void
 Vostok.Metrics.System.Process.CurrentProcessMetrics.CpuUtilizedCores.get -> double
