@@ -143,6 +143,9 @@ namespace Vostok.Metrics.System.Process
             return result;
         }
 
+        // See https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/resource_management_guide/sec-cpu
+        // and https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/resource_management_guide/sec-memory
+        // for details
         private ProcessCgroupStatus ReadCgroupStatus()
         {
             var result = new ProcessCgroupStatus();
