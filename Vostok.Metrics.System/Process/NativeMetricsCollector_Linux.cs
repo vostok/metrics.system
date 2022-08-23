@@ -11,14 +11,14 @@ namespace Vostok.Metrics.System.Process
     {
         private const string cgroupMemoryLimitFileName = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
         private const string cgroupCpuCfsQuotaFileName = "/sys/fs/cgroup/cpu/cpu.cfs_quota_us";
-        private const string cgroupCpuCfsPerioFileName = "/sys/fs/cgroup/cpu/cpu.cfs_period_us";
+        private const string cgroupCpuCfsPeriodFileName = "/sys/fs/cgroup/cpu/cpu.cfs_period_us";
 
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader processStatReader = new ReusableFileReader("/proc/self/stat");
         private readonly ReusableFileReader processStatusReader = new ReusableFileReader("/proc/self/status");
         private readonly ReusableFileReader cgroupMemoryLimitReader = new ReusableFileReader(cgroupMemoryLimitFileName);
         private readonly ReusableFileReader cgroupCpuCfsQuotaReader = new ReusableFileReader(cgroupCpuCfsQuotaFileName);
-        private readonly ReusableFileReader cgroupCpuCfsPeriodReader = new ReusableFileReader(cgroupCpuCfsPerioFileName);
+        private readonly ReusableFileReader cgroupCpuCfsPeriodReader = new ReusableFileReader(cgroupCpuCfsPeriodFileName);
         private readonly CpuUtilizationCollector cpuCollector = new CpuUtilizationCollector();
 
         public void Dispose()
@@ -150,19 +150,18 @@ namespace Vostok.Metrics.System.Process
         {
             var result = new ProcessCgroupStatus();
 
-            if (File.Exists(cgroupMemoryLimitFileName))
+            if (cgroupMemoryLimitReader.TryReadFirstLine(out var memoryLimitLine)
+                && long.TryParse(memoryLimitLine, out var memoryLimit))
             {
-                if (long.TryParse(cgroupMemoryLimitReader.ReadFirstLine(), out var memoryLimit))
-                    result.MemoryLimit = memoryLimit;
+                result.MemoryLimit = memoryLimit;
             }
 
-            if (File.Exists(cgroupCpuCfsPerioFileName) && File.Exists(cgroupCpuCfsQuotaFileName))
+            if (cgroupCpuCfsPeriodReader.TryReadFirstLine(out var cpuPeriodLine)
+                && cgroupCpuCfsQuotaReader.TryReadFirstLine(out var cpuQuotaLine)
+                && long.TryParse(cpuPeriodLine, out var cpuPeriod)
+                && long.TryParse(cpuQuotaLine, out var cpuQuota))
             {
-                if (long.TryParse(cgroupCpuCfsPeriodReader.ReadFirstLine(), out var cpuPeriod)
-                    && long.TryParse(cgroupCpuCfsQuotaReader.ReadFirstLine(), out var cpuQuota))
-                {
-                    result.CpuLimit = (double) cpuQuota / cpuPeriod;
-                }
+                result.CpuLimit = (double)cpuQuota / cpuPeriod;
             }
 
             return result;
