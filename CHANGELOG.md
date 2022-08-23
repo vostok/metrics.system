@@ -1,3 +1,7 @@
+## 0.3.16 (23-08-2022):
+
+Application limits can now be obtained from cgroup when present. 
+
 ## 0.3.15 (23-08-2022):
 
 Apply common helpers and counters from `Vostok.Commons.Helpers`.
