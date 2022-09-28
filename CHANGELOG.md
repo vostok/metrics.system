@@ -1,3 +1,7 @@
+## 0.3.17 (28-09-2022):
+
+Fixed unlimited cgroup limits.
+
 ## 0.3.16 (23-08-2022):
 
 Application limits can now be obtained from cgroup when present. 
