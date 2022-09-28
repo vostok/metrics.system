@@ -12,6 +12,9 @@ namespace Vostok.Metrics.System.Process
         private const string cgroupMemoryLimitFileName = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
         private const string cgroupCpuCfsQuotaFileName = "/sys/fs/cgroup/cpu/cpu.cfs_quota_us";
         private const string cgroupCpuCfsPeriodFileName = "/sys/fs/cgroup/cpu/cpu.cfs_period_us";
+        
+        private const string cgroupNoMemoryLimitValue = "9223372036854771712";
+        private const string cgroupNoCpuLimitValue = "-1";
 
         private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
         private readonly ReusableFileReader processStatReader = new ReusableFileReader("/proc/self/stat");
@@ -151,6 +154,7 @@ namespace Vostok.Metrics.System.Process
             var result = new ProcessCgroupStatus();
 
             if (cgroupMemoryLimitReader.TryReadFirstLine(out var memoryLimitLine)
+                && memoryLimitLine != cgroupNoMemoryLimitValue
                 && long.TryParse(memoryLimitLine, out var memoryLimit))
             {
                 result.MemoryLimit = memoryLimit;
@@ -158,6 +162,7 @@ namespace Vostok.Metrics.System.Process
 
             if (cgroupCpuCfsPeriodReader.TryReadFirstLine(out var cpuPeriodLine)
                 && cgroupCpuCfsQuotaReader.TryReadFirstLine(out var cpuQuotaLine)
+                && cpuQuotaLine != cgroupNoCpuLimitValue
                 && long.TryParse(cpuPeriodLine, out var cpuPeriod)
                 && long.TryParse(cpuQuotaLine, out var cpuQuota))
             {
