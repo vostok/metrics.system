@@ -1,0 +1,10 @@
+Vostok.Metrics.System.Host.DiskUsageCollector_Linux
+Vostok.Metrics.System.Host.DiskUsageCollector_Linux.Collect() -> System.Collections.Generic.Dictionary<string, Vostok.Metrics.System.Host.DiskUsageInfo>
+Vostok.Metrics.System.Host.DiskUsageCollector_Linux.DiskUsageCollector_Linux() -> void
+Vostok.Metrics.System.Host.DiskUsageCollector_Linux.Dispose() -> void
+Vostok.Metrics.System.Host.DiskUsageCollector_Windows
+Vostok.Metrics.System.Host.DiskUsageCollector_Windows.Collect() -> System.Collections.Generic.Dictionary<string, Vostok.Metrics.System.Host.DiskUsageInfo>
+Vostok.Metrics.System.Host.DiskUsageCollector_Windows.DiskUsageCollector_Windows() -> void
+Vostok.Metrics.System.Host.DiskUsageCollector_Windows.Dispose() -> void
+Vostok.Metrics.System.Host.IDiskUsageCollector
+Vostok.Metrics.System.Host.IDiskUsageCollector.Collect() -> System.Collections.Generic.Dictionary<string, Vostok.Metrics.System.Host.DiskUsageInfo>
