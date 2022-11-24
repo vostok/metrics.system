@@ -63,7 +63,7 @@ namespace Vostok.Metrics.System.Host
                 metrics.MemoryKernel = memInfo.KernelMemory.Value;
                 metrics.MemoryTotal = memInfo.TotalMemory.Value;
                 metrics.MemoryFree = memInfo.FreeMemory.Value;
-                metrics.PageFaultsPerSecond = (long) hardPageFaultCollector.Collect(memInfo.MajorPageFaultCount.Value);
+                metrics.PageFaultsPerSecond = (long)hardPageFaultCollector.Collect(memInfo.MajorPageFaultCount.Value);
             }
 
             if (perfInfo.Filled)
@@ -77,7 +77,11 @@ namespace Vostok.Metrics.System.Host
                 networkCollector.Collect(metrics);
 
             if (settings.CollectDiskUsageMetrics)
-                diskUsageCollector.Collect(metrics);
+            {
+                var diskUsage = diskUsageCollector.Collect();
+                if (diskUsage != null)
+                    metrics.DisksUsageInfo = diskUsage;
+            }
         }
 
         private SystemStat ReadSystemStat()
@@ -167,7 +171,7 @@ namespace Vostok.Metrics.System.Host
             try
             {
                 var processDirectories = Directory.EnumerateDirectories("/proc/")
-                   .Where(x => pidRegex.IsMatch(x));
+                    .Where(x => pidRegex.IsMatch(x));
 
                 var processCount = 0;
                 var threadCount = 0;

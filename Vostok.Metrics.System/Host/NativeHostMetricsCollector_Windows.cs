@@ -13,53 +13,34 @@ namespace Vostok.Metrics.System.Host
         private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector(GetProcessorCount);
 
         private readonly IPerformanceCounter<Observation<NetworkUsage>[]> networkUsageCounter = PerformanceCounterFactory.Default
-           .Create<NetworkUsage>()
-           .AddCounter(
+            .Create<NetworkUsage>()
+            .AddCounter(
                 "Network Interface",
                 "Bytes Sent/sec",
                 (context, value) => context.Result.NetworkSentBytesPerSecond = value)
-           .AddCounter(
+            .AddCounter(
                 "Network Interface",
                 "Bytes Received/sec",
                 (context, value) => context.Result.NetworkReceivedBytesPerSecond = value)
-           .AddCounter(
+            .AddCounter(
                 "Network Interface",
                 "Current Bandwidth",
                 (context, value) => context.Result.NetworkCurrentBandwidthBitsPerSecond = value)
-           .BuildForMultipleInstances("*");
+            .BuildForMultipleInstances("*");
 
         private readonly IPerformanceCounter<MemoryInfo> memoryInfoCounter = PerformanceCounterFactory.Default
-           .Create<MemoryInfo>()
-           .AddCounter(
+            .Create<MemoryInfo>()
+            .AddCounter(
                 "Memory",
                 "Free & Zero Page List Bytes",
-                (context, value) => context.Result.MemoryFreeBytes = (long) value)
-           .AddCounter(
+                (context, value) => context.Result.MemoryFreeBytes = (long)value)
+            .AddCounter(
                 "Memory",
                 "Page Faults/sec",
-                (context, value) => context.Result.PageFaultsPerSecond = (long) value)
-           .Build();
+                (context, value) => context.Result.PageFaultsPerSecond = (long)value)
+            .Build();
 
-        private readonly IPerformanceCounter<Observation<DiskUsage>[]> diskUsageCounter = PerformanceCounterFactory.Default
-           .Create<DiskUsage>()
-           .AddCounter("LogicalDisk", "% Idle Time", (context, value) => context.Result.IdleTimePercent = value.Clamp(0, 100))
-           .AddCounter(
-                "LogicalDisk",
-                "Avg. Disk sec/Read",
-                (context, value) => context.Result.ReadAverageSecondsLatency = value)
-           .AddCounter(
-                "LogicalDisk",
-                "Avg. Disk sec/Write",
-                (context, value) => context.Result.WriteAverageSecondsLatency = value)
-           .AddCounter("LogicalDisk", "Disk Reads/sec", (context, value) => context.Result.DiskReadsPerSecond = (long) value)
-           .AddCounter("LogicalDisk", "Disk Writes/sec", (context, value) => context.Result.DiskWritesPerSecond = (long) value)
-           .AddCounter(
-                "LogicalDisk",
-                "Current Disk Queue Length",
-                (context, value) => context.Result.CurrentQueueLength = (long) value)
-           .AddCounter("LogicalDisk", "Disk Read Bytes/sec", (context, value) => context.Result.BytesReadPerSecond = (long) value)
-           .AddCounter("LogicalDisk", "Disk Write Bytes/sec", (context, value) => context.Result.BytesWrittenPerSecond = (long) value)
-           .BuildForMultipleInstances("*:");
+        private readonly DiskUsageCollector_Windows diskUsageCollector = new DiskUsageCollector_Windows();
 
         public NativeHostMetricsCollector_Windows(HostMetricsSettings settings)
             => this.settings = settings;
@@ -68,7 +49,7 @@ namespace Vostok.Metrics.System.Host
         {
             networkUsageCounter.Dispose();
             memoryInfoCounter.Dispose();
-            diskUsageCounter.Dispose();
+            diskUsageCollector.Dispose();
         }
 
         public void Collect(HostMetrics metrics)
@@ -78,12 +59,16 @@ namespace Vostok.Metrics.System.Host
 
             if (settings.CollectMemoryMetrics)
                 CollectMemoryMetrics(metrics);
-            
+
             if (settings.CollectNetworkUsageMetrics)
                 CollectNetworkUsage(metrics);
 
             if (settings.CollectDiskUsageMetrics)
-                CollectDisksUsage(metrics);
+            {
+                var diskUsage = diskUsageCollector.Collect();
+                if (diskUsage != null)
+                    metrics.DisksUsageInfo = diskUsage;
+            }
         }
 
         [DllImport("psapi.dll", SetLastError = true)]
@@ -118,14 +103,14 @@ namespace Vostok.Metrics.System.Host
                 if (!GetPerformanceInfo(out var perfInfo, sizeof(PERFORMANCE_INFORMATION)))
                     WinMetricsCollectorHelper.ThrowOnError();
 
-                metrics.MemoryAvailable = (long) perfInfo.PhysicalAvailable * (long) perfInfo.PageSize;
-                metrics.MemoryCached = (long) perfInfo.SystemCache * (long) perfInfo.PageSize;
-                metrics.MemoryKernel = (long) perfInfo.KernelTotal * (long) perfInfo.PageSize;
-                metrics.MemoryTotal = (long) perfInfo.PhysicalTotal * (long) perfInfo.PageSize;
+                metrics.MemoryAvailable = (long)perfInfo.PhysicalAvailable * (long)perfInfo.PageSize;
+                metrics.MemoryCached = (long)perfInfo.SystemCache * (long)perfInfo.PageSize;
+                metrics.MemoryKernel = (long)perfInfo.KernelTotal * (long)perfInfo.PageSize;
+                metrics.MemoryTotal = (long)perfInfo.PhysicalTotal * (long)perfInfo.PageSize;
 
-                metrics.ProcessCount = (int) perfInfo.ProcessCount;
-                metrics.ThreadCount = (int) perfInfo.ThreadCount;
-                metrics.HandleCount = (int) perfInfo.HandleCount;
+                metrics.ProcessCount = (int)perfInfo.ProcessCount;
+                metrics.ThreadCount = (int)perfInfo.ThreadCount;
+                metrics.HandleCount = (int)perfInfo.HandleCount;
 
                 var memoryInfo = memoryInfoCounter.Observe();
 
@@ -149,9 +134,9 @@ namespace Vostok.Metrics.System.Host
                     var result = new NetworkInterfaceUsageInfo
                     {
                         InterfaceName = networkUsageObservation.Instance,
-                        ReceivedBytesPerSecond = (long) networkUsageObservation.Value.NetworkReceivedBytesPerSecond,
-                        SentBytesPerSecond = (long) networkUsageObservation.Value.NetworkSentBytesPerSecond,
-                        BandwidthBytesPerSecond = (long) (networkUsageObservation.Value.NetworkCurrentBandwidthBitsPerSecond / 8d)
+                        ReceivedBytesPerSecond = (long)networkUsageObservation.Value.NetworkReceivedBytesPerSecond,
+                        SentBytesPerSecond = (long)networkUsageObservation.Value.NetworkSentBytesPerSecond,
+                        BandwidthBytesPerSecond = (long)(networkUsageObservation.Value.NetworkCurrentBandwidthBitsPerSecond / 8d)
                     };
 
                     networkInterfacesUsageInfo[networkUsageObservation.Instance] = result;
@@ -169,37 +154,6 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        private void CollectDisksUsage(HostMetrics metrics)
-        {
-            var disksUsageInfo = new Dictionary<string, DiskUsageInfo>();
-
-            try
-            {
-                foreach (var diskUsageInfo in diskUsageCounter.Observe())
-                {
-                    var result = new DiskUsageInfo
-                    {
-                        DiskName = diskUsageInfo.Instance.Replace(":", string.Empty),
-                        ReadAverageMsLatency = (long) (diskUsageInfo.Value.ReadAverageSecondsLatency * 1000),
-                        WriteAverageMsLatency = (long) (diskUsageInfo.Value.WriteAverageSecondsLatency * 1000),
-                        CurrentQueueLength = diskUsageInfo.Value.CurrentQueueLength,
-                        UtilizedPercent = 100 - diskUsageInfo.Value.IdleTimePercent,
-                        ReadsPerSecond = diskUsageInfo.Value.DiskReadsPerSecond,
-                        WritesPerSecond = diskUsageInfo.Value.DiskWritesPerSecond,
-                        BytesReadPerSecond = diskUsageInfo.Value.BytesReadPerSecond,
-                        BytesWrittenPerSecond = diskUsageInfo.Value.BytesWrittenPerSecond
-                    };
-                    disksUsageInfo[result.DiskName] = result;
-                }
-
-                metrics.DisksUsageInfo = disksUsageInfo;
-            }
-            catch (Exception error)
-            {
-                InternalErrorLogger.Warn(error);
-            }
-        }
-
         private static int? GetProcessorCount()
         {
             {
@@ -207,7 +161,7 @@ namespace Vostok.Metrics.System.Host
                 {
                     GetNativeSystemInfo(out var info);
                     WinMetricsCollectorHelper.ThrowOnError();
-                    return (int) info.NumberOfProcessors;
+                    return (int)info.NumberOfProcessors;
                 }
                 catch (Exception error)
                 {
@@ -228,18 +182,6 @@ namespace Vostok.Metrics.System.Host
             public double NetworkSentBytesPerSecond { get; set; }
             public double NetworkReceivedBytesPerSecond { get; set; }
             public double NetworkCurrentBandwidthBitsPerSecond { get; set; }
-        }
-
-        private class DiskUsage
-        {
-            public double IdleTimePercent { get; set; }
-            public double ReadAverageSecondsLatency { get; set; }
-            public double WriteAverageSecondsLatency { get; set; }
-            public long DiskReadsPerSecond { get; set; }
-            public long DiskWritesPerSecond { get; set; }
-            public long BytesReadPerSecond { get; set; }
-            public long BytesWrittenPerSecond { get; set; }
-            public long CurrentQueueLength { get; set; }
         }
 
         [StructLayout(LayoutKind.Sequential)]

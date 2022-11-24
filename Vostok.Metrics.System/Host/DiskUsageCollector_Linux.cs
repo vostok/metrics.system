@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using JetBrains.Annotations;
 using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
 {
-    internal class DiskUsageCollector_Linux : IDisposable
+    [PublicAPI]
+    public class DiskUsageCollector_Linux : IDiskUsageCollector
     {
         private readonly Stopwatch stopwatch = new Stopwatch();
         private readonly ReusableFileReader diskStatsReader = new ReusableFileReader("/proc/diskstats");
         private volatile Dictionary<string, DiskStats> previousDisksStatsInfo = new Dictionary<string, DiskStats>();
 
-        public void Dispose()
-        {
-            diskStatsReader?.Dispose();
-        }
-
-        public void Collect(HostMetrics metrics)
+        public Dictionary<string, DiskUsageInfo> Collect()
         {
             var deltaSeconds = stopwatch.Elapsed.TotalSeconds;
 
@@ -35,11 +32,16 @@ namespace Vostok.Metrics.System.Host
                 newDisksStatsInfo[diskStats.DiskName] = diskStats;
             }
 
-            metrics.DisksUsageInfo = disksUsageInfo;
-
             previousDisksStatsInfo = newDisksStatsInfo;
 
             stopwatch.Restart();
+
+            return disksUsageInfo;
+        }
+
+        public void Dispose()
+        {
+            diskStatsReader?.Dispose();
         }
 
         private void FillInfo(DiskUsageInfo toFill, DiskStats previousDiskStats, DiskStats diskStats, double deltaSeconds)
@@ -53,9 +55,9 @@ namespace Vostok.Metrics.System.Host
             var msSpentDoingIoDelta = diskStats.MsSpentDoingIo - previousDiskStats.MsSpentDoingIo;
 
             if (readsDelta > 0)
-                toFill.ReadAverageMsLatency = (long) ((double) msReadDelta / readsDelta);
+                toFill.ReadAverageMsLatency = (long)((double)msReadDelta / readsDelta);
             if (writesDelta > 0)
-                toFill.WriteAverageMsLatency = (long) ((double) msWriteDelta / writesDelta);
+                toFill.WriteAverageMsLatency = (long)((double)msWriteDelta / writesDelta);
 
             toFill.CurrentQueueLength = diskStats.CurrentQueueLength;
 
