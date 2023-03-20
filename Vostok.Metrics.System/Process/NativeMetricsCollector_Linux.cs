@@ -16,9 +16,9 @@ namespace Vostok.Metrics.System.Process
         private const string cgroupNoMemoryLimitValue = "9223372036854771712";
         private const string cgroupNoCpuLimitValue = "-1";
 
-        private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
-        private readonly ReusableFileReader processStatReader = new ReusableFileReader("/proc/self/stat");
-        private readonly ReusableFileReader processStatusReader = new ReusableFileReader("/proc/self/status");
+        private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat"); //2.7k
+        private readonly ReusableFileReader processStatReader = new ReusableFileReader("/proc/self/stat"); //300b
+        private readonly ReusableFileReader processStatusReader = new ReusableFileReader("/proc/self/status"); //1.3k
         private readonly ReusableFileReader cgroupMemoryLimitReader = new ReusableFileReader(cgroupMemoryLimitFileName);
         private readonly ReusableFileReader cgroupCpuCfsQuotaReader = new ReusableFileReader(cgroupCpuCfsQuotaFileName);
         private readonly ReusableFileReader cgroupCpuCfsPeriodReader = new ReusableFileReader(cgroupCpuCfsPeriodFileName);
@@ -116,7 +116,10 @@ namespace Vostok.Metrics.System.Process
 
             try
             {
-                result.FileDescriptorsCount = Directory.EnumerateFiles("/proc/self/fd/").Count();
+                //https://unix.stackexchange.com/questions/365922/monitoring-number-of-open-fds-per-process-efficiently
+                //кажется быстро не посчитать
+                // /proc/PID/status FDSize не то
+                //result.FileDescriptorsCount = Directory.EnumerateFiles("/proc/self/fd/").Count();//todo super slow trash
             }
             catch (DirectoryNotFoundException)
             {
