@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Vostok.Metrics.System.Helpers;
 
@@ -108,12 +109,26 @@ namespace Vostok.Metrics.System.Host
 
             return result;
         }
+        
+        private const string libc = "libc.so.6";
+            
+        [DllImport(libc, CharSet = CharSet.Ansi, SetLastError = true)]
+        public static extern IntPtr sysconf(int name);
+        const int _SC_NPROCESSORS_ONLN = 84;
+
 
         private int? GetProcessorCount()
         {
+            //todo super slow, + many garbage
+            //auto npc = get_nprocs_conf();
+            //auto np = get_nprocs();
             try
             {
-                return cpuInfoReader.ReadLines().Count(x => x.Contains("processor"));
+                var number = sysconf(_SC_NPROCESSORS_ONLN);
+                if ((long)number < 0)
+                    return 0;
+                return (int)number;
+                //return cpuInfoReader.ReadLines().Count(x => x.Contains("processor"));//todo trash!!
             }
             catch (Exception error)
             {
@@ -160,7 +175,7 @@ namespace Vostok.Metrics.System.Host
             return result;
         }
 
-        private PerformanceInfo ReadPerformanceInfo()
+        private PerformanceInfo ReadPerformanceInfo()//todo тоже медленный способ то
         {
             var result = new PerformanceInfo();
 
@@ -176,7 +191,7 @@ namespace Vostok.Metrics.System.Host
                 {
                     try
                     {
-                        threadCount += Directory.EnumerateDirectories(Path.Combine(processDirectory, "task")).Count();
+                        threadCount += Directory.EnumerateDirectories(Path.Combine(processDirectory, "task")).Count();//todo slow
                     }
                     catch (DirectoryNotFoundException)
                     {
