@@ -10,7 +10,7 @@ namespace Vostok.Metrics.System.Host
         private ulong previousSystemTime;
         private ulong previousIdleTime;
 
-        public HostCpuUtilizationCollector(Func<int?> coresCountProvider)
+        public HostCpuUtilizationCollector(Func<int?> coresCountProvider) //todo alternative method is needed??
         {
             this.coresCountProvider = coresCountProvider;
         }
