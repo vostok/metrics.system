@@ -9,6 +9,7 @@ namespace Vostok.Metrics.System.Process
 {
     internal class NativeMetricsCollector_Linux : IDisposable
     {
+        private readonly LinuxProcessMetricsSettings settings;
         private const string cgroupMemoryLimitFileName = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
         private const string cgroupCpuCfsQuotaFileName = "/sys/fs/cgroup/cpu/cpu.cfs_quota_us";
         private const string cgroupCpuCfsPeriodFileName = "/sys/fs/cgroup/cpu/cpu.cfs_period_us";
@@ -23,6 +24,11 @@ namespace Vostok.Metrics.System.Process
         private readonly ReusableFileReader cgroupCpuCfsQuotaReader = new ReusableFileReader(cgroupCpuCfsQuotaFileName);
         private readonly ReusableFileReader cgroupCpuCfsPeriodReader = new ReusableFileReader(cgroupCpuCfsPeriodFileName);
         private readonly CpuUtilizationCollector cpuCollector = new CpuUtilizationCollector();
+
+        public NativeMetricsCollector_Linux(LinuxProcessMetricsSettings settings)
+        {
+            this.settings = settings ?? new LinuxProcessMetricsSettings();
+        }
 
         public void Dispose()
         {
@@ -49,9 +55,11 @@ namespace Vostok.Metrics.System.Process
 
             if (systemStat.Filled && processStat.Filled)
             {
-                var systemTime = systemStat.SystemTime.Value + systemStat.UserTime.Value + systemStat.IdleTime.Value;
+                var systemTime = systemStat.SystemTime.Value + systemStat.UserTime.Value + systemStat.IdleTime.Value; //тут вроде как прошедшее системное время... *cores
                 var processTime = processStat.SystemTime.Value + processStat.UserTime.Value;
 
+                //todo тут кажется не то передают, в systemTime не все время учтено...
+                //todo IdleTime учитывает ядра??
                 cpuCollector.Collect(metrics, systemTime, processTime, systemStat.CpuCount);
             }
 
@@ -59,7 +67,7 @@ namespace Vostok.Metrics.System.Process
             metrics.CgroupMemoryLimit = cgroupStatus.MemoryLimit;
         }
 
-        private SystemStat ReadSystemStat()
+        private SystemStat ReadSystemStat()//NOTE calc whole system stats, not current process stats
         {
             var result = new SystemStat();
 
@@ -77,7 +85,12 @@ namespace Vostok.Metrics.System.Process
                         result.IdleTime = itime;
                 }
 
-                result.CpuCount = systemStatReader.ReadLines().Count(line => line.StartsWith("cpu")) - 1;
+                if (settings.UseDotnetCpuCount)
+                    result.CpuCount = Environment.ProcessorCount; //NOTE function in linux, not constant
+                else
+                    //todo double read systemStatReader
+                    //todo 
+                    result.CpuCount = systemStatReader.ReadLines().Count(line => line.StartsWith("cpu")) - 1;
             }
             catch (Exception error)
             {
@@ -119,7 +132,8 @@ namespace Vostok.Metrics.System.Process
                 //https://unix.stackexchange.com/questions/365922/monitoring-number-of-open-fds-per-process-efficiently
                 //кажется быстро не посчитать
                 // /proc/PID/status FDSize не то
-                //result.FileDescriptorsCount = Directory.EnumerateFiles("/proc/self/fd/").Count();//todo super slow trash
+                if(!settings.DisableOpenFilesCount)
+                    result.FileDescriptorsCount = Directory.EnumerateFiles("/proc/self/fd/").Count();
             }
             catch (DirectoryNotFoundException)
             {

@@ -90,7 +90,7 @@ namespace Vostok.Metrics.System.Process
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var collector = new NativeMetricsCollector_Linux();
+                var collector = new NativeMetricsCollector_Linux(this.settings.LinuxSettings);
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
             }
