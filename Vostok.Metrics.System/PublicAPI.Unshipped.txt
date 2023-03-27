@@ -1,0 +1,8 @@
+Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.LinuxSettings.get -> Vostok.Metrics.System.Process.LinuxProcessMetricsSettings
+Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.LinuxSettings.set -> void
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableOpenFilesCount.get -> bool
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableOpenFilesCount.set -> void
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.LinuxProcessMetricsSettings() -> void
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.UseDotnetCpuCount.get -> bool
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.UseDotnetCpuCount.set -> void
