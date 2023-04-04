@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Vostok.Metrics.System.Helpers;
+using Vostok.Metrics.System.Helpers.Linux;
 
 // ReSharper disable PossibleInvalidOperationException
 
@@ -16,11 +17,10 @@ namespace Vostok.Metrics.System.Host
         private readonly Regex pidRegex = new Regex("[0-9]+$", RegexOptions.Compiled);
 
         // See https://man7.org/linux/man-pages/man5/proc.5.html for information about each file
-        private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat");
+        private readonly ProcStatReader procStatReader;
         private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
         private readonly ReusableFileReader vmStatReader = new ReusableFileReader("/proc/vmstat");
         private readonly ReusableFileReader descriptorInfoReader = new ReusableFileReader("/proc/sys/fs/file-nr");
-        private readonly ReusableFileReader cpuInfoReader = new ReusableFileReader("/proc/cpuinfo");
 
         private readonly HostCpuUtilizationCollector cpuCollector;
         private readonly NetworkUtilizationCollector_Linux networkCollector = new NetworkUtilizationCollector_Linux();
@@ -30,12 +30,13 @@ namespace Vostok.Metrics.System.Host
         public NativeHostMetricsCollector_Linux(HostMetricsSettings settings)
         {
             this.settings = settings;
+            procStatReader = new ProcStatReader(true); //todo?
             cpuCollector = new HostCpuUtilizationCollector(GetProcessorCount);
         }
 
         public void Dispose()
         {
-            systemStatReader.Dispose();
+            procStatReader.Dispose();
             memoryReader.Dispose();
             vmStatReader.Dispose();
             descriptorInfoReader.Dispose();
@@ -45,16 +46,18 @@ namespace Vostok.Metrics.System.Host
 
         public void Collect(HostMetrics metrics)
         {
-            var systemStat = settings.CollectCpuMetrics ? ReadSystemStat() : new SystemStat();
             var memInfo = settings.CollectMemoryMetrics ? ReadMemoryInfo() : new MemoryInfo();
             var perfInfo = settings.CollectMiscMetrics ? ReadPerformanceInfo() : new PerformanceInfo();
 
-            if (systemStat.Filled)
+            if (settings.CollectCpuMetrics)
             {
-                var usedTime = systemStat.UserTime.Value + systemStat.NicedTime.Value +
-                               systemStat.SystemTime.Value + systemStat.IdleTime.Value;
-
-                cpuCollector.Collect(metrics, usedTime, systemStat.IdleTime.Value);
+                ulong usedTime = 0;
+                if (procStatReader.TryRead(out var systemStat))
+                {
+                    usedTime = systemStat.UserTime + systemStat.NicedTime +
+                               systemStat.SystemTime + systemStat.IdleTime;
+                }
+                cpuCollector.Collect(metrics, usedTime, systemStat.IdleTime); //todo  pass cores count here??
             }
 
             if (memInfo.Filled)
@@ -81,33 +84,19 @@ namespace Vostok.Metrics.System.Host
                 diskUsageCollector.Collect(metrics);
         }
 
-        private SystemStat ReadSystemStat()
+        private bool ReadSystemStat(out ProcStat procStat)
         {
-            var result = new SystemStat();
-
             try
             {
-                if (FileParser.TrySplitLine(systemStatReader.ReadFirstLine(), 7, out var parts) && parts[0] == "cpu")
-                {
-                    if (ulong.TryParse(parts[1], out var utime))
-                        result.UserTime = utime;
-
-                    if (ulong.TryParse(parts[2], out var ntime))
-                        result.NicedTime = ntime;
-
-                    if (ulong.TryParse(parts[3], out var stime))
-                        result.SystemTime = stime;
-
-                    if (ulong.TryParse(parts[4], out var itime))
-                        result.IdleTime = itime;
-                }
+                return procStatReader.TryRead(out procStat);
             }
             catch (Exception error)
             {
                 InternalErrorLogger.Warn(error);
             }
 
-            return result;
+            procStat = default;
+            return false;
         }
         
         private const string libc = "libc.so.6";
