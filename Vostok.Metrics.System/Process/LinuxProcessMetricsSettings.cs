@@ -12,4 +12,6 @@ public class LinuxProcessMetricsSettings
     /// use Environment.ProcessorCount for cpu count
     /// </summary>
     public bool UseDotnetCpuCount { get; set; }
+
+    public bool DisableCgroupStats { get; set; }
 }

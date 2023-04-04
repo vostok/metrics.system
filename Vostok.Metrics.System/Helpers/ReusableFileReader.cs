@@ -12,6 +12,10 @@ namespace Vostok.Metrics.System.Helpers
 
         public ReusableFileReader(string path)
             => this.path = path;
+        public ReusableFileReader(Stream stream)
+        {
+            reader = new StreamReader(stream, true);
+        }
 
         public string ReadFirstLine()
         {
@@ -19,6 +23,7 @@ namespace Vostok.Metrics.System.Helpers
 
             return reader.ReadLine();
         }
+
         public bool TryReadFirstLine(out string line)
         {
             line = null;

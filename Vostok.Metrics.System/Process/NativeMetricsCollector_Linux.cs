@@ -2,24 +2,27 @@
 using System.IO;
 using System.Linq;
 using Vostok.Metrics.System.Helpers;
+using Vostok.Metrics.System.Helpers.Linux;
 
 // ReSharper disable PossibleInvalidOperationException
 
 namespace Vostok.Metrics.System.Process
 {
+
     internal class NativeMetricsCollector_Linux : IDisposable
     {
-        private readonly LinuxProcessMetricsSettings settings;
         private const string cgroupMemoryLimitFileName = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
         private const string cgroupCpuCfsQuotaFileName = "/sys/fs/cgroup/cpu/cpu.cfs_quota_us";
         private const string cgroupCpuCfsPeriodFileName = "/sys/fs/cgroup/cpu/cpu.cfs_period_us";
-        
+
         private const string cgroupNoMemoryLimitValue = "9223372036854771712";
         private const string cgroupNoCpuLimitValue = "-1";
+        private readonly LinuxProcessMetricsSettings settings;
 
-        private readonly ReusableFileReader systemStatReader = new ReusableFileReader("/proc/stat"); //2.7k
-        private readonly ReusableFileReader processStatReader = new ReusableFileReader("/proc/self/stat"); //300b
-        private readonly ReusableFileReader processStatusReader = new ReusableFileReader("/proc/self/status"); //1.3k
+        private readonly ProcStatReader procStatReader;
+        private readonly ReusableFileReader processStatReader = new ReusableFileReader("/proc/self/stat"); //300b  //cpu times
+        private readonly ProcSelfStatmReader procSelfStatmReader;
+
         private readonly ReusableFileReader cgroupMemoryLimitReader = new ReusableFileReader(cgroupMemoryLimitFileName);
         private readonly ReusableFileReader cgroupCpuCfsQuotaReader = new ReusableFileReader(cgroupCpuCfsQuotaFileName);
         private readonly ReusableFileReader cgroupCpuCfsPeriodReader = new ReusableFileReader(cgroupCpuCfsPeriodFileName);
@@ -28,34 +31,37 @@ namespace Vostok.Metrics.System.Process
         public NativeMetricsCollector_Linux(LinuxProcessMetricsSettings settings)
         {
             this.settings = settings ?? new LinuxProcessMetricsSettings();
+            procStatReader = new ProcStatReader(this.settings.UseDotnetCpuCount);
+            procSelfStatmReader = new ProcSelfStatmReader();
         }
 
         public void Dispose()
         {
-            systemStatReader.Dispose();
+            procStatReader.Dispose();
             processStatReader.Dispose();
-            processStatusReader.Dispose();
+            procSelfStatmReader.Dispose();
         }
 
         public void Collect(CurrentProcessMetrics metrics)
         {
-            var systemStat = ReadSystemStat();
             var processStat = ReadProcessStat();
-            var processStatus = ReadProcessStatus();
+
             var cgroupStatus = ReadCgroupStatus();
 
-            if (processStatus.FileDescriptorsCount.HasValue)
-                metrics.HandlesCount = processStatus.FileDescriptorsCount.Value;
+            if (ReadOpenFilesCount(out var openFilesCount))
+                metrics.HandlesCount = openFilesCount;
 
-            if (processStatus.VirtualMemoryResident.HasValue)
-                metrics.MemoryResident = processStatus.VirtualMemoryResident.Value;
-
-            if (processStatus.VirtualMemoryData.HasValue)
-                metrics.MemoryPrivate = processStatus.VirtualMemoryData.Value;
-
-            if (systemStat.Filled && processStat.Filled)
+            if (procSelfStatmReader.TryRead(out var statm))
             {
-                var systemTime = systemStat.SystemTime.Value + systemStat.UserTime.Value + systemStat.IdleTime.Value; //тут вроде как прошедшее системное время... *cores
+                metrics.MemoryResident = statm.PrivateRss;
+
+                metrics.MemoryPrivate = statm.DataSize;
+            }
+
+            if (processStat.Filled && ReadSystemStat(out var systemStat))
+            {
+                //todo nice time??
+                var systemTime = systemStat.SystemTime + systemStat.UserTime + systemStat.IdleTime; //тут вроде как прошедшее системное время... *cores
                 var processTime = processStat.SystemTime.Value + processStat.UserTime.Value;
 
                 //todo тут кажется не то передают, в systemTime не все время учтено...
@@ -67,37 +73,19 @@ namespace Vostok.Metrics.System.Process
             metrics.CgroupMemoryLimit = cgroupStatus.MemoryLimit;
         }
 
-        private SystemStat ReadSystemStat()//NOTE calc whole system stats, not current process stats
+        private bool ReadSystemStat(out ProcStat procStat)
         {
-            var result = new SystemStat();
-
             try
             {
-                if (FileParser.TrySplitLine(systemStatReader.ReadFirstLine(), 5, out var parts) && parts[0] == "cpu")
-                {
-                    if (ulong.TryParse(parts[1], out var utime))
-                        result.UserTime = utime;
-
-                    if (ulong.TryParse(parts[3], out var stime))
-                        result.SystemTime = stime;
-
-                    if (ulong.TryParse(parts[4], out var itime))
-                        result.IdleTime = itime;
-                }
-
-                if (settings.UseDotnetCpuCount)
-                    result.CpuCount = Environment.ProcessorCount; //NOTE function in linux, not constant
-                else
-                    //todo double read systemStatReader
-                    //todo 
-                    result.CpuCount = systemStatReader.ReadLines().Count(line => line.StartsWith("cpu")) - 1;
+                return procStatReader.TryRead(out procStat);
             }
             catch (Exception error)
             {
                 InternalErrorLogger.Warn(error);
             }
 
-            return result;
+            procStat = default;
+            return false;
         }
 
         private ProcessStat ReadProcessStat()
@@ -123,44 +111,29 @@ namespace Vostok.Metrics.System.Process
             return result;
         }
 
-        private ProcessStatus ReadProcessStatus()
+        private bool ReadOpenFilesCount(out int filesCount)
         {
-            var result = new ProcessStatus();
+            filesCount = 0;
 
-            try
+            if (!settings.DisableOpenFilesCount)
             {
-                //https://unix.stackexchange.com/questions/365922/monitoring-number-of-open-fds-per-process-efficiently
-                //кажется быстро не посчитать
-                // /proc/PID/status FDSize не то
-                if(!settings.DisableOpenFilesCount)
-                    result.FileDescriptorsCount = Directory.EnumerateFiles("/proc/self/fd/").Count();
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // NOTE: Ignored due to process already exited so we don't have to count it's file descriptors count.
-                result.FileDescriptorsCount = 0;
-            }
-
-            try
-            {
-                foreach (var line in processStatusReader.ReadLines())
+                try
                 {
-                    if (FileParser.TryParseLong(line, "RssAnon", out var vmRss))
-                        result.VirtualMemoryResident = vmRss * 1024L;
-
-                    if (FileParser.TryParseLong(line, "VmData", out var vmData))
-                        result.VirtualMemoryData = vmData * 1024L;
-
-                    if (result.Filled)
-                        break;
+                    //https://unix.stackexchange.com/questions/365922/monitoring-number-of-open-fds-per-process-efficiently
+                    //кажется быстро не посчитать
+                    // /proc/PID/status FDSize не то
+                    filesCount = Directory.EnumerateFiles("/proc/self/fd/").Count();
+                    return true;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // NOTE: Ignored due to process already exited so we don't have to count it's file descriptors count.
                 }
             }
-            catch (Exception error)
-            {
-                InternalErrorLogger.Warn(error);
-            }
 
-            return result;
+        
+
+            return false;
         }
 
         // See https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/resource_management_guide/sec-cpu
@@ -169,34 +142,26 @@ namespace Vostok.Metrics.System.Process
         private ProcessCgroupStatus ReadCgroupStatus()
         {
             var result = new ProcessCgroupStatus();
-
-            if (cgroupMemoryLimitReader.TryReadFirstLine(out var memoryLimitLine)
-                && memoryLimitLine != cgroupNoMemoryLimitValue
-                && long.TryParse(memoryLimitLine, out var memoryLimit))
+            if (!settings.DisableCgroupStats)
             {
-                result.MemoryLimit = memoryLimit;
-            }
+                if (cgroupMemoryLimitReader.TryReadFirstLine(out var memoryLimitLine)
+                    && memoryLimitLine != cgroupNoMemoryLimitValue
+                    && long.TryParse(memoryLimitLine, out var memoryLimit))
+                {
+                    result.MemoryLimit = memoryLimit;
+                }
 
-            if (cgroupCpuCfsPeriodReader.TryReadFirstLine(out var cpuPeriodLine)
-                && cgroupCpuCfsQuotaReader.TryReadFirstLine(out var cpuQuotaLine)
-                && cpuQuotaLine != cgroupNoCpuLimitValue
-                && long.TryParse(cpuPeriodLine, out var cpuPeriod)
-                && long.TryParse(cpuQuotaLine, out var cpuQuota))
-            {
-                result.CpuLimit = (double)cpuQuota / cpuPeriod;
+                if (cgroupCpuCfsPeriodReader.TryReadFirstLine(out var cpuPeriodLine)
+                    && cgroupCpuCfsQuotaReader.TryReadFirstLine(out var cpuQuotaLine)
+                    && cpuQuotaLine != cgroupNoCpuLimitValue
+                    && long.TryParse(cpuPeriodLine, out var cpuPeriod)
+                    && long.TryParse(cpuQuotaLine, out var cpuQuota))
+                {
+                    result.CpuLimit = (double)cpuQuota / cpuPeriod;
+                }
             }
 
             return result;
-        }
-
-        private class SystemStat
-        {
-            public bool Filled => IdleTime.HasValue && UserTime.HasValue && SystemTime.HasValue;
-
-            public int? CpuCount { get; set; }
-            public ulong? IdleTime { get; set; }
-            public ulong? UserTime { get; set; }
-            public ulong? SystemTime { get; set; }
         }
 
         private class ProcessStat
@@ -207,16 +172,7 @@ namespace Vostok.Metrics.System.Process
             public ulong? SystemTime { get; set; }
         }
 
-        private class ProcessStatus
-        {
-            public bool Filled => FileDescriptorsCount.HasValue && VirtualMemoryResident.HasValue && VirtualMemoryData.HasValue;
-
-            public int? FileDescriptorsCount { get; set; }
-            public long? VirtualMemoryResident { get; set; }
-            public long? VirtualMemoryData { get; set; }
-        }
-
-        private class ProcessCgroupStatus
+        private struct ProcessCgroupStatus
         {
             public double? CpuLimit { get; set; }
             public long? MemoryLimit { get; set; }

@@ -6,3 +6,5 @@ Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableOpenFilesCount.
 Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.LinuxProcessMetricsSettings() -> void
 Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.UseDotnetCpuCount.get -> bool
 Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.UseDotnetCpuCount.set -> void
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableCgroupStats.get -> bool
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableCgroupStats.set -> void
