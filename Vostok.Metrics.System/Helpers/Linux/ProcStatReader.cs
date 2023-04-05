@@ -13,11 +13,8 @@ namespace Vostok.Metrics.System.Helpers.Linux;
 /// </summary>
 internal readonly struct ProcStatReader : IDisposable
 {
-    private readonly bool useDotnetCpuCount;
-
-    public ProcStatReader(bool useDotnetCpuCount)
+    public ProcStatReader()
     {
-        this.useDotnetCpuCount = useDotnetCpuCount;
 #if NET6_0_OR_GREATER
         systemStatReader = new SpanReusableFileReader("/proc/stat");
 #else
@@ -27,7 +24,6 @@ internal readonly struct ProcStatReader : IDisposable
 
     public ProcStatReader(bool useDotnetCpuCount, Stream procStatStream)
     {
-        this.useDotnetCpuCount = useDotnetCpuCount;
 #if NET6_0_OR_GREATER
         systemStatReader = new SpanReusableFileReader(procStatStream);
 #else
@@ -63,14 +59,15 @@ internal readonly struct ProcStatReader : IDisposable
 
             index++;
 
-            if (useDotnetCpuCount)
-                break;
+            break;
+        //    if (useDotnetCpuCount)
+        //        break;
         }
 
-        if (useDotnetCpuCount)
-            procStat.CpuCount = Environment.ProcessorCount;
-        else
-            procStat.CpuCount = index - 1;
+        //if (useDotnetCpuCount)
+        //    procStat.CpuCount = Environment.ProcessorCount;
+        //else
+        //    procStat.CpuCount = index - 1;
         return index >= 1;
 #else
         return ParseNotOptimized(ref procStat);
@@ -124,10 +121,6 @@ internal readonly struct ProcStatReader : IDisposable
             }
         }
 
-        if (useDotnetCpuCount)
-            procStat.CpuCount = Environment.ProcessorCount; //NOTE function in linux, not constant
-        else
-            procStat.CpuCount = systemStatReader.ReadLines().Count(line => line.StartsWith("cpu")) - 1;
         return correctReads == 4;
     }
 #endif
