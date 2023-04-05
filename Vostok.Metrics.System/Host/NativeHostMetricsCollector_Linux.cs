@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Vostok.Metrics.System.Helpers;
 using Vostok.Metrics.System.Helpers.Linux;
@@ -26,12 +25,14 @@ namespace Vostok.Metrics.System.Host
         private readonly NetworkUtilizationCollector_Linux networkCollector = new NetworkUtilizationCollector_Linux();
         private readonly DerivativeCollector hardPageFaultCollector = new DerivativeCollector();
         private readonly DiskUsageCollector_Linux diskUsageCollector = new DiskUsageCollector_Linux();
+        private readonly CpuCountMeter cpuCountMeter;
 
         public NativeHostMetricsCollector_Linux(HostMetricsSettings settings)
         {
             this.settings = settings;
-            procStatReader = new ProcStatReader(true); //todo?
-            cpuCollector = new HostCpuUtilizationCollector(GetProcessorCount);
+            procStatReader = new ProcStatReader();
+            cpuCollector = new HostCpuUtilizationCollector();
+            cpuCountMeter = new CpuCountMeter(false);//false because we can get system cpu count, not fake count for current process
         }
 
         public void Dispose()
@@ -51,13 +52,12 @@ namespace Vostok.Metrics.System.Host
 
             if (settings.CollectCpuMetrics)
             {
-                ulong usedTime = 0;
+                ulong totalTime = 0;
                 if (procStatReader.TryRead(out var systemStat))
                 {
-                    usedTime = systemStat.UserTime + systemStat.NicedTime +
-                               systemStat.SystemTime + systemStat.IdleTime;
+                    totalTime = systemStat.GetTotalTime();
                 }
-                cpuCollector.Collect(metrics, usedTime, systemStat.IdleTime); //todo  pass cores count here??
+                cpuCollector.Collect(metrics, totalTime, systemStat.IdleTime, cpuCountMeter.GetCpuCount());
             }
 
             if (memInfo.Filled)
@@ -99,33 +99,6 @@ namespace Vostok.Metrics.System.Host
             return false;
         }
         
-        private const string libc = "libc.so.6";
-            
-        [DllImport(libc, CharSet = CharSet.Ansi, SetLastError = true)]
-        public static extern IntPtr sysconf(int name);
-        const int _SC_NPROCESSORS_ONLN = 84;
-
-
-        private int? GetProcessorCount()
-        {
-            //todo super slow, + many garbage
-            //auto npc = get_nprocs_conf();
-            //auto np = get_nprocs();
-            try
-            {
-                var number = sysconf(_SC_NPROCESSORS_ONLN);
-                if ((long)number < 0)
-                    return 0;
-                return (int)number;
-                //return cpuInfoReader.ReadLines().Count(x => x.Contains("processor"));//todo trash!!
-            }
-            catch (Exception error)
-            {
-                InternalErrorLogger.Warn(error);
-                return null;
-            }
-        }
-
         private MemoryInfo ReadMemoryInfo()
         {
             var result = new MemoryInfo();

@@ -10,7 +10,8 @@ namespace Vostok.Metrics.System.Host
     internal class NativeHostMetricsCollector_Windows : IDisposable
     {
         private readonly HostMetricsSettings settings;
-        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector(GetProcessorCount);
+        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
+        private readonly int safeProcessorCount = Environment.ProcessorCount;
 
         private readonly IPerformanceCounter<Observation<NetworkUsage>[]> networkUsageCounter = PerformanceCounterFactory.Default
            .Create<NetworkUsage>()
@@ -103,7 +104,7 @@ namespace Vostok.Metrics.System.Host
 
                 var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
 
-                cpuCollector.Collect(metrics, systemTime, idleTime.ToUInt64());
+                cpuCollector.Collect(metrics, systemTime, idleTime.ToUInt64(), GetProcessorCount());
             }
             catch (Exception error)
             {
@@ -200,7 +201,7 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        private static int? GetProcessorCount()
+        private int GetProcessorCount()
         {
             {
                 try
@@ -212,7 +213,7 @@ namespace Vostok.Metrics.System.Host
                 catch (Exception error)
                 {
                     InternalErrorLogger.Warn(error);
-                    return null;
+                    return safeProcessorCount;
                 }
             }
         }
