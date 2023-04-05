@@ -8,7 +8,6 @@ using Vostok.Metrics.System.Helpers.Linux;
 
 namespace Vostok.Metrics.System.Process
 {
-
     internal class NativeMetricsCollector_Linux : IDisposable
     {
         private const string cgroupMemoryLimitFileName = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
@@ -20,7 +19,7 @@ namespace Vostok.Metrics.System.Process
         private readonly LinuxProcessMetricsSettings settings;
 
         private readonly ProcStatReader procStatReader;
-        private readonly ReusableFileReader processStatReader = new ReusableFileReader("/proc/self/stat"); //300b  //cpu times
+        private readonly ProcSelfStatReader procSelfStatReader;
         private readonly ProcSelfStatmReader procSelfStatmReader;
 
         private readonly ReusableFileReader cgroupMemoryLimitReader = new ReusableFileReader(cgroupMemoryLimitFileName);
@@ -33,36 +32,35 @@ namespace Vostok.Metrics.System.Process
             this.settings = settings ?? new LinuxProcessMetricsSettings();
             procStatReader = new ProcStatReader(this.settings.UseDotnetCpuCount);
             procSelfStatmReader = new ProcSelfStatmReader();
+            procSelfStatReader = new ProcSelfStatReader();
         }
 
         public void Dispose()
         {
             procStatReader.Dispose();
-            processStatReader.Dispose();
+            procSelfStatReader.Dispose();
             procSelfStatmReader.Dispose();
         }
 
         public void Collect(CurrentProcessMetrics metrics)
         {
-            var processStat = ReadProcessStat();
-
             var cgroupStatus = ReadCgroupStatus();
 
             if (ReadOpenFilesCount(out var openFilesCount))
                 metrics.HandlesCount = openFilesCount;
 
-            if (procSelfStatmReader.TryRead(out var statm))
+            if (TryReadProcessStatm(out var statm))
             {
                 metrics.MemoryResident = statm.PrivateRss;
 
                 metrics.MemoryPrivate = statm.DataSize;
             }
 
-            if (processStat.Filled && ReadSystemStat(out var systemStat))
+            if (TryReadProcessStat(out var processStat) && ReadSystemStat(out var systemStat))
             {
                 //todo nice time??
                 var systemTime = systemStat.SystemTime + systemStat.UserTime + systemStat.IdleTime; //тут вроде как прошедшее системное время... *cores
-                var processTime = processStat.SystemTime.Value + processStat.UserTime.Value;
+                var processTime = processStat.stime + processStat.utime;
 
                 //todo тут кажется не то передают, в systemTime не все время учтено...
                 //todo IdleTime учитывает ядра??
@@ -77,7 +75,8 @@ namespace Vostok.Metrics.System.Process
         {
             try
             {
-                return procStatReader.TryRead(out procStat);
+                if (procStatReader.TryRead(out procStat))
+                    return true;
             }
             catch (Exception error)
             {
@@ -88,27 +87,36 @@ namespace Vostok.Metrics.System.Process
             return false;
         }
 
-        private ProcessStat ReadProcessStat()
+        private bool TryReadProcessStat(out ProcSelfStat value)
         {
-            var result = new ProcessStat();
-
             try
             {
-                if (FileParser.TrySplitLine(processStatReader.ReadFirstLine(), 15, out var parts))
-                {
-                    if (ulong.TryParse(parts[13], out var utime))
-                        result.UserTime = utime;
-
-                    if (ulong.TryParse(parts[14], out var stime))
-                        result.SystemTime = stime;
-                }
+                if (procSelfStatReader.TryRead(out value))
+                    return true;
             }
             catch (Exception error)
             {
                 InternalErrorLogger.Warn(error);
             }
 
-            return result;
+            value = default;
+            return false;
+        }
+
+        private bool TryReadProcessStatm(out ProcSelfStatm value)
+        {
+            try
+            {
+                if (procSelfStatmReader.TryRead(out value))
+                    return true;
+            }
+            catch (Exception error)
+            {
+                InternalErrorLogger.Warn(error);
+            }
+
+            value = default;
+            return false;
         }
 
         private bool ReadOpenFilesCount(out int filesCount)
@@ -130,8 +138,6 @@ namespace Vostok.Metrics.System.Process
                     // NOTE: Ignored due to process already exited so we don't have to count it's file descriptors count.
                 }
             }
-
-        
 
             return false;
         }
@@ -162,14 +168,6 @@ namespace Vostok.Metrics.System.Process
             }
 
             return result;
-        }
-
-        private class ProcessStat
-        {
-            public bool Filled => UserTime.HasValue && SystemTime.HasValue;
-
-            public ulong? UserTime { get; set; }
-            public ulong? SystemTime { get; set; }
         }
 
         private struct ProcessCgroupStatus
