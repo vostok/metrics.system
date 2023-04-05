@@ -48,7 +48,7 @@ internal class ProcSelfStatmReader : IDisposable
 
         if (!statmReader.TryReadLine(out var line))
             return false;
-        var e = line.GetTokensEnumerator2();
+        var e = ProcFsParserHelper.EnumerateTokens(line);
 
         if (!e.TryMove(1) || !long.TryParse(e.Token, out value.PrivateRss))
             return false;

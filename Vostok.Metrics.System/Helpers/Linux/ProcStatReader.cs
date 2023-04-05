@@ -81,18 +81,18 @@ internal readonly struct ProcStatReader : IDisposable
 
     private static bool TryParseTimes(ReadOnlySpan<char> line, ref ProcStat ss)
     {
-        var e = line.GetTokensEnumerator();
+        var e = ProcFsParserHelper.EnumerateTokens(line);
 
-        if (!e.MoveNext() || !e.Current.SequenceEqual("cpu".AsSpan()))
+        if (!e.TryMove(0) || !e.Token.SequenceEqual("cpu"))
             return false;
 
-        if (!e.MoveNext() || !ulong.TryParse(e.Current, out ss.UserTime))
+        if (!e.TryMove(1) || !ulong.TryParse(e.Token, out ss.UserTime))
             return false;
-        if (!e.MoveNext() || !ulong.TryParse(e.Current, out ss.NicedTime))
+        if (!e.TryMove(2) || !ulong.TryParse(e.Token, out ss.NicedTime))
             return false;
-        if (!e.MoveNext() || !ulong.TryParse(e.Current, out ss.SystemTime))
+        if (!e.TryMove(3) || !ulong.TryParse(e.Token, out ss.SystemTime))
             return false;
-        if (!e.MoveNext() || !ulong.TryParse(e.Current, out ss.IdleTime))
+        if (!e.TryMove(4) || !ulong.TryParse(e.Token, out ss.IdleTime))
             return false;
         return true;
     }
