@@ -1,27 +1,26 @@
-﻿using System;
-using Vostok.Metrics.System.Helpers;
+﻿using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host
 {
     internal class HostCpuUtilizationCollector
     {
-        private readonly Func<int?> coresCountProvider;
-        private int previousCoresCount = Environment.ProcessorCount;
         private ulong previousSystemTime;
         private ulong previousIdleTime;
 
-        public HostCpuUtilizationCollector(Func<int?> coresCountProvider) //todo alternative method is needed??
-        {
-            this.coresCountProvider = coresCountProvider;
-        }
-
-        public void Collect(HostMetrics metrics, ulong systemTime, ulong idleTime)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="metrics"></param>
+        /// <param name="systemTime">total time passed(sum for all cpus)</param>
+        /// <param name="idleTime">sum of idle times for all cpus</param>
+        /// <param name="cpuCount">processor count</param>
+        public void Collect(HostMetrics metrics, ulong systemTime, ulong idleTime, int cpuCount)
         {
             var systemTimeDiff = (double)systemTime - previousSystemTime;
             var idleTimeDiff = (double)idleTime - previousIdleTime;
             var spentTimeDiff = 1 - idleTimeDiff / systemTimeDiff;
 
-            metrics.CpuTotalCores = previousCoresCount = coresCountProvider() ?? previousCoresCount;
+            metrics.CpuTotalCores = cpuCount;
 
             if (previousSystemTime == 0 || systemTimeDiff <= 0)
             {

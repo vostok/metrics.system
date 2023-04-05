@@ -8,7 +8,7 @@ using Vostok.Metrics.System.Helpers.Linux;
 
 namespace Vostok.Metrics.System.Process
 {
-    internal class NativeMetricsCollector_Linux : IDisposable
+    internal class NativeProcessMetricsCollector_Linux : IDisposable
     {
         private const string cgroupMemoryLimitFileName = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
         private const string cgroupCpuCfsQuotaFileName = "/sys/fs/cgroup/cpu/cpu.cfs_quota_us";
@@ -26,13 +26,15 @@ namespace Vostok.Metrics.System.Process
         private readonly ReusableFileReader cgroupCpuCfsQuotaReader = new ReusableFileReader(cgroupCpuCfsQuotaFileName);
         private readonly ReusableFileReader cgroupCpuCfsPeriodReader = new ReusableFileReader(cgroupCpuCfsPeriodFileName);
         private readonly CpuUtilizationCollector cpuCollector = new CpuUtilizationCollector();
+        private readonly CpuCountMeter cpuCountMeter;
 
-        public NativeMetricsCollector_Linux(LinuxProcessMetricsSettings settings)
+        public NativeProcessMetricsCollector_Linux(LinuxProcessMetricsSettings settings)
         {
             this.settings = settings ?? new LinuxProcessMetricsSettings();
-            procStatReader = new ProcStatReader(this.settings.UseDotnetCpuCount);
+            procStatReader = new ProcStatReader();
             procSelfStatmReader = new ProcSelfStatmReader();
             procSelfStatReader = new ProcSelfStatReader();
+            cpuCountMeter = new CpuCountMeter(this.settings.UseDotnetCpuCount);
         }
 
         public void Dispose()
@@ -58,13 +60,10 @@ namespace Vostok.Metrics.System.Process
 
             if (TryReadProcessStat(out var processStat) && ReadSystemStat(out var systemStat))
             {
-                //todo nice time??
-                var systemTime = systemStat.SystemTime + systemStat.UserTime + systemStat.IdleTime; //тут вроде как прошедшее системное время... *cores
+                var systemTime = systemStat.GetTotalTime();
                 var processTime = processStat.stime + processStat.utime;
 
-                //todo тут кажется не то передают, в systemTime не все время учтено...
-                //todo IdleTime учитывает ядра??
-                cpuCollector.Collect(metrics, systemTime, processTime, systemStat.CpuCount);
+                cpuCollector.Collect(metrics, systemTime, processTime, cpuCountMeter.GetCpuCount());
             }
 
             metrics.CgroupCpuLimitCores = cgroupStatus.CpuLimit;
