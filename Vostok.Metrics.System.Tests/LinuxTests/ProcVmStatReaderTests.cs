@@ -38,5 +38,5 @@ public class ProcVmStatReaderTests
     }
 
     private static ProcVmStatReader CreateReaderWithContent() =>
-        new ProcVmStatReader(new MemoryStream(File.ReadAllBytes("Resources\\proc_vmstat.bin")));
+        new ProcVmStatReader(new MemoryStream(File.ReadAllBytes("Resources/proc_vmstat.bin")));
 }
