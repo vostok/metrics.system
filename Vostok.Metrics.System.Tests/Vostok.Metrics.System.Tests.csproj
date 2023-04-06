@@ -35,10 +35,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="LinuxTests\" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Update="Resources\proc_meminfo.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\proc_stat.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\proc_vmstat.bin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

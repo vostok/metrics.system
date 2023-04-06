@@ -13,5 +13,10 @@ namespace Vostok.Metrics.System.Helpers
 
             return line.StartsWith(name) && TrySplitLine(line, 2, out var parts) && long.TryParse(parts[1], out value);
         }
+
+        public static bool TryParseLongRef(string line, string name, ref long value)
+        {
+            return line.StartsWith(name) && TrySplitLine(line, 2, out var parts) && long.TryParse(parts[1], out value);
+        }
     }
 }
