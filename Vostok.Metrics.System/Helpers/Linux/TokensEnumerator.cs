@@ -12,7 +12,7 @@ internal ref struct TokensEnumerator
 
     public TokensEnumerator(ReadOnlySpan<char> source)
     {
-        enumerator = source.Split(separators, true).GetEnumerator();
+        enumerator = source.Split(separators, true).GetEnumerator(); //general options: skip empty tokens, separator = ' '
         currentPosition = -1;
     }
 
