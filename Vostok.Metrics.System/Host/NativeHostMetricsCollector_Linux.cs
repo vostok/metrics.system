@@ -17,8 +17,8 @@ namespace Vostok.Metrics.System.Host
 
         // See https://man7.org/linux/man-pages/man5/proc.5.html for information about each file
         private readonly ProcStatReader procStatReader;
-        private readonly ReusableFileReader memoryReader = new ReusableFileReader("/proc/meminfo");
-        private readonly ReusableFileReader vmStatReader = new ReusableFileReader("/proc/vmstat");
+        private readonly ProcMemInfoReader memoryReader = new ProcMemInfoReader();
+        private readonly ProcVmStatReader vmStatReader = new ProcVmStatReader();
         private readonly ReusableFileReader descriptorInfoReader = new ReusableFileReader("/proc/sys/fs/file-nr");
 
         private readonly HostCpuUtilizationCollector cpuCollector;
@@ -32,7 +32,7 @@ namespace Vostok.Metrics.System.Host
             this.settings = settings;
             procStatReader = new ProcStatReader();
             cpuCollector = new HostCpuUtilizationCollector();
-            cpuCountMeter = new CpuCountMeter(false);//false because we can get system cpu count, not fake count for current process
+            cpuCountMeter = new CpuCountMeter(false); //false because we can get system cpu count, not fake count for current process
         }
 
         public void Dispose()
@@ -47,7 +47,6 @@ namespace Vostok.Metrics.System.Host
 
         public void Collect(HostMetrics metrics)
         {
-            var memInfo = settings.CollectMemoryMetrics ? ReadMemoryInfo() : new MemoryInfo();
             var perfInfo = settings.CollectMiscMetrics ? ReadPerformanceInfo() : new PerformanceInfo();
 
             if (settings.CollectCpuMetrics)
@@ -57,17 +56,18 @@ namespace Vostok.Metrics.System.Host
                 {
                     totalTime = systemStat.GetTotalTime();
                 }
+
                 cpuCollector.Collect(metrics, totalTime, systemStat.IdleTime, cpuCountMeter.GetCpuCount());
             }
 
-            if (memInfo.Filled)
+            if (settings.CollectMemoryMetrics && TryReadMemoryInfo(out var memInfo, out var vmStat))
             {
-                metrics.MemoryAvailable = memInfo.AvailableMemory.Value;
-                metrics.MemoryCached = memInfo.CacheMemory.Value;
-                metrics.MemoryKernel = memInfo.KernelMemory.Value;
-                metrics.MemoryTotal = memInfo.TotalMemory.Value;
-                metrics.MemoryFree = memInfo.FreeMemory.Value;
-                metrics.PageFaultsPerSecond = (long) hardPageFaultCollector.Collect(memInfo.MajorPageFaultCount.Value);
+                metrics.MemoryAvailable = memInfo.AvailableMemory;
+                metrics.MemoryCached = memInfo.CacheMemory;
+                metrics.MemoryKernel = memInfo.KernelMemory;
+                metrics.MemoryTotal = memInfo.TotalMemory;
+                metrics.MemoryFree = memInfo.FreeMemory;
+                metrics.PageFaultsPerSecond = (long)hardPageFaultCollector.Collect(vmStat.pgmajfault);
             }
 
             if (perfInfo.Filled)
@@ -98,53 +98,31 @@ namespace Vostok.Metrics.System.Host
             procStat = default;
             return false;
         }
-        
-        private MemoryInfo ReadMemoryInfo()
-        {
-            var result = new MemoryInfo();
 
+        private bool TryReadMemoryInfo(out ProcMemInfo memInfo, out ProcVmStat vmStat)
+        {
+            vmStat = default;
             try
             {
-                foreach (var line in memoryReader.ReadLines())
-                {
-                    if (FileParser.TryParseLong(line, "MemTotal", out var memTotal))
-                        result.TotalMemory = memTotal * 1024;
-
-                    if (FileParser.TryParseLong(line, "MemAvailable", out var memAvailable))
-                        result.AvailableMemory = memAvailable * 1024;
-
-                    if (FileParser.TryParseLong(line, "Cached", out var memCached))
-                        result.CacheMemory = memCached * 1024;
-
-                    if (FileParser.TryParseLong(line, "Slab", out var memKernel))
-                        result.KernelMemory = memKernel * 1024;
-
-                    if (FileParser.TryParseLong(line, "MemFree", out var memFree))
-                        result.FreeMemory = memFree * 1024;
-                }
-
-                foreach (var line in vmStatReader.ReadLines())
-                {
-                    if (FileParser.TryParseLong(line, "pgmajfault", out var hardPageFaultCount))
-                        result.MajorPageFaultCount = hardPageFaultCount;
-                }
+                return memoryReader.TryRead(out memInfo) && vmStatReader.TryRead(out vmStat);
             }
+
             catch (Exception error)
             {
                 InternalErrorLogger.Warn(error);
+                memInfo = default;
+                return false;
             }
-
-            return result;
         }
 
-        private PerformanceInfo ReadPerformanceInfo()//todo тоже медленный способ то
+        private PerformanceInfo ReadPerformanceInfo() //todo тоже медленный способ то
         {
             var result = new PerformanceInfo();
 
             try
             {
-                var processDirectories = Directory.EnumerateDirectories("/proc/")
-                   .Where(x => pidRegex.IsMatch(x));
+                var processDirectories = Directory.EnumerateDirectories("/proc/") //todo не мусорить хотя бы
+                    .Where(x => pidRegex.IsMatch(x));
 
                 var processCount = 0;
                 var threadCount = 0;
@@ -153,7 +131,7 @@ namespace Vostok.Metrics.System.Host
                 {
                     try
                     {
-                        threadCount += Directory.EnumerateDirectories(Path.Combine(processDirectory, "task")).Count();//todo slow
+                        threadCount += Directory.EnumerateDirectories(Path.Combine(processDirectory, "task")).Count(); //todo slow
                     }
                     catch (DirectoryNotFoundException)
                     {
@@ -187,29 +165,6 @@ namespace Vostok.Metrics.System.Host
             public int? ProcessCount { get; set; }
             public int? ThreadCount { get; set; }
             public int? HandleCount { get; set; }
-        }
-
-        private class SystemStat
-        {
-            public bool Filled => UserTime.HasValue && NicedTime.HasValue && SystemTime.HasValue && IdleTime.HasValue;
-
-            public ulong? UserTime { get; set; }
-            public ulong? NicedTime { get; set; }
-            public ulong? SystemTime { get; set; }
-            public ulong? IdleTime { get; set; }
-        }
-
-        private class MemoryInfo
-        {
-            public bool Filled => AvailableMemory.HasValue && KernelMemory.HasValue && CacheMemory.HasValue &&
-                                  TotalMemory.HasValue && FreeMemory.HasValue && MajorPageFaultCount.HasValue;
-
-            public long? AvailableMemory { get; set; }
-            public long? KernelMemory { get; set; }
-            public long? CacheMemory { get; set; }
-            public long? FreeMemory { get; set; }
-            public long? TotalMemory { get; set; }
-            public long? MajorPageFaultCount { get; set; }
         }
     }
 }
