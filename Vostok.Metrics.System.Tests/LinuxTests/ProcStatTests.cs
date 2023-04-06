@@ -21,8 +21,6 @@ public class ProcStatTests
 
         s.SystemTime.Should().Be(24951354);
         s.IdleTime.Should().Be(2007236828);
-
-        //s.CpuCount.Should().Be(12);
     }
 
     [Test]
@@ -45,5 +43,5 @@ public class ProcStatTests
     }
 
     private static ProcStatReader CreateReaderWithContent() =>
-        new ProcStatReader(false, new MemoryStream(File.ReadAllBytes("Resources\\proc_stat.bin")));
+        new ProcStatReader(new MemoryStream(File.ReadAllBytes("Resources\\proc_stat.bin")));
 }
