@@ -13,7 +13,7 @@ namespace Vostok.Metrics.System.Helpers.Linux;
 /// </summary>
 internal readonly struct ProcStatReader : IDisposable
 {
-    private const string file = "/proc/vmstat";
+    private const string file = "/proc/stat";
 
     public ProcStatReader()
     {

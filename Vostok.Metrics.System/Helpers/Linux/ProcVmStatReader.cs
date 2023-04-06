@@ -8,11 +8,6 @@ using System.Runtime.CompilerServices;
 
 namespace Vostok.Metrics.System.Helpers.Linux;
 
-internal struct ProcVmStat
-{
-    public long pgmajfault;
-}
-
 internal class ProcVmStatReader : IDisposable
 {
     private const string file = "/proc/vmstat";
