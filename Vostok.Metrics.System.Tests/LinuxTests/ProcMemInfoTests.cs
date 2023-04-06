@@ -42,5 +42,5 @@ public class ProcMemInfoTests
     }
 
     private static ProcMemInfoReader CreateReaderWithContent() =>
-        new ProcMemInfoReader(new MemoryStream(File.ReadAllBytes("Resources\\proc_meminfo.bin")));
+        new ProcMemInfoReader(new MemoryStream(File.ReadAllBytes("Resources/proc_meminfo.bin")));
 }

@@ -43,5 +43,5 @@ public class ProcStatTests
     }
 
     private static ProcStatReader CreateReaderWithContent() =>
-        new ProcStatReader(new MemoryStream(File.ReadAllBytes("Resources\\proc_stat.bin")));
+        new ProcStatReader(new MemoryStream(File.ReadAllBytes("Resources/proc_stat.bin")));
 }
