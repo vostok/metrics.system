@@ -8,15 +8,6 @@ using System.Runtime.CompilerServices;
 
 namespace Vostok.Metrics.System.Helpers.Linux;
 
-internal struct ProcMemInfo
-{
-    public long AvailableMemory;
-    public long KernelMemory;
-    public long CacheMemory;
-    public long FreeMemory;
-    public long TotalMemory;
-}
-
 internal class ProcMemInfoReader : IDisposable
 {
     private const string file = "/proc/meminfo";

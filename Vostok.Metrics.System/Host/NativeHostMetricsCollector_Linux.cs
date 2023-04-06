@@ -53,9 +53,7 @@ namespace Vostok.Metrics.System.Host
             {
                 ulong totalTime = 0;
                 if (ReadSystemStat(out var systemStat))
-                {
                     totalTime = systemStat.GetTotalTime();
-                }
 
                 cpuCollector.Collect(metrics, totalTime, systemStat.IdleTime, cpuCountMeter.GetCpuCount());
             }
