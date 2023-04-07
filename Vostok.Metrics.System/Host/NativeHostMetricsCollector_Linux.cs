@@ -113,13 +113,15 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        private PerformanceInfo ReadPerformanceInfo() //todo тоже медленный способ то
+        private PerformanceInfo ReadPerformanceInfo()
         {
             var result = new PerformanceInfo();
 
             try
             {
-                var processDirectories = Directory.EnumerateDirectories("/proc/") //todo не мусорить хотя бы
+                //todo не мусорить хотя бы строками
+                //todo 2: Directory.EnumerateDirectories дорогая изза вызовов lstat ненужных. можно напрямую вызывать getdents64 or readdir
+                var processDirectories = Directory.EnumerateDirectories("/proc/")
                     .Where(x => pidRegex.IsMatch(x));
 
                 var processCount = 0;
@@ -129,7 +131,8 @@ namespace Vostok.Metrics.System.Host
                 {
                     try
                     {
-                        threadCount += Directory.EnumerateDirectories(Path.Combine(processDirectory, "task")).Count(); //todo slow
+                        //note: can read:  /proc/pid/status field Threads:  N
+                        threadCount += Directory.EnumerateDirectories(Path.Combine(processDirectory, "task")).Count();
                     }
                     catch (DirectoryNotFoundException)
                     {
