@@ -11,6 +11,6 @@ internal class LibcApi
     public static extern IntPtr sysconf(int name);
     
     public const int _SC_NPROCESSORS_ONLN = 84;
-    public const int _SC_PAGESIZE  = 11;
+    public const int _SC_PAGESIZE  = 30;
 
 }
