@@ -1,4 +1,8 @@
 ﻿using System;
+#if NET6_0_OR_GREATER
+using Vostok.Commons.Helpers.Spans;
+#endif
+
 
 namespace Vostok.Metrics.System.Helpers.Linux;
 

@@ -10,7 +10,7 @@ notests *default:
 
   deps:
     - vostok.commons.collections/src
-    - vostok.commons.helpers/src
+    - vostok.commons.helpers/src@span_helpers
     - vostok.commons.time/src
     - vostok.commons.environment/src
     - vostok.devtools
