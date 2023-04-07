@@ -16,7 +16,7 @@ namespace Vostok.Metrics.System.Host
             diskStatsReader?.Dispose();
         }
 
-        public void Collect(HostMetrics metrics)
+        public void Collect(HostMetrics metrics) //todo не мусорить строками
         {
             var deltaSeconds = stopwatch.Elapsed.TotalSeconds;
 
