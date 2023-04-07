@@ -1,3 +1,9 @@
+static Vostok.Metrics.System.Host.HostMetricsExtensions.LogMetrics(this Vostok.Metrics.System.Host.HostMetrics metrics, Vostok.Logging.Abstractions.ILog log, System.TimeSpan period) -> void
+static Vostok.Metrics.System.Host.HostMetricsExtensions.ToDataPoints(this Vostok.Metrics.System.Host.HostMetrics metrics, System.DateTimeOffset? timestamp = null) -> System.Collections.Generic.IEnumerable<Vostok.Metrics.Models.MetricDataPoint>
+static Vostok.Metrics.System.Process.CurrentProcessMetricsExtensions.LogMetrics(this Vostok.Metrics.System.Process.CurrentProcessMetrics metrics, Vostok.Logging.Abstractions.ILog log, System.TimeSpan period) -> void
+static Vostok.Metrics.System.Process.CurrentProcessMetricsExtensions.ToDataPoints(this Vostok.Metrics.System.Process.CurrentProcessMetrics metrics, System.DateTimeOffset? timestamp = null) -> System.Collections.Generic.IEnumerable<Vostok.Metrics.Models.MetricDataPoint>
+Vostok.Metrics.System.Host.HostMetricsExtensions
+Vostok.Metrics.System.Process.CurrentProcessMetricsExtensions
 Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.LinuxSettings.get -> Vostok.Metrics.System.Process.LinuxProcessMetricsSettings
 Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.LinuxSettings.set -> void
 Vostok.Metrics.System.Process.LinuxProcessMetricsSettings
