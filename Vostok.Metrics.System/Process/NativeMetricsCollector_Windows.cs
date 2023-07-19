@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Vostok.Metrics.System.Helpers;
-using Vostok.Metrics.System.Host;
 
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 // ReSharper disable MemberCanBePrivate.Local
@@ -85,10 +84,7 @@ namespace Vostok.Metrics.System.Process
                 var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
                 var processTime = processKernel.ToUInt64() + processUser.ToUInt64();
 
-                // note: Environment.ProcessorCount from NET6+ respects process affinity and the job object's hard limit on CPU utilization
-                // https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/environment-processorcount-on-windows
-                // so we should get total number of system cores from NativeHostMetricsCollector_Windows instead
-                cpuCollector.Collect(metrics, systemTime, processTime, NativeHostMetricsCollector_Windows.GetProcessorCount());
+                cpuCollector.Collect(metrics, systemTime, processTime);
             }
             catch (Exception error)
             {

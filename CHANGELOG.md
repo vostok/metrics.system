@@ -1,9 +1,3 @@
-## 0.3.18 (26-06-2023):
-
-Fixed incorrect usage of Environment.ProcessorCount value (use host cores instead).
-
-[Backward compability was broken in .net6](https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/environment-processorcount-on-windows)
-
 ## 0.3.17 (28-09-2022):
 
 Fixed unlimited cgroup limits.
