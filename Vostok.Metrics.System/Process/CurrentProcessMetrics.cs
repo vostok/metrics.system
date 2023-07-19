@@ -8,7 +8,7 @@ namespace Vostok.Metrics.System.Process
     {
         /// <summary>
         /// <para>Number of CPU cores utilized by current process.</para>
-        /// <para>This metric has a value between 0 and <see cref="Environment.ProcessorCount"/>.</para>
+        /// <para>This metric has a value between 0 and the total number of logical processors on the machine.</para>
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
         public double CpuUtilizedCores { get; set; }
