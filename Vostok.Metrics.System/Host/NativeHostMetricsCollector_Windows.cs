@@ -172,7 +172,7 @@ namespace Vostok.Metrics.System.Host
 
         private void CollectDisksUsage(HostMetrics metrics)
         {
-            var disksUsageInfo = new Dictionary<string, DiskUsageInfo>();
+            var disksUsageInfo = new Dictionary<string, DiskUsageInfo>(StringComparer.OrdinalIgnoreCase); //windows drive names are case insensitive
 
             try
             {
