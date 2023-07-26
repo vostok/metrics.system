@@ -21,7 +21,7 @@ namespace Vostok.Metrics.System.Host
             var deltaSeconds = stopwatch.Elapsed.TotalSeconds;
 
             var newDisksStatsInfo = new Dictionary<string, DiskStats>();
-            var disksUsageInfo = new Dictionary<string, DiskUsageInfo>();
+            var disksUsageInfo = new Dictionary<string, DiskUsageInfo>(); //case sensitive in linux
 
             foreach (var diskStats in ParseDiskstats(diskStatsReader.ReadLines()))
             {
