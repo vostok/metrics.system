@@ -52,10 +52,14 @@ namespace Vostok.Metrics.System.Host
             if (settings.CollectCpuMetrics)
             {
                 ulong totalTime = 0;
+                ulong kernelTime = 0;
                 if (ReadSystemStat(out var systemStat))
+                {
                     totalTime = systemStat.GetTotalTime();
+                    kernelTime = systemStat.SystemTime;
+                }
 
-                cpuCollector.Collect(metrics, totalTime, systemStat.IdleTime, cpuCountMeter.GetCpuCount());
+                cpuCollector.Collect(metrics, totalTime, systemStat.IdleTime, kernelTime, cpuCountMeter.GetCpuCount());
             }
 
             if (settings.CollectMemoryMetrics && TryReadMemoryInfo(out var memInfo, out var vmStat))
