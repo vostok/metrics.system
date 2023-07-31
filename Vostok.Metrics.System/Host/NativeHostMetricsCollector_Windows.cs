@@ -104,7 +104,7 @@ namespace Vostok.Metrics.System.Host
 
                 var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
 
-                cpuCollector.Collect(metrics, systemTime, idleTime.ToUInt64(), GetProcessorCount());
+                cpuCollector.Collect(metrics, systemTime, idleTime.ToUInt64(), systemKernel.ToUInt64(), GetProcessorCount());
             }
             catch (Exception error)
             {
