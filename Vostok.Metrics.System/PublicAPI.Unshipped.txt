@@ -14,3 +14,5 @@ Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.UseDotnetCpuCount.get 
 Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.UseDotnetCpuCount.set -> void
 Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableCgroupStats.get -> bool
 Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableCgroupStats.set -> void
+Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedFractionInKernel.get -> double
+Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedFractionInKernel.set -> void
