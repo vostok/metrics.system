@@ -85,10 +85,14 @@ namespace Vostok.Metrics.System.Process
                 var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
                 var processTime = processKernel.ToUInt64() + processUser.ToUInt64();
 
+#if NET6_0_OR_GREATER
                 // note: Environment.ProcessorCount from NET6+ respects process affinity and the job object's hard limit on CPU utilization
                 // https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/environment-processorcount-on-windows
                 // so we should get total number of system cores from NativeHostMetricsCollector_Windows instead
                 cpuCollector.Collect(metrics, systemTime, processTime, NativeHostMetricsCollector_Windows.GetProcessorCount());
+#else
+                cpuCollector.Collect(metrics, systemTime, processTime);
+#endif
             }
             catch (Exception error)
             {
