@@ -1,3 +1,7 @@
+## 0.3.19 (19-07-2023):
+
+Revert `0.3.18` changes due to problems with `GetProcessorCount`
+
 ## 0.3.18 (26-06-2023):
 
 Fixed incorrect usage of Environment.ProcessorCount value (use host cores instead).
