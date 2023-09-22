@@ -54,6 +54,7 @@ namespace Vostok.Metrics.System.Process
 
         private readonly DnsMonitor dnsMonitor = new DnsMonitor();
         private readonly CurrentProcessDnsObserver dnsObserver;
+        private readonly IDisposable dnsSubscription;
 
         private readonly DeltaCollector lockContentionCount = new DeltaCollector(LockContentionCountProvider);
         private readonly DeltaCollector exceptionsCount = new DeltaCollector(() => ExceptionsCountProvider());
@@ -83,7 +84,7 @@ namespace Vostok.Metrics.System.Process
             this.settings = settings ?? new CurrentProcessMetricsSettings();
 
             dnsObserver = new CurrentProcessDnsObserver();
-            dnsMonitor.Subscribe(dnsObserver);
+            dnsSubscription = dnsMonitor.Subscribe(dnsObserver);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 nativeCollector = new NativeMetricsCollector_Windows().Collect;
@@ -100,6 +101,7 @@ namespace Vostok.Metrics.System.Process
         {
             disposeNativeCollector?.Invoke();
             socketMonitor.Dispose();
+            dnsSubscription.Dispose();
             dnsMonitor.Dispose();
         }
 
