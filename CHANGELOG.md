@@ -1,3 +1,7 @@
+## 0.3.20 (22-09-2023):
+
+Return back changes from 0.3.18 using RuntimeDetector to fix "Overlapped I/O operation is in progress" exception for framework 4.7.2/4.8.
+
 ## 0.3.19 (19-07-2023):
 
 Revert `0.3.18` changes due to problems with `GetProcessorCount`
