@@ -201,7 +201,7 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        private int GetProcessorCount()
+        internal static int? GetProcessorCount()
         {
             {
                 try
