@@ -13,6 +13,7 @@ internal class CpuCountMeter
 
     /// <summary>
     /// Count ONLINE cpu's for system
+    /// docker container behaviour = should return system cores count, not container limits 
     /// </summary>
     public int GetCpuCount()
     {
