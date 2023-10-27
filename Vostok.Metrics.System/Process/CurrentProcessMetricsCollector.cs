@@ -86,7 +86,7 @@ namespace Vostok.Metrics.System.Process
             dnsMonitor.Subscribe(dnsObserver);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                nativeCollector = new NativeMetricsCollector_Windows().Collect;
+                nativeCollector = new NativeProcessMetricsCollector_Windows().Collect;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
