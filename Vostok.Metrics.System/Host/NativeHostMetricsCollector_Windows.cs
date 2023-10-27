@@ -104,7 +104,7 @@ namespace Vostok.Metrics.System.Host
 
                 var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
 
-                cpuCollector.Collect(metrics, systemTime, idleTime.ToUInt64(), systemKernel.ToUInt64(), GetProcessorCount());
+                cpuCollector.Collect(metrics, systemTime, idleTime.ToUInt64(), systemKernel.ToUInt64(), GetHostProcessorCount());
             }
             catch (Exception error)
             {
@@ -201,7 +201,11 @@ namespace Vostok.Metrics.System.Host
             }
         }
 
-        private int GetProcessorCount()
+        /// <summary>
+        /// gets host processor count. should work correnct inside docker or in job
+        /// </summary>
+        /// <returns></returns>
+        public static int GetHostProcessorCount()
         {
             {
                 try
@@ -213,7 +217,7 @@ namespace Vostok.Metrics.System.Host
                 catch (Exception error)
                 {
                     InternalErrorLogger.Warn(error);
-                    return safeProcessorCount;
+                    return Environment.ProcessorCount; //safe value
                 }
             }
         }
