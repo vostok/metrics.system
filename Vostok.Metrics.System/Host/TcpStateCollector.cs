@@ -9,7 +9,8 @@ namespace Vostok.Metrics.System.Host
         {
             var states = new Dictionary<TcpState, int>();
 
-            foreach (var tcpConnection in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections())
+            var globalProps = IPGlobalProperties.GetIPGlobalProperties();
+            foreach (var tcpConnection in globalProps.GetActiveTcpConnections())
             {
                 if (!states.ContainsKey(tcpConnection.State))
                     states[tcpConnection.State] = 0;

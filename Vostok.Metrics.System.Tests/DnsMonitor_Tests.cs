@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
@@ -26,6 +28,34 @@ namespace Vostok.Metrics.System.Tests
             monitor?.Dispose();
             monitor = new DnsMonitor();
             monitor.Subscribe(this);
+        }
+
+        [Test]
+        public void T()
+        {
+            var dictionary = new Dictionary<IPAddress, int>();
+            var globalProps = IPGlobalProperties.GetIPGlobalProperties();
+            foreach (var tcpConnection in globalProps.GetActiveTcpConnections())
+            {
+                var ep = tcpConnection.LocalEndPoint;
+                var address = ep.Address;
+                
+                dictionary.TryAdd(address, 0);
+                dictionary[address]++;
+            }
+            
+            foreach (var tcpConnection in globalProps.GetActiveTcpListeners())
+            {
+                var address = tcpConnection.Address;
+                
+                dictionary.TryAdd(address, 0);
+                dictionary[address]++;
+            }
+
+            foreach (var kvp in dictionary)
+            {
+                Console.WriteLine($"Addres: {kvp.Key}, Count: {kvp.Value}");
+            }
         }
 
         [Test]
