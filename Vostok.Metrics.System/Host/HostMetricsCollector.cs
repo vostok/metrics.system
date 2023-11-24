@@ -18,7 +18,7 @@ namespace Vostok.Metrics.System.Host
         private readonly Action<HostMetrics> nativeCollector;
         private readonly Action disposeNativeCollector;
         private readonly DiskSpaceCollector diskSpaceCollector = new DiskSpaceCollector();
-        private readonly TcpStateCollector tcpStateCollector = new TcpStateCollector();
+        private readonly TcpStateCollector tcpStateCollector;
         private readonly ThrottlingCache<HostMetrics> cache;
 
         public HostMetricsCollector()
@@ -43,6 +43,7 @@ namespace Vostok.Metrics.System.Host
             }
 
             cache = new ThrottlingCache<HostMetrics>(CollectInternal, CacheTTL);
+            tcpStateCollector = new TcpStateCollector();
         }
 
         public void Dispose()
