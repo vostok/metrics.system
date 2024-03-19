@@ -145,7 +145,7 @@ namespace Vostok.Metrics.System.Host
                 }
 
                 // NOTE: See https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net for details.
-                // NOTE: This value equals -1 if interface is disabled, so we will filter this values out later.
+                // NOTE: This value equals -1 if interface is disabled on older kernels, so we will filter this values out later.
                 foreach (var networkUsage in networkInterfacesUsage.Values)
                 {
                     if (TryReadSpeed(networkUsage.InterfaceName, out var result) && int.TryParse(result, out var speed))
@@ -234,6 +234,12 @@ namespace Vostok.Metrics.System.Host
             {
                 result = File.ReadAllText(path);
                 return true;
+            }
+            // NOTE: Disabled interfaces give this error on newer kernels.
+            catch (IOException ioError) when (ioError.Message.StartsWith("Invalid argument"))
+            {
+                result = null;
+                return false;
             }
             catch (Exception error)
             {
