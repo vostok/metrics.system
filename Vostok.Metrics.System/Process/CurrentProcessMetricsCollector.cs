@@ -7,6 +7,7 @@ using Vostok.Commons.Helpers.Counters;
 using Vostok.Metrics.System.Dns;
 using Vostok.Metrics.System.Helpers;
 using Vostok.Metrics.System.Host;
+using Vostok.Metrics.System.Process.Legacy;
 
 namespace Vostok.Metrics.System.Process
 {
@@ -90,7 +91,10 @@ namespace Vostok.Metrics.System.Process
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var collector = new NativeProcessMetricsCollector_Linux(this.settings.LinuxSettings);
+                var useLegacyCollector = Environment.GetEnvironmentVariable(VostokSystemMetricsConstants.UseLegacyMetricsCollectorEnvironmentVariable) == "TRUE";
+                INativeProcessMetricsCollector_Linux collector = useLegacyCollector
+                    ? new LegacyNativeMetricsCollector_Linux() 
+                    : new NativeProcessMetricsCollector_Linux(this.settings.LinuxSettings);
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
             }
