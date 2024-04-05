@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using JetBrains.Annotations;
+using Vostok.Logging.Abstractions;
 using Vostok.Metrics.System.Helpers;
+using Vostok.Metrics.System.Host.Legacy;
 
 namespace Vostok.Metrics.System.Host
 {
@@ -37,7 +39,10 @@ namespace Vostok.Metrics.System.Host
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var collector = new NativeHostMetricsCollector_Linux(this.settings);
+                var useLegacyCollector = Environment.GetEnvironmentVariable(VostokSystemMetricsConstants.UseLegacyMetricsCollectorEnvironmentVariable) == "TRUE";
+                INativeHostMetricsCollector_Linux collector = useLegacyCollector 
+                    ? new LegacyNativeHostMetricsCollector_Linux(this.settings) 
+                    : new NativeHostMetricsCollector_Linux(this.settings);
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
             }

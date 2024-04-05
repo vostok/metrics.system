@@ -8,7 +8,7 @@ using Vostok.Metrics.System.Helpers.Linux;
 
 namespace Vostok.Metrics.System.Process
 {
-    internal class NativeProcessMetricsCollector_Linux : IDisposable
+    internal class NativeProcessMetricsCollector_Linux : INativeProcessMetricsCollector_Linux
     {
         private const string cgroupMemoryLimitFileName = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
         private const string cgroupCpuCfsQuotaFileName = "/sys/fs/cgroup/cpu/cpu.cfs_quota_us";

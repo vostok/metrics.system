@@ -9,7 +9,7 @@ using Vostok.Metrics.System.Helpers.Linux;
 
 namespace Vostok.Metrics.System.Host
 {
-    internal class NativeHostMetricsCollector_Linux : IDisposable
+    internal class NativeHostMetricsCollector_Linux : INativeHostMetricsCollector_Linux
     {
         private readonly HostMetricsSettings settings;
 
