@@ -3,6 +3,7 @@ using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Process.Legacy
 {
+    [Obsolete]
     internal class LegacyCpuUtilizationCollector
     {
         private static readonly int DefaultCoresCount = Environment.ProcessorCount;

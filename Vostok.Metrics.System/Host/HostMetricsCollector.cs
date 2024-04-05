@@ -39,9 +39,13 @@ namespace Vostok.Metrics.System.Host
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var useLegacyCollector = Environment.GetEnvironmentVariable(VostokSystemMetricsConstants.UseLegacyMetricsCollectorEnvironmentVariable) == "TRUE";
+                var useLegacyCollector = Environment
+                    .GetEnvironmentVariable(VostokSystemMetricsConstants.UseLegacyMetricsCollectorEnvironmentVariable)?
+                    .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false;
                 INativeHostMetricsCollector_Linux collector = useLegacyCollector 
+#pragma warning disable CS0612
                     ? new LegacyNativeHostMetricsCollector_Linux(this.settings) 
+#pragma warning restore CS0612
                     : new NativeHostMetricsCollector_Linux(this.settings);
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
