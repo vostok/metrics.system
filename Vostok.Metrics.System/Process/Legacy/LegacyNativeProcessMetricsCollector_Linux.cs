@@ -7,6 +7,7 @@ using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Process.Legacy
 {
+    [Obsolete]
     internal class LegacyNativeMetricsCollector_Linux : INativeProcessMetricsCollector_Linux
     {
         private const string cgroupMemoryLimitFileName = "/sys/fs/cgroup/memory/memory.limit_in_bytes";

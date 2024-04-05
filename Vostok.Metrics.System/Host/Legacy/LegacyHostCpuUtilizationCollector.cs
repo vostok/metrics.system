@@ -3,6 +3,7 @@ using Vostok.Metrics.System.Helpers;
 
 namespace Vostok.Metrics.System.Host.Legacy
 {
+    [Obsolete]
     internal class LegacyHostCpuUtilizationCollector
     {
         private readonly Func<int?> coresCountProvider;
