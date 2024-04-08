@@ -1,3 +1,7 @@
+## 0.3.21 (08-04-2024):
+
+Do not log warnings about disabled network interfaces on newer Linux kernels.
+
 ## 0.3.20 (22-09-2023):
 
 Return back changes from 0.3.18 using RuntimeDetector to fix "Overlapped I/O operation is in progress" exception for framework 4.7.2/4.8.
