@@ -91,14 +91,16 @@ namespace Vostok.Metrics.System.Process
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var useLegacyCollector = Environment
-                    .GetEnvironmentVariable(VostokSystemMetricsConstants.UseLegacyMetricsCollectorEnvironmentVariable)?
+                var legacyCollectorFeatureFlag = Environment
+                    .GetEnvironmentVariable(VostokSystemMetricsConstants.UseLegacyMetricsCollectorEnvironmentVariable);
+                var useLegacyCollector = legacyCollectorFeatureFlag?
                     .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false;
                 INativeProcessMetricsCollector_Linux collector = useLegacyCollector
 #pragma warning disable CS0612
-                    ? new LegacyNativeMetricsCollector_Linux() 
+                    ? new LegacyNativeMetricsCollector_Linux()
 #pragma warning restore CS0612
                     : new NativeProcessMetricsCollector_Linux(this.settings.LinuxSettings);
+                InternalLogger.Debug(nameof(CurrentProcessMetricsCollector), $"Legacy metrics collector feature flag: '{legacyCollectorFeatureFlag}', using {collector.GetType()}");
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
             }

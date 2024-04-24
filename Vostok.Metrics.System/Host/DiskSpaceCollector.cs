@@ -73,7 +73,7 @@ namespace Vostok.Metrics.System.Host
                 catch (Exception error)
                 {
                     if (drive.IsReady)
-                        InternalErrorLogger.Warn(error);
+                        InternalLogger.Warn(error);
                     continue;
                 }
 
@@ -95,7 +95,7 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 

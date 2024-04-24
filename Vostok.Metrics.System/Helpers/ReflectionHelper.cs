@@ -24,7 +24,7 @@ namespace Vostok.Metrics.System.Helpers
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
 
                 return _ => default;
             }
@@ -42,7 +42,7 @@ namespace Vostok.Metrics.System.Helpers
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
 
                 return () => default;
             }
@@ -60,7 +60,7 @@ namespace Vostok.Metrics.System.Helpers
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
 
                 return () => default;
             }
@@ -81,7 +81,7 @@ namespace Vostok.Metrics.System.Helpers
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
 
                 return _ => default;
             }

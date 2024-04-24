@@ -162,11 +162,11 @@ namespace Vostok.Metrics.System.Host
 
                 foreach (var teamingInterface in teamingInterfaces)
                     if (!TryFillTeamingInfo(networkInterfacesUsage, teamingInterface, out var error))
-                        InternalErrorLogger.Warn(error);
+                        InternalLogger.Warn(error);
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return FilterDisabledInterfaces(networkInterfacesUsage.Values);
@@ -245,7 +245,7 @@ namespace Vostok.Metrics.System.Host
             {
                 // NOTE: We expect teaming interface to not be able to read speed directly.
                 if (!IsTeamingInterface(interfaceName))
-                    InternalErrorLogger.Warn(error);
+                    InternalLogger.Warn(error);
 
                 result = null;
                 return false;

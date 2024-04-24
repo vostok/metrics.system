@@ -94,7 +94,7 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             procStat = default;
@@ -111,7 +111,7 @@ namespace Vostok.Metrics.System.Host
 
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
                 memInfo = default;
                 return false;
             }
@@ -157,7 +157,7 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return result;

@@ -82,7 +82,7 @@ namespace Vostok.Metrics.System.Process.Legacy
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return result;
@@ -105,7 +105,7 @@ namespace Vostok.Metrics.System.Process.Legacy
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return result;
@@ -141,7 +141,7 @@ namespace Vostok.Metrics.System.Process.Legacy
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return result;
