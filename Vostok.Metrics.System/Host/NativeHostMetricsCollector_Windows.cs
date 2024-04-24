@@ -108,7 +108,7 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
@@ -135,7 +135,7 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
@@ -166,7 +166,7 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
@@ -197,7 +197,7 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
@@ -216,7 +216,7 @@ namespace Vostok.Metrics.System.Host
                 }
                 catch (Exception error)
                 {
-                    InternalErrorLogger.Warn(error);
+                    InternalLogger.Warn(error);
                     return Environment.ProcessorCount; //safe value
                 }
             }

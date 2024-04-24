@@ -79,7 +79,7 @@ namespace Vostok.Metrics.System.Process
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             procStat = default;
@@ -95,7 +95,7 @@ namespace Vostok.Metrics.System.Process
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             value = default;
@@ -111,7 +111,7 @@ namespace Vostok.Metrics.System.Process
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             value = default;

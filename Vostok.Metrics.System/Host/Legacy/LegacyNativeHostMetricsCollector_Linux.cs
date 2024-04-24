@@ -103,13 +103,13 @@ namespace Vostok.Metrics.System.Host.Legacy
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return result;
         }
 
-        private int? GetProcessorCount()
+        private int? GetProcessorCount() 
         {
             try
             {
@@ -117,7 +117,7 @@ namespace Vostok.Metrics.System.Host.Legacy
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
                 return null;
             }
         }
@@ -154,7 +154,7 @@ namespace Vostok.Metrics.System.Host.Legacy
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return result;
@@ -197,7 +197,7 @@ namespace Vostok.Metrics.System.Host.Legacy
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return result;

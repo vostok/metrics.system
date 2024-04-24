@@ -35,7 +35,7 @@ namespace Vostok.Metrics.System.Process
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
@@ -50,7 +50,7 @@ namespace Vostok.Metrics.System.Process
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
@@ -102,7 +102,7 @@ namespace Vostok.Metrics.System.Process
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 

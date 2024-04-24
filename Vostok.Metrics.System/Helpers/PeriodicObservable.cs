@@ -54,7 +54,7 @@ namespace Vostok.Metrics.System.Helpers
                 }
                 catch (Exception error)
                 {
-                    InternalErrorLogger.Warn(error);
+                    InternalLogger.Warn(error);
                 }
 
                 var remainingWait = period - watch.Elapsed;

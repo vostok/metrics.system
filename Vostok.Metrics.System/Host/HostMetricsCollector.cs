@@ -24,7 +24,9 @@ namespace Vostok.Metrics.System.Host
         private readonly ThrottlingCache<HostMetrics> cache;
 
         public HostMetricsCollector()
-            : this (new HostMetricsSettings()) { }
+            : this(new HostMetricsSettings())
+        {
+        }
 
         public HostMetricsCollector(HostMetricsSettings settings)
         {
@@ -39,14 +41,15 @@ namespace Vostok.Metrics.System.Host
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var useLegacyCollector = Environment
-                    .GetEnvironmentVariable(VostokSystemMetricsConstants.UseLegacyMetricsCollectorEnvironmentVariable)?
-                    .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false;
-                INativeHostMetricsCollector_Linux collector = useLegacyCollector 
+                var legacyCollectorFeatureFlag = Environment
+                    .GetEnvironmentVariable(VostokSystemMetricsConstants.UseLegacyMetricsCollectorEnvironmentVariable);
+                var useLegacyCollector = legacyCollectorFeatureFlag?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false;
+                INativeHostMetricsCollector_Linux collector = useLegacyCollector
 #pragma warning disable CS0612
-                    ? new LegacyNativeHostMetricsCollector_Linux(this.settings) 
+                    ? new LegacyNativeHostMetricsCollector_Linux(this.settings)
 #pragma warning restore CS0612
                     : new NativeHostMetricsCollector_Linux(this.settings);
+                InternalLogger.Debug(nameof(HostMetricsCollector), $"Legacy metrics collector feature flag: '{legacyCollectorFeatureFlag}', using {collector.GetType()}");
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
             }
@@ -67,7 +70,7 @@ namespace Vostok.Metrics.System.Host
         private HostMetrics CollectInternal()
         {
             var metrics = new HostMetrics();
-            
+
             CollectNativeMetrics(metrics);
 
             if (settings.CollectDiskSpaceMetrics)
@@ -75,7 +78,7 @@ namespace Vostok.Metrics.System.Host
 
             if (settings.CollectTcpStateMetrics)
                 tcpStateCollector.Collect(metrics);
-            
+
             return metrics;
         }
 
