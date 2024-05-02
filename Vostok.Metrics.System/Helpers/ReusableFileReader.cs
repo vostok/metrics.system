@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Vostok.Commons.Environment;
 
 namespace Vostok.Metrics.System.Helpers
 {
@@ -13,19 +12,25 @@ namespace Vostok.Metrics.System.Helpers
         public ReusableFileReader(string path)
             => this.path = path;
 
+        public ReusableFileReader(Stream stream)
+        {
+            reader = new StreamReader(stream, true);
+        }
+
         public string ReadFirstLine()
         {
             Reset();
 
             return reader.ReadLine();
         }
+
         public bool TryReadFirstLine(out string line)
         {
             line = null;
-            
+
             if (!File.Exists(path))
                 return false;
-            
+
             try
             {
                 line = ReadFirstLine();

@@ -7,6 +7,9 @@
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net6.0;net5.0;netcoreapp3.1;netcoreapp2.1</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\.gitattributes" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NSubstitute" Version="4.2.1" />
@@ -30,5 +33,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\vostok.metrics\Vostok.Metrics\bin\Release\$(ReferencesFramework)\Vostok.Metrics.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Resources\proc_meminfo.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\proc_stat.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\proc_vmstat.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

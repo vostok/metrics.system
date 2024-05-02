@@ -7,6 +7,7 @@ using Vostok.Commons.Helpers.Counters;
 using Vostok.Metrics.System.Dns;
 using Vostok.Metrics.System.Helpers;
 using Vostok.Metrics.System.Host;
+using Vostok.Metrics.System.Process.Legacy;
 
 namespace Vostok.Metrics.System.Process
 {
@@ -86,11 +87,20 @@ namespace Vostok.Metrics.System.Process
             dnsMonitor.Subscribe(dnsObserver);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                nativeCollector = new NativeMetricsCollector_Windows().Collect;
+                nativeCollector = new NativeProcessMetricsCollector_Windows().Collect;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var collector = new NativeMetricsCollector_Linux();
+                var legacyCollectorFeatureFlag = Environment
+                    .GetEnvironmentVariable(VostokSystemMetricsConstants.UseLegacyMetricsCollectorEnvironmentVariable);
+                var useLegacyCollector = legacyCollectorFeatureFlag?
+                    .Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false;
+                INativeProcessMetricsCollector_Linux collector = useLegacyCollector
+#pragma warning disable CS0612
+                    ? new LegacyNativeMetricsCollector_Linux()
+#pragma warning restore CS0612
+                    : new NativeProcessMetricsCollector_Linux(this.settings.LinuxSettings);
+                InternalLogger.Debug(nameof(CurrentProcessMetricsCollector), $"Legacy metrics collector feature flag: '{legacyCollectorFeatureFlag}', using {collector.GetType()}");
                 nativeCollector = collector.Collect;
                 disposeNativeCollector = collector.Dispose;
             }
