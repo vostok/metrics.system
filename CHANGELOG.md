@@ -1,3 +1,9 @@
+## 0.3.23 (02-05-2024):
+
+Performance improvements for linux system metrics collectors for large hosts. CPU consumption goes down (significantly), GC time % goes up (mildly).
+
+It is possible to switch back to previous metric collecting logic via environment variable VOSTOK_METRICS_SYSTEM_LINUX_USE_LEGACY_COLLECTOR=True.
+
 ## 0.3.21 (08-04-2024):
 
 Do not log warnings about disabled network interfaces on newer Linux kernels.
