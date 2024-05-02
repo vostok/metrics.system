@@ -1,4 +1,5 @@
-﻿override Vostok.Metrics.System.Dns.DnsMonitor.OnEventSourceCreated(System.Diagnostics.Tracing.EventSource eventSource) -> void
+﻿const Vostok.Metrics.System.Helpers.VostokSystemMetricsConstants.UseLegacyMetricsCollectorEnvironmentVariable = "VOSTOK_METRICS_SYSTEM_LINUX_USE_LEGACY_COLLECTOR" -> string
+override Vostok.Metrics.System.Dns.DnsMonitor.OnEventSourceCreated(System.Diagnostics.Tracing.EventSource eventSource) -> void
 override Vostok.Metrics.System.Dns.DnsMonitor.OnEventWritten(System.Diagnostics.Tracing.EventWrittenEventArgs eventData) -> void
 override Vostok.Metrics.System.Gc.GarbageCollectionMonitor.OnEventSourceCreated(System.Diagnostics.Tracing.EventSource source) -> void
 override Vostok.Metrics.System.Gc.GarbageCollectionMonitor.OnEventWritten(System.Diagnostics.Tracing.EventWrittenEventArgs event) -> void
@@ -8,9 +9,13 @@ static Vostok.Metrics.System.Gc.GarbageCollectionMonitorExtensions_Logging.LogCo
 static Vostok.Metrics.System.Gc.GarbageCollectionMonitorExtensions_Metrics.ReportMetrics(this Vostok.Metrics.System.Gc.GarbageCollectionMonitor monitor, Vostok.Metrics.IMetricContext metricContext) -> System.IDisposable
 static Vostok.Metrics.System.Gc.GarbageCollectionMonitorExtensions_Metrics.ReportMetrics(this Vostok.Metrics.System.Gc.GarbageCollectionMonitor monitor, Vostok.Metrics.IMetricContext metricContext, System.TimeSpan? period) -> System.IDisposable
 static Vostok.Metrics.System.Host.HostMetricsCollectorExtensions.ReportMetrics(this Vostok.Metrics.System.Host.HostMetricsCollector collector, Vostok.Metrics.IMetricContext metricContext, System.TimeSpan? period = null) -> System.IDisposable
+static Vostok.Metrics.System.Host.HostMetricsExtensions.LogMetrics(this Vostok.Metrics.System.Host.HostMetrics metrics, Vostok.Logging.Abstractions.ILog log, System.TimeSpan period) -> void
+static Vostok.Metrics.System.Host.HostMetricsExtensions.ToDataPoints(this Vostok.Metrics.System.Host.HostMetrics metrics, System.DateTimeOffset? timestamp = null) -> System.Collections.Generic.IEnumerable<Vostok.Metrics.Models.MetricDataPoint>
 static Vostok.Metrics.System.Host.HostMetricsSettings.CreateDisabled() -> Vostok.Metrics.System.Host.HostMetricsSettings
 static Vostok.Metrics.System.Host.HostMonitorExtensions.LogPeriodically(this Vostok.Metrics.System.Host.HostMonitor monitor, Vostok.Logging.Abstractions.ILog log, System.TimeSpan period) -> System.IDisposable
 static Vostok.Metrics.System.Process.CurrentProcessMetricsCollectorExtensions.ReportMetrics(this Vostok.Metrics.System.Process.CurrentProcessMetricsCollector collector, Vostok.Metrics.IMetricContext metricContext, System.TimeSpan? period = null) -> System.IDisposable
+static Vostok.Metrics.System.Process.CurrentProcessMetricsExtensions.LogMetrics(this Vostok.Metrics.System.Process.CurrentProcessMetrics metrics, Vostok.Logging.Abstractions.ILog log, System.TimeSpan period) -> void
+static Vostok.Metrics.System.Process.CurrentProcessMetricsExtensions.ToDataPoints(this Vostok.Metrics.System.Process.CurrentProcessMetrics metrics, System.DateTimeOffset? timestamp = null) -> System.Collections.Generic.IEnumerable<Vostok.Metrics.Models.MetricDataPoint>
 static Vostok.Metrics.System.Process.CurrentProcessMonitorExtensions.LogPeriodically(this Vostok.Metrics.System.Process.CurrentProcessMonitor monitor, Vostok.Logging.Abstractions.ILog log, System.TimeSpan period) -> System.IDisposable
 Vostok.Metrics.System.Dns.DnsLookupInfo
 Vostok.Metrics.System.Dns.DnsLookupInfo.DnsLookupInfo(bool isFailed, System.TimeSpan latency) -> void
@@ -52,6 +57,7 @@ Vostok.Metrics.System.Gc.GarbageCollectionType
 Vostok.Metrics.System.Gc.GarbageCollectionType.BackgroundGC = 1 -> Vostok.Metrics.System.Gc.GarbageCollectionType
 Vostok.Metrics.System.Gc.GarbageCollectionType.ForegroundGC = 2 -> Vostok.Metrics.System.Gc.GarbageCollectionType
 Vostok.Metrics.System.Gc.GarbageCollectionType.NonConcurrentGC = 0 -> Vostok.Metrics.System.Gc.GarbageCollectionType
+Vostok.Metrics.System.Helpers.VostokSystemMetricsConstants
 Vostok.Metrics.System.Host.DiskSpaceInfo
 Vostok.Metrics.System.Host.DiskSpaceInfo.DiskName.get -> string
 Vostok.Metrics.System.Host.DiskSpaceInfo.DiskName.set -> void
@@ -91,6 +97,8 @@ Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedCores.get -> double
 Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedCores.set -> void
 Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedFraction.get -> double
 Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedFraction.set -> void
+Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedFractionInKernel.get -> double
+Vostok.Metrics.System.Host.HostMetrics.CpuUtilizedFractionInKernel.set -> void
 Vostok.Metrics.System.Host.HostMetrics.DisksSpaceInfo.get -> System.Collections.Generic.Dictionary<string, Vostok.Metrics.System.Host.DiskSpaceInfo>
 Vostok.Metrics.System.Host.HostMetrics.DisksSpaceInfo.set -> void
 Vostok.Metrics.System.Host.HostMetrics.DisksUsageInfo.get -> System.Collections.Generic.Dictionary<string, Vostok.Metrics.System.Host.DiskUsageInfo>
@@ -133,6 +141,7 @@ Vostok.Metrics.System.Host.HostMetricsCollector.Dispose() -> void
 Vostok.Metrics.System.Host.HostMetricsCollector.HostMetricsCollector() -> void
 Vostok.Metrics.System.Host.HostMetricsCollector.HostMetricsCollector(Vostok.Metrics.System.Host.HostMetricsSettings settings) -> void
 Vostok.Metrics.System.Host.HostMetricsCollectorExtensions
+Vostok.Metrics.System.Host.HostMetricsExtensions
 Vostok.Metrics.System.Host.HostMetricsSettings
 Vostok.Metrics.System.Host.HostMetricsSettings.CollectCpuMetrics.get -> bool
 Vostok.Metrics.System.Host.HostMetricsSettings.CollectCpuMetrics.set -> void
@@ -259,10 +268,13 @@ Vostok.Metrics.System.Process.CurrentProcessMetricsCollector.CurrentProcessMetri
 Vostok.Metrics.System.Process.CurrentProcessMetricsCollector.CurrentProcessMetricsCollector(Vostok.Metrics.System.Process.CurrentProcessMetricsSettings settings) -> void
 Vostok.Metrics.System.Process.CurrentProcessMetricsCollector.Dispose() -> void
 Vostok.Metrics.System.Process.CurrentProcessMetricsCollectorExtensions
+Vostok.Metrics.System.Process.CurrentProcessMetricsExtensions
 Vostok.Metrics.System.Process.CurrentProcessMetricsSettings
 Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.CpuCoresLimitProvider.get -> System.Func<double?>
 Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.CpuCoresLimitProvider.set -> void
 Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.CurrentProcessMetricsSettings() -> void
+Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.LinuxSettings.get -> Vostok.Metrics.System.Process.LinuxProcessMetricsSettings
+Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.LinuxSettings.set -> void
 Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.MemoryBytesLimitProvider.get -> System.Func<long?>
 Vostok.Metrics.System.Process.CurrentProcessMetricsSettings.MemoryBytesLimitProvider.set -> void
 Vostok.Metrics.System.Process.CurrentProcessMonitor
@@ -271,3 +283,11 @@ Vostok.Metrics.System.Process.CurrentProcessMonitor.CurrentProcessMonitor(Vostok
 Vostok.Metrics.System.Process.CurrentProcessMonitor.Dispose() -> void
 Vostok.Metrics.System.Process.CurrentProcessMonitor.ObserveMetrics(System.TimeSpan period) -> System.IObservable<Vostok.Metrics.System.Process.CurrentProcessMetrics>
 Vostok.Metrics.System.Process.CurrentProcessMonitorExtensions
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableCgroupStats.get -> bool
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableCgroupStats.set -> void
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableOpenFilesCount.get -> bool
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.DisableOpenFilesCount.set -> void
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.LinuxProcessMetricsSettings() -> void
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.UseDotnetCpuCount.get -> bool
+Vostok.Metrics.System.Process.LinuxProcessMetricsSettings.UseDotnetCpuCount.set -> void
