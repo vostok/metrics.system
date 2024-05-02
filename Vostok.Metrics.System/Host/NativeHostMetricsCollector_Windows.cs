@@ -10,7 +10,8 @@ namespace Vostok.Metrics.System.Host
     internal class NativeHostMetricsCollector_Windows : IDisposable
     {
         private readonly HostMetricsSettings settings;
-        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector(GetProcessorCount);
+        private readonly HostCpuUtilizationCollector cpuCollector = new HostCpuUtilizationCollector();
+        private readonly int safeProcessorCount = Environment.ProcessorCount;
 
         private readonly IPerformanceCounter<Observation<NetworkUsage>[]> networkUsageCounter = PerformanceCounterFactory.Default
            .Create<NetworkUsage>()
@@ -103,11 +104,11 @@ namespace Vostok.Metrics.System.Host
 
                 var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
 
-                cpuCollector.Collect(metrics, systemTime, idleTime.ToUInt64());
+                cpuCollector.Collect(metrics, systemTime, idleTime.ToUInt64(), systemKernel.ToUInt64(), GetHostProcessorCount());
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
@@ -134,7 +135,7 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
@@ -165,13 +166,13 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
         private void CollectDisksUsage(HostMetrics metrics)
         {
-            var disksUsageInfo = new Dictionary<string, DiskUsageInfo>();
+            var disksUsageInfo = new Dictionary<string, DiskUsageInfo>(StringComparer.OrdinalIgnoreCase); //windows drive names are case insensitive
 
             try
             {
@@ -196,11 +197,15 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
-        internal static int? GetProcessorCount()
+        /// <summary>
+        /// gets host processor count. should work correnct inside docker or in job
+        /// </summary>
+        /// <returns></returns>
+        public static int GetHostProcessorCount()
         {
             {
                 try
@@ -211,8 +216,8 @@ namespace Vostok.Metrics.System.Host
                 }
                 catch (Exception error)
                 {
-                    InternalErrorLogger.Warn(error);
-                    return null;
+                    InternalLogger.Warn(error);
+                    return Environment.ProcessorCount; //safe value
                 }
             }
         }

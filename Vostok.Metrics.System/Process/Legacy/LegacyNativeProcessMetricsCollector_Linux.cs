@@ -5,9 +5,10 @@ using Vostok.Metrics.System.Helpers;
 
 // ReSharper disable PossibleInvalidOperationException
 
-namespace Vostok.Metrics.System.Process
+namespace Vostok.Metrics.System.Process.Legacy
 {
-    internal class NativeMetricsCollector_Linux : IDisposable
+    [Obsolete]
+    internal class LegacyNativeMetricsCollector_Linux : INativeProcessMetricsCollector_Linux
     {
         private const string cgroupMemoryLimitFileName = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
         private const string cgroupCpuCfsQuotaFileName = "/sys/fs/cgroup/cpu/cpu.cfs_quota_us";
@@ -22,7 +23,7 @@ namespace Vostok.Metrics.System.Process
         private readonly ReusableFileReader cgroupMemoryLimitReader = new ReusableFileReader(cgroupMemoryLimitFileName);
         private readonly ReusableFileReader cgroupCpuCfsQuotaReader = new ReusableFileReader(cgroupCpuCfsQuotaFileName);
         private readonly ReusableFileReader cgroupCpuCfsPeriodReader = new ReusableFileReader(cgroupCpuCfsPeriodFileName);
-        private readonly CpuUtilizationCollector cpuCollector = new CpuUtilizationCollector();
+        private readonly LegacyCpuUtilizationCollector cpuCollector = new LegacyCpuUtilizationCollector();
 
         public void Dispose()
         {
@@ -81,7 +82,7 @@ namespace Vostok.Metrics.System.Process
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return result;
@@ -104,7 +105,7 @@ namespace Vostok.Metrics.System.Process
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return result;
@@ -140,7 +141,7 @@ namespace Vostok.Metrics.System.Process
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return result;

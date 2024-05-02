@@ -11,5 +11,8 @@ namespace Vostok.Metrics.System.Process
 
         [CanBeNull]
         public Func<long?> MemoryBytesLimitProvider { get; set; }
+
+        [CanBeNull]
+        public LinuxProcessMetricsSettings LinuxSettings { get; set; }
     }
 }

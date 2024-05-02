@@ -8,7 +8,7 @@
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
-    <VersionPrefix>0.3.22</VersionPrefix>
+    <VersionPrefix>0.3.23</VersionPrefix>
   </PropertyGroup>
   <PropertyGroup>
     <Title>Vostok.Metrics.System</Title>
@@ -30,6 +30,8 @@
     <Compile Include="..\..\vostok.commons.helpers\Vostok.Commons.Helpers\Counters\ConcurrentCounter.cs" Link="Commons\ConcurrentCounter.cs" />
     <Compile Include="..\..\vostok.commons.helpers\Vostok.Commons.Helpers\Counters\DeltaCollector.cs" Link="Commons\DeltaCollector.cs" />
     <Compile Include="..\..\vostok.commons.helpers\Vostok.Commons.Helpers\Diagnostics\EventHelper.cs" Link="Commons\EventHelper.cs" />
+    <Compile Include="..\..\vostok.commons.helpers\Vostok.Commons.Helpers\Spans\SpanSplitter.cs" Link="Commons\SpanSplitter.cs" />
+    <Compile Include="..\..\vostok.commons.helpers\Vostok.Commons.Helpers\Spans\StreamLinesReader.cs" Link="Commons\StreamLinesReader.cs" />
     <Compile Include="..\..\vostok.commons.time\Vostok.Commons.Time\TimeSpanFormatting.cs" Link="Commons\TimeSpanFormatting.cs" />
   </ItemGroup>
   <ItemGroup>

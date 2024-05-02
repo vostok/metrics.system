@@ -60,7 +60,7 @@ namespace Vostok.Metrics.System.Gc
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 

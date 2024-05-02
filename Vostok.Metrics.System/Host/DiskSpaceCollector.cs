@@ -12,6 +12,7 @@ namespace Vostok.Metrics.System.Host
         private readonly ReusableFileReader mountsReaderLinux;
         private readonly Func<DriveInfo, bool> systemFilter;
         private readonly Func<string, string> nameFormatter;
+        private readonly StringComparer diskNameComparer;
 
         private volatile Dictionary<string, string> mountDiskMap = new Dictionary<string, string>();
 
@@ -21,12 +22,14 @@ namespace Vostok.Metrics.System.Host
             {
                 systemFilter = FilterDisks_Windows;
                 nameFormatter = FormatDiskName_Windows;
+                diskNameComparer = StringComparer.OrdinalIgnoreCase;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 systemFilter = FilterDisks_Linux;
                 nameFormatter = FormatDiskName_Linux;
                 mountsReaderLinux = new ReusableFileReader("/proc/mounts");
+                diskNameComparer = StringComparer.Ordinal;
             }
         }
 
@@ -35,7 +38,7 @@ namespace Vostok.Metrics.System.Host
 
         public void Collect(HostMetrics metrics)
         {
-            var diskSpaceInfos = new Dictionary<string, DiskSpaceInfo>();
+            var diskSpaceInfos = new Dictionary<string, DiskSpaceInfo>(diskNameComparer);
 
             foreach (var info in GetDiskSpaceInfos())
             {
@@ -70,7 +73,7 @@ namespace Vostok.Metrics.System.Host
                 catch (Exception error)
                 {
                     if (drive.IsReady)
-                        InternalErrorLogger.Warn(error);
+                        InternalLogger.Warn(error);
                     continue;
                 }
 
@@ -92,7 +95,7 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 

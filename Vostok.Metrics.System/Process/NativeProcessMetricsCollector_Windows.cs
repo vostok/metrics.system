@@ -9,9 +9,10 @@ using Vostok.Metrics.System.Host;
 
 namespace Vostok.Metrics.System.Process
 {
-    internal class NativeMetricsCollector_Windows
+    internal class NativeProcessMetricsCollector_Windows
     {
         private static readonly IntPtr CurrentProcessHandle = GetCurrentProcess();
+        private static readonly bool isDotNet60AndNewer = RuntimeDetector.IsDotNet60AndNewer;
 
         private readonly CpuUtilizationCollector cpuCollector = new CpuUtilizationCollector();
 
@@ -29,12 +30,12 @@ namespace Vostok.Metrics.System.Process
                 if (!GetProcessMemoryInfo(CurrentProcessHandle, out var memoryCounters, sizeof(PROCESS_MEMORY_COUNTERS_EX)))
                     WinMetricsCollectorHelper.ThrowOnError();
 
-                metrics.MemoryResident = (long) memoryCounters.WorkingSetSize;
-                metrics.MemoryPrivate = (long) memoryCounters.PrivateUsage;
+                metrics.MemoryResident = (long)memoryCounters.WorkingSetSize;
+                metrics.MemoryPrivate = (long)memoryCounters.PrivateUsage;
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
@@ -45,11 +46,11 @@ namespace Vostok.Metrics.System.Process
                 if (!GetProcessHandleCount(CurrentProcessHandle, out var handleCount))
                     WinMetricsCollectorHelper.ThrowOnError();
 
-                metrics.HandlesCount = (int) handleCount;
+                metrics.HandlesCount = (int)handleCount;
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 
@@ -86,21 +87,22 @@ namespace Vostok.Metrics.System.Process
                 var systemTime = systemKernel.ToUInt64() + systemUser.ToUInt64();
                 var processTime = processKernel.ToUInt64() + processUser.ToUInt64();
 
-                if (RuntimeDetector.IsDotNet60AndNewer)
+                if (isDotNet60AndNewer)
                 {
                     // note: Environment.ProcessorCount from NET6+ respects process affinity and the job object's hard limit on CPU utilization
                     // https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/environment-processorcount-on-windows
                     // so we should get total number of system cores from NativeHostMetricsCollector_Windows instead
-                    cpuCollector.Collect(metrics, systemTime, processTime, NativeHostMetricsCollector_Windows.GetProcessorCount());
+                    cpuCollector.Collect(metrics, systemTime, processTime, NativeHostMetricsCollector_Windows.GetHostProcessorCount());
                 }
                 else
                 {
-                    cpuCollector.Collect(metrics, systemTime, processTime);
+                    //fix old behaviour before net6
+                    cpuCollector.Collect(metrics, systemTime, processTime, Environment.ProcessorCount);
                 }
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
         }
 

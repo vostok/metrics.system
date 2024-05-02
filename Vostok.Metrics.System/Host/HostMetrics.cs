@@ -27,6 +27,12 @@ namespace Vostok.Metrics.System.Host
         /// <para>This metric is an average value between two observation moments (current and previous).</para>
         /// </summary>
         public double CpuUtilizedFraction { get; set; }
+        
+        /// <summary>
+        /// <para>Fraction of the CPU resources consumed by host in kernel mode</para>
+        /// <para>This metric has a value between 0 and 1.</para>
+        /// </summary>
+        public double CpuUtilizedFractionInKernel { get; set; }
 
         /// <summary>
         /// Amount of physical RAM on host.

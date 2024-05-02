@@ -16,12 +16,12 @@ namespace Vostok.Metrics.System.Host
             diskStatsReader?.Dispose();
         }
 
-        public void Collect(HostMetrics metrics)
+        public void Collect(HostMetrics metrics) //todo не мусорить строками
         {
             var deltaSeconds = stopwatch.Elapsed.TotalSeconds;
 
             var newDisksStatsInfo = new Dictionary<string, DiskStats>();
-            var disksUsageInfo = new Dictionary<string, DiskUsageInfo>();
+            var disksUsageInfo = new Dictionary<string, DiskUsageInfo>(); //case sensitive in linux
 
             foreach (var diskStats in ParseDiskstats(diskStatsReader.ReadLines()))
             {
@@ -117,7 +117,7 @@ namespace Vostok.Metrics.System.Host
             }
             catch (Exception error)
             {
-                InternalErrorLogger.Warn(error);
+                InternalLogger.Warn(error);
             }
 
             return disksStats;
