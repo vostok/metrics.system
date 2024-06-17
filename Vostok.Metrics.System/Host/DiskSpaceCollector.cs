@@ -57,6 +57,8 @@ namespace Vostok.Metrics.System.Host
             // NOTE: We are trying to get information from disks which are not ready. This is made for docker compatibility (some of the drives are shown as NotReady for some reason).
             // NOTE: Also, the fact that drive has IsReady set to true doesn't mean much: it can still throw IOExceptions.
             // NOTE: See https://docs.microsoft.com/en-us/dotnet/api/system.io.driveinfo.isready for details.
+            //DriveInfo.GetDrives() returns info from /proc/mounts or getmntent call https://man7.org/linux/man-pages/man3/getmntent.3.html
+            //systemFilter is useless in current implementation
             foreach (var drive in DriveInfo.GetDrives().Where(x => systemFilter(x) && x.DriveType == DriveType.Fixed))
             {
                 var result = new DiskSpaceInfo();
@@ -65,7 +67,7 @@ namespace Vostok.Metrics.System.Host
                 {
                     result.DiskName = nameFormatter(drive.Name);
                     result.RootDirectory = drive.RootDirectory.FullName;
-                    result.FreeBytes = drive.TotalFreeSpace;
+                    result.FreeBytes = drive.TotalFreeSpace; //todo useless in linux, need AvailableFreeSpace for see what space avail for real usage.
                     result.TotalCapacityBytes = drive.TotalSize;
                     if (result.TotalCapacityBytes != 0)
                         result.FreePercent = result.FreeBytes * 100d / result.TotalCapacityBytes;
@@ -83,6 +85,20 @@ namespace Vostok.Metrics.System.Host
 
         private void UpdateMountMap()
         {
+            //todo bad method, trash devices like "loop0" included
+            //use list direcroty "/dev/disk/by-path" and follow symlinks, remove duplicated...
+            /*
+dgorlov@sd2-k-lin01:~$ ls -alh /dev/disk/by-path
+total 0
+drwxr-xr-x 2 root root 160 Feb  6 14:14 .
+drwxr-xr-x 6 root root 120 Feb  6 14:14 ..
+lrwxrwxrwx 1 root root   9 Feb  6 14:14 pci-0000:00:1f.2-ata-1 -> ../../sda
+lrwxrwxrwx 1 root root  10 Feb  6 14:15 pci-0000:00:1f.2-ata-1-part1 -> ../../sda1
+lrwxrwxrwx 1 root root  10 Feb  6 14:14 pci-0000:00:1f.2-ata-1-part2 -> ../../sda2
+lrwxrwxrwx 1 root root   9 Jun 17 14:02 pci-0000:00:1f.2-ata-2 -> ../../sdb
+lrwxrwxrwx 1 root root   9 Feb  6 14:14 pci-0000:00:1f.2-ata-3 -> ../../sdc
+lrwxrwxrwx 1 root root   9 Feb  6 14:14 pci-0000:00:1f.2-ata-4 -> ../../sdd             
+            */
             mountDiskMap = new Dictionary<string, string>();
 
             try
