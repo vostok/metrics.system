@@ -176,7 +176,7 @@ namespace Vostok.Metrics.System.Host
 
             try
             {
-                foreach (var diskUsageInfo in diskUsageCounter.Observe())
+                foreach (var diskUsageInfo in diskUsageCounter.Observe()) //NOTE Observe can fail due to perf counter errors
                 {
                     var result = new DiskUsageInfo
                     {

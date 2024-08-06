@@ -86,7 +86,9 @@ namespace Vostok.Metrics.System.Host
 
         /// <summary>
         /// Disk usage info per device.
+        /// null if failed to obtain info or disabled
         /// </summary>
+        [CanBeNull]
         public Dictionary<string, DiskUsageInfo> DisksUsageInfo { get; set; }
 
         /// <summary>
