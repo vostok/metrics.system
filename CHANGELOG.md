@@ -1,3 +1,7 @@
+## 0.3.24 (16-12-2024): 
+
+Bump NuGet deps versions
+
 ## 0.3.23 (02-05-2024):
 
 Performance improvements for linux system metrics collectors for large hosts. CPU consumption goes down (significantly), GC time % goes up (mildly).
