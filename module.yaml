@@ -7,6 +7,16 @@ notests *default:
 
   install:
     - Vostok.Metrics.System/bin/Release/netstandard2.0/Vostok.Metrics.System.dll
+    - groups:
+        - target-framework: "netstandard2.0"
+          libraries:
+            - Vostok.Metrics.System/bin/Release/netstandard2.0/Vostok.Metrics.System.dll
+        - target-framework: "net6.0"
+          libraries:
+            - Vostok.Metrics.System/bin/Release/net6.0/Vostok.Metrics.System.dll
+        - target-framework: "net8.0"
+          libraries:
+            - Vostok.Metrics.System/bin/Release/net8.0/Vostok.Metrics.System.dll
 
   deps:
     - vostok.commons.collections/src
